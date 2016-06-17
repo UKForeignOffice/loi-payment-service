@@ -1,0 +1,190 @@
+//INFORMED CUSTOM CSS
+html {
+  background-color: #dee0e2; //Footer fill
+}
+ul {
+  list-style-type: disc;
+  padding-left: 40px;
+  padding-bottom: 20px; }
+
+.hide {
+  display:none;
+}
+// Activate class of noJs for when js is disabled (mainly for doc selector)
+.noJs{display:none;width:0;height:0;text-indent:-99999}
+// fix styles
+.nomargin {margin:0!important}
+.nopadding {padding:0!important}
+.nopaddingtop {padding-top: 0!important}
+.nomargintop {margin-top: 0!important}
+.nopaddingbottom {padding-bottom: 0!important}
+.nomarginbottom {margin-bottom: 0!important}
+.nomarginright {margin-right: 0!important}
+.nopaddingright  {padding-right: 0!important}
+.floatright {float: right}
+.floatleft {float: left}
+.nonboldlabel {font-weight: 100;font-size: 19px;}
+.bold-text {font-weight: bold}
+.text-block {display: block}
+.marginlr15 {margin-left: 15px!important;margin-right: 15px;}
+.textindent { display: block; text-indent: -100000em; height: 0; width: 0; max-width: 0; max-height: 0; position: absolute;}
+.column-two-thirds {padding: 0!important}
+.full-width {  width:100%}
+// Hide, only when JavaScript is enabled
+.js-enabled .js-hidden {  display: none;}
+
+
+.back-to-previous {
+  font-family: "nta",Arial,sans-serif;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 300;
+  text-transform: none;
+  display: block;
+  text-decoration: none;
+  border-bottom: #0b0c0c 1px solid;
+  width: 2.25em;
+  background: url("../images/icon-caret-left.png") left 0.2em no-repeat;
+  padding-left: 0.75em;
+  margin-top: 0.75em;
+  text-align: right;
+  overflow: hidden;
+  float:left;
+  color:#0b0c0c!important;
+}
+
+.back_to_previous_button {
+  font-family: "nta",Arial,sans-serif;
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 300;
+  text-transform: none;
+  display: block;
+  text-decoration: none;
+  padding-left: 0.75em;
+  margin-top: 0.75em;
+  overflow: hidden;
+  color: #0b0c0c !important;
+  border: none;
+  width: 36px;
+  border-bottom: #0b0c0c 1px solid;
+  text-align: right;
+  background: url("images/icon-caret-left.png") left 48% no-repeat;
+
+}
+.back_to_previous_button:focus{
+  background-color: #ffbf47;
+  outline: 3px solid #ffbf47;
+}
+
+
+
+.inner_header{
+  width: 100%;
+  display: block;
+  margin-bottom: 30px;
+  height: 1em;
+
+  #mobile-inner-header{
+    float: right;
+    width: 100%!important;
+  }
+
+  .inner-header-content {
+    float: right;
+    padding-top: 8px;
+  }
+
+  @media (max-width:640px) {
+    margin-bottom: 0;
+    float: none;
+    border: none;
+    .inner-header-content{
+      float: none;
+      padding: 0;
+    }
+
+    span.email-logout-text {
+      float: right;
+      width: auto;
+    }
+
+    a.back-to-previous {
+      float: left;
+    }
+  }
+  @include media(mobile){
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    display: block;
+    border-bottom: 1px solid #bfc1c3;
+    height: 4em;
+
+  }
+}
+.email-logout-text{
+  margin-top: .75em;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+
+.sr-only{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+
+//FOOTER CSS
+#footer {
+  border-top: 10px solid #005ea5;
+}
+.footer-categories{
+  padding: 0 15px 20px;
+}
+.footer-explore{
+  float: left;
+  width: 66.66%;
+  padding-bottom: 40px;
+}
+.footer-categories ul {
+  float: left;
+  margin: 10px 0 0 0;
+  width: 50%;
+  font-size: 16px;
+  line-height: 1.25;
+  padding-left: 0;
+  list-style-type: none;
+}
+#footer .footer-categories .footer-inside-government h2 {
+  margin: 0 15px;}
+.footer-categories ul li {
+  padding: 20px 0 0;
+  margin: 0 15px;
+}
+.footer-categories .footer-inside-government {
+  float: left;
+  width: 33.33%;
+}
+.footer-categories .footer-explore h2, #footer .footer-categories .footer-inside-government h2 {
+  padding: 0 0 20px;
+  border-bottom: 1px solid #bfc1c3;
+}
+
+.footer-categories hr {
+  clear: both;
+  margin: 0 15px 0px;
+  border: 1px solid #bfc1c3;
+  border-width: 1px 0 0 0;
+}
+#footer .footer-meta .footer-meta-inner {
+  padding-top: 30px;
+}
+
+

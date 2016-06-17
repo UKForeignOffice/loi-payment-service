@@ -1,0 +1,60 @@
+$path : '../images/govuk_frontend_toolkit/';
+//govuk_frontend_toolkit
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_colours';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_conditionals';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_css3';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_device-pixels';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_font_stack';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_grid_layout';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_helpers';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_measurements';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_shims';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_typography';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/_url-helpers';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/design-patterns/_alpha-beta';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/design-patterns/_breadcrumbs';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/design-patterns/_buttons';
+@import '../node_modules/govuk_frontend_toolkit/stylesheets/design-patterns/_media-player';
+
+//govuk-elements-sass
+
+// GOV.UK elements
+
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_helpers";                       // Helper functions and classes
+
+// Generic (normalize/reset.css)
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_reset";
+
+// Base (unclassed HTML elements)
+// These are predefined by govuk_template
+// If you're not using govuk_template, uncomment the line below.
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_govuk-template-base";           // Base styles set by GOV.UK template
+
+// Objects (unstyled design patterns)
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_layout";                        // Main content container. Grid layout - rows and column widths
+
+// Components (chunks of UI)
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_elements-typography";           // Typography
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_buttons";                       // Buttons
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_icons";                         // Icons - numbered steps, calendar, search
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_lists";                         // Lists - numbered, bulleted
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_tables";                        // Tables - regular, numeric
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_details";                       // Details summary
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_panels";                        // Panels with a left grey border
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_forms";                         // Form - wrappers, inputs, labels
+@import "../node_modules/govuk-elements-sass/public/sass/elements/forms/_form-block-labels";       // Chunky labels for radios and checkboxes
+@import "../node_modules/govuk-elements-sass/public/sass/elements/forms/_form-date";               // Date of birth pattern
+@import "../node_modules/govuk-elements-sass/public/sass/elements/forms/_form-validation";         // Errors and validation
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_breadcrumbs";                   // Breadcrumbs
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_phase-banner";                  // Alpha and beta banners and tags
+@import "../node_modules/govuk-elements-sass/public/sass/elements/_components";                    // GOV.UK prefixed styles - blue highlighted box
+
+
+.phase-banner {
+  @include phase-banner($state: beta);
+}
+
+
+//INFORMED CSS
+@import "informed";
+@import "informed-responsive-mobile";

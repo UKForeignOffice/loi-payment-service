@@ -1,0 +1,40 @@
+{
+  "name": "is-payment-service",
+  "version": "1.0.0",
+  "description": "Legalisation payment microservice",
+  "author": "Mike Skaife <mike.skaife@informed.com>",
+  "dependencies": {
+    "body-parser": "~1.0.0",
+    "chai": "^3.5.0",
+    "connect-mongo": "^1.1.0",
+    "dotenv": "^2.0.0",
+    "ejs": "~0.8.5",
+    "express": "~4.0.0",
+    "express-session": "^1.13.0",
+    "fs-extra": "^0.30.0",
+    "govuk-elements-sass": "1.1.4",
+    "govuk_frontend_toolkit": "4.10.0",
+    "istanbul": "^0.4.2",
+    "jshint": "^2.9.1",
+    "mocha": "^2.4.5",
+    "morgan": "~1.0.0",
+    "node-sass": "^3.7.0",
+    "node-sass-middleware": "^0.9.8",
+    "pg": "^4.4.3",
+    "pg-hstore": "^2.3.2",
+    "request": "~2.67.0",
+    "sequelize": "^3.17.1",
+    "serve-favicon": "^2.3.0",
+    "should": "^8.3.0",
+    "supertest": "^1.2.0",
+    "winston": "^2.1.1",
+    "xunit-file": "0.0.9"
+  },
+  "scripts": {
+    "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive -R xunit-file test/",
+    "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- --timeout 10000 --recursive -R tap \"test/\" > test.tap && istanbul report clover",
+    "lint": "jshint --reporter checkstyle . > linting.xml",
+    "local-lint": "jshint ."
+  },
+  "license": "MIT"
+}

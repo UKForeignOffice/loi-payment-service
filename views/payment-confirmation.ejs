@@ -1,0 +1,55 @@
+
+<% include partials/header %>
+
+
+<div>
+
+
+        <%if (loggedIn == true) { %>
+        <div class="inner_header">
+            <%if(user_data.loggedIn){%>
+            <div class="inner-header-content">
+                    <span class="email-logout-text">
+                        <%if(typeof(user_data.account)!='undefined' && user_data.account!=null && user_data.account.first_name != null){%>
+                        <%= user_data.account.first_name+' '+user_data.account.last_name%><%}else{%><%= user_data.user.email%><%}%>
+                    </span>
+                    <span class="email-logout-text">
+                        <a  href="/dashboard" class="btn btn-success btn-sm">Applications</a>
+                        <a  href="<%= user_data.url%>/account" class="btn btn-success btn-sm">Account</a>
+                        <a  href="<%=  user_data.url%>/addresses" class="btn btn-success btn-sm">Addresses</a>
+                        <a  href="/sign-out" id="sign-out-link" class="btn btn-success btn-sm">Sign out</a>
+                    </span>
+            </div>
+            <%}%>
+        </div>
+        <% } %>
+
+        <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+
+        <h1 class="heading-xlarge">Your payment was unsuccessful</h1>
+
+        <div class="intro column-two-thirds">
+
+            <p>We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card to pay for your documents, or use a different card.</p>
+
+            <!-- PAYMENT FORM -->
+            <form action="<%= smartPayUrl %>" method="post">
+
+              <div class="form-group">
+
+                <% var ordered =  params; %>
+                <% for(var key in ordered){ %>
+                <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
+                <% } %>
+
+                <button type="submit" class="button">Pay on Barclaycard SmartPay</button>
+
+              </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+<% include partials/footer %>

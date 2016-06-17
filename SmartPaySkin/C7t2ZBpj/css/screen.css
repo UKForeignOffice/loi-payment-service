@@ -1,0 +1,616 @@
+html {
+	height: 100%;
+	max-height: 100%;
+	font-size: 0.875em;
+	font-family: Helvetica, Arial, Tahoma;
+	color: #333333;
+}
+
+body {
+	background-image: none!important;
+	background-repeat: no-repeat;
+	background-attachment:fixed;
+	background-position: 50% 0%; 
+}
+
+.masthead {
+    width: 100%;
+	background: #0b0c0c;
+	height: 60px;
+}
+.centerpage {
+	margin: 0 10px;
+
+}
+.header-bar {
+	height: 10px;
+  background-color: #005ea5;
+  max-width: 900px;
+	margin: 0 auto;
+}
+
+div.pmOcRemove {
+    margin-top: 20px;
+}
+
+div.pmOcPan {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+div.pmOcExp {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+div.pmOcName {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+#cvcWhatIs {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+.pmOcPay input[type=submit] {
+	background-color: #00823b;
+	padding: 0.5em 0.75em ;
+	border: none;
+	-webkit-box-shadow: 0 2px 0 #003518;
+  -moz-box-shadow: 0 2px 0 #003518;
+  box-shadow: 0 2px 0 #003518;
+	overflow: hidden;
+	color: #FFFFFF;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-weight: bold;
+	font-size: 0.9em;
+	vertical-align: top;
+	margin-bottom: 20px;
+}
+/*
+#mainBack {
+    display: none;
+}
+*/
+
+tr#shippedbefore {
+    display: none;
+}
+
+/* Main Elements */
+#logoheader {
+	width: 900px;
+	height: 99px;
+}
+
+#logoheader2 {
+	width:900px;
+	height: 101px;
+	border-top: 1px solid #eee;
+	margin-top: 5px;
+	padding-top: 5px;
+	background: url(../img/merchantlogo.gif) no-repeat;
+	display: none;
+	}
+
+#logoheader2 H1 {
+	float: left;
+	}	
+
+.IAlogo {
+	width: 180px;
+	height: 99px;
+	background: url(../img/IAlogos.gif) no-repeat;
+	display: block;
+	margin-top: 0px;
+	float: right;
+}
+
+.SmartLogo {
+	width: 263px;
+	height: 99px;
+	display: block;
+	float: left;
+	padding-top: 0px;
+	background-image: none!important;
+}
+
+#content {
+	max-width:900px;
+	margin: 0 auto;
+}
+
+#pmcontent {
+	clear: both;
+}
+
+#foot {
+	max-width:900px;
+	margin: 0 auto;
+
+}
+
+.paddiv1, .paddiv2 {
+	text-align:center;
+	height: 0px;
+}
+
+#nextstep {
+	font-weight: bold;
+	height: 22px;
+	color: #6D7FA8;
+	font-size: 1.1em;
+	display: none;
+}
+
+#nextstepc {
+	padding-top: 4px;
+	padding-bottom: 2px;
+	font-size: 1.2em;
+	color: #6f777b;
+	margin-top: 15px;
+}
+
+.popupMsg {
+	display: none;
+	border: 1px solid #666;
+	background-color: #eee;
+	margin-bottom: 5px;
+	margin-right: 10px;
+	margin-left: 10px;
+	padding: 6px;
+}
+
+.popupMsgOPP {
+	position:absolute;
+	top:190px; /* Add to this the height of you merchant logo to keep the What is CV2 window inline */
+	left:600px;
+	width: 220px;
+	height: 225px;
+	padding-left: 15px;
+	padding-right: 10px;
+	padding-top: 15px;
+	padding-bottom: 10px;
+	margin: 0px;
+	z-index: 10;
+	background: transparent url("../img/popupMsgOPP.png") no-repeat;
+	border: 0px solid #666;
+}
+.popupMsgOPP h3{
+	font-size: 11px;
+	color: #00A1E4;
+	width:195px;
+	font-weight: normal;
+}
+.popupMsgOPP p{
+	line-height: 15px;
+	font-size: 11px;
+	color: #333333;
+	/*width: 200px;*/
+}
+.popupMsg h3{
+	font-size: 12px;
+	color: #00A1E4;
+}
+.popupMsg p{
+	font-size: 11px;
+	color: #333333;
+}
+
+/* Common HTML Elements in #content */
+
+#content p,#content ul,#content pre {
+	padding: 5px;
+}
+
+#content h2 {
+	color: #333333;
+	padding-top: 6px;
+	font-size: 2em;
+	margin-top: 0.5em;
+	margin-bottom: 0.8em;
+
+	font-weight: bold;
+}
+
+#content h3 {
+	margin-left: 5px;
+	font-size: 1.5em;
+	font-weight: bold;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+
+}
+
+#content pre {
+	font-size: 1em;
+}
+#content div {
+	font-size: 1.1em;
+	/*color: #666666;*/
+}
+#orderDataHeader, 
+#displayAmount{
+	font-weight: bold;
+	color: #333333;
+	
+	padding-bottom: 2px;
+	padding-top: 2px;
+}
+
+/* Table */
+table.basetable {
+	color: #000;
+	border-spacing: 0;
+	font-size: 1.1em
+}
+
+table.basetable td {
+	padding: 0;
+	padding-bottom: 1em;
+	padding-right: 0.6em;
+	padding: 0.5em 1em 1em 0;
+}
+table.basetable tr#shippedbefore td.b {
+	font-weight: normal;
+	display: none;
+}
+table.basetable td.b {
+	font-weight: bold;
+}
+
+/* Order Data Layout */
+table.od {
+	margin: 10px 0px;
+}
+
+table.od td, table.od th  {
+	padding: 5px;
+	border: 1px solid #999;
+}
+
+table.od th {
+	font-weight: bold;
+}
+
+/* Image Buttons (Payment Methods) */
+
+.imgB{
+	width: 158px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	background: transparent url("../img/bg_buttons.png") no-repeat left 0px;
+	overflow: hidden;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-size: 13px;
+	color: #333333;
+}
+
+.r input{
+	background: transparent url("../img/pay_btn.png") no-repeat left 0px;
+	width: 58px;
+  height:24px;
+  cursor: pointer;
+  margin: 0;
+  border: 0;
+	font-weight: bold;
+	font-size: 1.1em;
+	color: #FFFFFF;
+}
+.r input:hover{
+	background: transparent url("../img/pay_btn.png") no-repeat left 0px;
+	width: 58px;
+  height:24px;
+  cursor: pointer;
+  margin: 0;
+  border: 0;
+	font-weight: bold;	
+	font-size: 1.1em;
+	color: #FFFFFF;
+}
+
+form>.imgB, form>.footerB  { /* For non-IE browsers*/
+	height: 0px;
+}
+
+.imgB:hover, .imgB:active{
+	color: #66f;
+}
+
+.pmB {
+	width: 238px;
+	height: 42px;
+	padding-left: 85px;
+	text-align: left;
+	margin-bottom: 6px;
+	font-size: 1.1em;
+	background-color: transparent !important;
+}
+
+/* Image Buttons Footer (next/previous/pay) 64*/
+
+#footerb1div {	
+	text-align: left;
+	margin: 30px 0px 0px 0px;
+}
+
+#footerb2div {	
+	margin: 30px 0px 0px 0px;
+}
+
+/* NEXT buttons */
+.nextB,
+.finishB {
+	/*background: transparent url("../img/bg_nex.png") no-repeat left 0px;
+	background-position: right;*/
+	background-color: #00823b;
+	padding: 0.5em 0.75em ;
+	border: none;
+	-webkit-box-shadow: 0 2px 0 #003518;
+  -moz-box-shadow: 0 2px 0 #003518;
+  box-shadow: 0 2px 0 #003518;
+	overflow: hidden;
+	color: #FFFFFF;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-weight: bold;
+	font-size: 1.2em;
+	vertical-align: top;
+}
+.nextB:hover,
+.finishB:hover{
+  background-color: #00692f;
+}
+.nextB:active,
+.finishB:active {
+  top: 2px;
+  -webkit-box-shadow: 0 0 0 #00823b;
+  -moz-box-shadow: 0 0 0 #00823b;
+  box-shadow: 0 0 0 #00823b;
+}
+
+/* PREVIOUS buttons */
+.backB {
+	background: none;
+	height: 25px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	text-decoration: underline;
+	color: #005ea5;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-size: 1.1em;
+}
+.backB:hover{
+	color:  #2e8aca;
+}
+
+/* CANCEL buttons */
+.cancelB {
+	background: transparent url("../img/bg_can.png") no-repeat left 0px;
+	background-position: left;
+	width: 110px;
+	height: 25px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	color: #FFFFFF;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-weight: bold;
+	font-size: 1.2em;
+}
+.cancelB:hover {
+	background-position: left;
+	width: 110px;
+	height: 25px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	color: #FFFFFF;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+/* Links*/
+
+a {
+	text-decoration: none;
+}
+
+a:visited {
+	text-decoration: none;
+} 
+
+/* Form elements */
+
+input,select {
+	font-size: 0.95em;
+	padding: 1px;
+	border: 1px solid #C3C3C3;
+	border-top-color: #7C7C7C;
+	border-bottom-color: #DDD;
+}
+
+button:focus {
+	outline: none;
+}
+
+/* Validation */
+
+table.basetable .inputField {
+	padding: 1px 2px 2px 2px;
+	background-color: #FFFFFF;
+}
+
+table.basetable select {
+	padding: 1px 2px 2px 2px;
+	background-color: #FFFFFF;
+}
+
+table.basetable .errorField {
+	border: 2px solid #DF3034;
+	background-color: #FFFFFF;
+	padding: 1px 1px 1px 1px;
+}
+
+table.basetable .errorField select {
+	border: 2px solid #DF3034;
+	background-color: #FFFFFF;
+	padding: 1px 1px 1px 1px;
+}
+
+
+.fieldDiv {
+	padding-right: 20px;
+	background: transparent;
+}
+
+.errorDiv #cvcWhatIs{
+	color: #00A1E4;
+	font-size: 11px;
+	text-decoration: none;
+}
+.errorDiv #cvcWhatIs:visited{
+	color: #00A1E4;
+	font-size: 11px;
+	text-decoration: none;
+}
+
+
+.errorDiv #cvcWhatIs:hover{
+	color: #666666;
+	font-size: 11px;
+	text-decoration: underline;
+}
+
+#cvcWhatIs:visited{
+	color: #00A1E4;
+	font-size: 11px;
+	text-decoration: none;
+}
+
+#cvcWhatIs{
+	color: #00A1E4;
+	font-size: 11px;
+	text-decoration: none;
+}
+#cvcWhatIs:hover{
+	color: #666666;
+	font-size: 11px;
+	text-decoration: underline;
+}
+
+.fieldDiv a span {
+	color: #005ea5;
+	text-decoration: underline;
+}
+.fieldDiv a:hover span {
+	color: #2e8aca;
+
+}
+
+.fieldDiv .inputField{
+	padding-left: 15px;
+}
+
+.errorDiv {
+	/*background: transparent url("../img/error.png") no-repeat right 3px;*/
+	padding-right: 5px;
+}
+
+.errorFrame {
+	background-color: #ABABAB
+	border-left: 2px solid #8B8B8B;
+	/*background: url("../img/error_big.png") no-repeat 15px 10px #FEF7F7;*/
+	min-height:60px;
+  height:auto !important;
+  margin-left: 0px;
+}
+
+.red{
+	font-weight: normal;
+	color: #000000
+}
+
+#errorFrameValidationErrors {
+	margin-left:70px;
+	margin-top: 5px;
+	}
+
+.bcfoot {
+	max-width:900px;
+	margin: 0 auto;
+	color: #0094DE;
+	clear: both;
+	text-align: right;
+}
+.pmBcard {
+	margin-top:5px;
+}
+
+.fieldSubHeader{
+	padding-top: 5px;
+	font-weight: bold;
+	font-family: Tahoma;
+	color: #333333;
+	font-size: 13px;
+}
+
+
+div.pmOcRemove {
+    margin-top: 20px;
+}
+
+div.pmOcPan {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+div.pmOcExp {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+div.pmOcName {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+#cvcWhatIs {
+    font-size: 0.9em!important;
+	font-weight:normal!important;
+}
+
+.pmOcPay input[type=submit] {
+	background-color: #00823b;
+	padding: 0.5em 0.75em ;
+	border: none;
+	-webkit-box-shadow: 0 2px 0 #003518;
+  -moz-box-shadow: 0 2px 0 #003518;
+  box-shadow: 0 2px 0 #003518;
+	overflow: hidden;
+	color: #FFFFFF;
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+	font-weight: bold;
+	font-size: 0.9em;
+	vertical-align: top;
+	margin-bottom: 20px;
+}
+	/*
+	#mainBack {
+        display: none;
+    }
+	*/
+	
+	tr#shippedbefore {
+        display: none;
+    }

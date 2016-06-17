@@ -1,0 +1,92 @@
+#yourDetailsForm label, #is-uk label, #documentsCertifiedConf label, #is-same label, #send-options-form label, #return_address label, #additional_info label {
+  @include media(mobile){
+    margin-right: 0;
+  }
+}
+
+#is-uk .error, #is-same .error, #send-options-form .error, #return_address .error, #additional_info .error {
+  @include media(mobile){
+    margin-right: 0;
+  }
+}
+
+@include media(mobile){
+  fieldset.inline.error {
+    width: 98%
+  }
+  .error input[type='text'],
+  .error input[type='tel'],
+  .error input[type='email'],
+  .error select {
+    width: 98%
+  }
+
+  .error .block-label {width:auto}
+
+  #documentsCertifiedConf {padding: 0 15px;}
+  #documentsCertifiedConf .item {margin-right: 0}
+
+  #is-uk .form-group, #is-same .form-group, #send-options-form .form-group, #return_address .form-group, #additional_info .form-group, .postcode-search {
+    float: none!important;
+    width: auto!important;
+    margin-bottom: 15px!important;
+    margin-right: 0!important;
+  }
+}
+@include media(mobile) {
+  a.back-to-previous {
+    font-size: 14px;
+  }
+
+  #Applications-Link {
+    margin-left: 0px;
+    padding-left: 0px;
+  }
+  #mobile-inner-header {
+    float: left;
+    display: block;
+    width: 100%;
+    height: auto;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  #dashboard-search-filter{
+    width: 85%;
+  }
+}
+
+/*
+type ahead search field mobile fix
+*/
+@include media(mobile) {
+  input#doc_search_button {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  span.twitter-typeahead {
+  }
+
+  input.typeahead.tt-input {
+    width: 96%;
+  }
+
+  span.twitter-typeahead {
+    width: 100%;
+  }
+
+  div#doc-seach-typeahead {
+    position: relative;
+  }
+}
+
+@media(max-width: 340px) {
+  .inner_header{
+    height: 3em!important;
+  }
+  .email-logout-text {
+    font-size: 14px!important;
+
+  }
+}

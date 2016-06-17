@@ -1,1 +1,1 @@
-# loi-payment-service
+# is-payment-service
