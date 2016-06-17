@@ -30,7 +30,7 @@ module.exports = function(router, configSmartPay, app) {
 
         // get the application ID from the request (redirected from application service)
         var appid = req.session.appId;
-        if(req.session.appId && req.session.appId != =0 ){
+        if(req.session.appId && req.session.appId !==0 ){
             //Do nothing
         }
         else{
