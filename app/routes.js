@@ -20,8 +20,8 @@ module.exports = function(router, configSmartPay, app) {
     // =====================================
     router
         // redirect to Barclaycard to process payment
-        .get('/submit-payment', function(req,res){submitPayment(req,res)})
-        .post('/submit-payment', function(req,res){submitPayment(req,res)});
+        .get('/submit-payment', function(req,res){submitPayment(req,res);})
+        .post('/submit-payment', function(req,res){submitPayment(req,res);});
 
 
 
@@ -30,7 +30,7 @@ module.exports = function(router, configSmartPay, app) {
 
         // get the application ID from the request (redirected from application service)
         var appid = req.session.appId;
-        if(req.session.appId && req.session.appId!=0 ){
+        if(req.session.appId && req.session.appId != =0 ){
             //Do nothing
         }
         else{
@@ -98,7 +98,7 @@ module.exports = function(router, configSmartPay, app) {
                 });
             });
         });
-    };
+    }
 
     // =====================================
     // PAYMENT CONFIRMATION
