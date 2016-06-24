@@ -28,6 +28,12 @@ var store = new MongoDBStore(
         collection: 'sessions'
     });
 app.set('view engine', 'ejs');
+app.use(function (req, res, next) {
+    res.locals = {
+        piwikID: configSmartPay.configs.cookieDomain == "www.legalistiaonbeta.co.uk" ? 19 : 18
+    };
+    next();
+});
 app.use(session({
     secret: '6542356733921bb813d3ca61002410fe',
     key: 'express.sid',
