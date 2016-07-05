@@ -81,9 +81,10 @@
     (function() {
         var u="//web-analytics.fco.gov.uk/piwik/";
         _paq.push(['setTrackerUrl', u+'piwik.php']);
-        _paq.push(['setSiteId', 18]);
+        _paq.push(['setSiteId', <%= piwikID%>]);
         var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
         g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
     })();
 </script>
-<noscript><p class="hide"><img src="//web-analytics.fco.gov.uk/piwik/piwik.php?idsite=18&rec=1" style="border:0;" alt="" /></p></noscript>
+<noscript><p class="hide"><img src="//web-analytics.fco.gov.uk/piwik/piwik.php?idsite=<%= piwikID%>&rec=1" style="border:0;" alt="" /></p></noscript>
+<!-- End Piwik Code -->
