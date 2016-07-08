@@ -11,7 +11,7 @@ module.exports = function(router, configSmartPay, app) {
 
         // healthcheck
         .get('/healthcheck', function(req, res) {
-            res.json({ message: 'is-payment-service running'});
+            res.json({message: 'Payment Service is running'});
         });
 
 
