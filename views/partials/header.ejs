@@ -63,27 +63,37 @@
 <!--end global-cookie-message-->
 
 
+
 <header role="banner" id="global-header" class="with-proposition noPrint">
     <div class="header-wrapper">
         <div class="header-global">
             <div class="header-logo">
+                <%if(service_public){%>
+                <a href="<%= govuk_url%>" title="Go to the gov.uk homepage" id="logo" class="content">
+                    <img src="/api/payment/images/gov.uk_logotype_crown.png" style="width:35px height:31px" alt="Foreign & Commonwealth Office"> GOV.UK
+                </a>
+                <%}else{%>
                 <a href="/" title="Go to the homepage" id="logo" class="content">
                     <img src="/api/payment/images/gov.uk_logotype_crown.png" style="width:35px height:31px" alt="Foreign & Commonwealth Office"> FCO
                 </a>
+                <%}%>
             </div>
         </div>
         <div class="header-proposition">
             <div class="content">
                 <!-- <a href="#" class="js-header-toggle menu">Menu</a>-->
                 <nav id="proposition-menu">
+                    <%if(service_public){%>
+                    <a href="<%= start_url%>" id="proposition-name">Get a document legalised</a>
+                    <%}else{%>
                     <a href="/" id="proposition-name">Get a document legalised</a>
+                    <%}%>
                 </nav>
 
             </div>
         </div>
     </div>
 </header>
-<!--end header-->
 
 
 
