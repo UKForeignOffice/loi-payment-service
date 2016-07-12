@@ -30,7 +30,10 @@ var store = new MongoDBStore(
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
-        piwikID: configSmartPay.configs.cookieDomain == "www.legalistiaonbeta.co.uk" ? 19 : 18
+        piwikID:session.domain == ("www.legalisationbeta.co.uk" ||"www.get-document-legalised.service.gov.uk") ? 19 :18,
+        service_public: configSmartPay.live_variables.Public,
+        start_url: configSmartPay.live_variables.startPageURL,
+        govuk_url: configSmartPay.live_variables.GOVUKURL
     };
     next();
 });
