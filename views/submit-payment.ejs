@@ -12,7 +12,7 @@
                 <div class="inner-header-content">
                     <span class="email-logout-text">
                          <%if(typeof(user_data.account)!='undefined' && user_data.account!=null && user_data.account.first_name != null){%>
-                        <%= user_data.account.first_name+' '+user_data.account.last_name%><%}else{%><%= user_data.user.email%><%}%>
+                        <%= (user_data.account.first_name+' '+user_data.account.last_name).substr(0,50)%><%}else{%><%= user_data.user.email%><%}%>
                     </span>
                     <span class="email-logout-text">
                         <a  href="/dashboard" class="btn btn-success btn-sm">Applications</a>
