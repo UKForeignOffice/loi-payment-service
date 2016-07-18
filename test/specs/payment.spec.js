@@ -16,7 +16,7 @@ describe('Work with Payments', function () {
             .expect(200)
             .end(function (err, res) {
                 if (err) return done(err);
-                expect(res.body.message).to.equal('is-payment-service running');
+                expect(res.body.message).to.equal('Payment Service is running');
                 done();
             });
     });

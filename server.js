@@ -28,6 +28,16 @@ var store = new MongoDBStore(
         collection: 'sessions'
     });
 app.set('view engine', 'ejs');
+app.use(function (req, res, next) {
+    res.locals = {
+        piwikID:session.domain == ("www.legalisationbeta.co.uk" ||"www.get-document-legalised.service.gov.uk") ? 19 :18,
+        feedbackURL:configSmartPay.live_variables.Public ? configSmartPay.live_variables.feedbackURL : "http://www.smartsurvey.co.uk/s/2264M/",
+        service_public: configSmartPay.live_variables.Public,
+        start_url: configSmartPay.live_variables.startPageURL,
+        govuk_url: configSmartPay.live_variables.GOVUKURL
+    };
+    next();
+});
 app.use(session({
     secret: '6542356733921bb813d3ca61002410fe',
     key: 'express.sid',
