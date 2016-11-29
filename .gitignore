@@ -1,6 +1,6 @@
 # Logs
-
 *.log
+Jenkinsfile
 
 # Runtime data
 pids
