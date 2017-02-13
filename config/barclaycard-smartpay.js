@@ -9,6 +9,7 @@ var skinCode = JSON.parse(env.SKINCODE);
 var currencyCode = JSON.parse(env.CURRENCYCODE);
 var merchantAccount = JSON.parse(env.MERCHANTACCOUNT);
 var resultURL = JSON.parse(env.RESULTURL);
+var sessionValidity = JSON.parse(env.SESSIONVALIDITY);
 var applicationServiceReturnUrl = JSON.parse(env.APPLICATIONSERVICERETURNURL);
 var smartPayUrl = JSON.parse(env.SMARTPAYURL);
 var smartPayHMACTestUrl = JSON.parse(env.SMARTPAYHMACTESTURL);
@@ -25,6 +26,7 @@ var configs = {
     "currencyCode": currencyCode.currencyCode,
     "merchantAccount": merchantAccount.merchantAccount,
     "resultURL":resultURL.resultURL,
+    "sessionValidity":sessionValidity.sessionValidity,
     "applicationServiceReturnUrl" : applicationServiceReturnUrl.applicationServiceReturnUrl,
     "smartPayUrl" : smartPayUrl.smartPayUrl,
     "smartPayHMACTestUrl" : smartPayHMACTestUrl.smartPayHMACTestUrl,
