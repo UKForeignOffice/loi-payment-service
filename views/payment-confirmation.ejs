@@ -24,6 +24,28 @@
         </div>
         <% } %>
 
+    <%if (isSessionValid == false) { %>
+
+    <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+
+    <h1 class="heading-xlarge">Sorry, you'll have to start again</h1>
+
+    <div class="intro column-two-thirds">
+
+        <p>You took longer than 25 minutes to enter your payment details and we've cleared your information to keep it secure. Your application has not been submitted and payment has not been taken.</p>
+
+        <ul>
+            <li><a href="/api/user/sign-in">Sign in</a></li>
+            <li><a href="/start">Start a new application</a></li>
+            <li><a href="https://www.gov.uk">GOV.UK home page</a></li>
+        </ul>
+
+    </div>
+
+</div>
+
+    <%} else { %>
+
         <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
 
         <h1 class="heading-xlarge">Your payment was unsuccessful</h1>
@@ -51,5 +73,7 @@
         </div>
 
     </div>
+
+<% } %>
 
 <% include partials/footer %>
