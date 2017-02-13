@@ -158,6 +158,7 @@ module.exports = function(router, configSmartPay, app) {
                     var appid = req.query.merchantReturnData;
                     var loggedIn = SmartPay.loggedInStatus(req);
                     var usersEmail = SmartPay.loggedInUserEmail(req);
+                    var isSessionValid = SmartPay.isSessionValid(req);
 
                     // get the relevant database models
                     var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
@@ -204,6 +205,7 @@ module.exports = function(router, configSmartPay, app) {
                                             smartPayUrl: configSmartPay.configs.smartPayUrl,
                                             startNewApplicationUrl: configSmartPay.configs.startNewApplicationUrl,
                                             loggedIn: loggedIn,
+                                            isSessionValid: isSessionValid,
                                             usersEmail: usersEmail,
                                             user_data: {
                                                 loggedIn: req.session && req.session.passport && req.session.passport.user,
