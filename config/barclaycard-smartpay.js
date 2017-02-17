@@ -3,7 +3,7 @@
  */
 
 var dotenv = require("dotenv");
-var env = dotenv.config();
+var env = dotenv.config({path: process.env.DOTENV || '.env'});
 var HMAC = JSON.parse(env.HMAC);
 var skinCode = JSON.parse(env.SKINCODE);
 var currencyCode = JSON.parse(env.CURRENCYCODE);
