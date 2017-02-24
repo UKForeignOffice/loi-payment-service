@@ -43,6 +43,7 @@ app.use(session({
     key: 'express.sid',
     store: store,
     resave: false,
+    rolling: true,
     saveUninitialized: false,
     cookie: {
         domain: configSmartPay.configs.cookieDomain,
