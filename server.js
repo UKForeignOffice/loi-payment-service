@@ -38,6 +38,7 @@ app.use(function (req, res, next) {
     };
     next();
 });
+
 app.use(session({
     secret: '6542356733921bb813d3ca61002410fe',
     key: 'express.sid',
