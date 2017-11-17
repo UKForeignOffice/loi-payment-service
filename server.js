@@ -7,6 +7,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
+var cookieParser = require('cookie-parser');
 
 var common = require('./config/common.js');
 var configSmartPay = common.config();
@@ -20,6 +21,7 @@ var MongoDBStore = require('connect-mongo/es5')(session);
 require('./config/logs');
 
 app.use(bodyParser()); //get information from HTML forms
+app.use(cookieParser());
 var store = new MongoDBStore(
     {
         uri: configSmartPay.configs.mongoURL,
@@ -37,6 +39,12 @@ app.use(function (req, res, next) {
         govuk_url: configSmartPay.live_variables.GOVUKURL
     };
     next();
+});
+app.use(function(req, res, next) {
+    if (req.cookies['LoggedIn']){
+        res.cookie('LoggedIn',true,{ maxAge: 1800000, httpOnly: true });
+    }
+    return next();
 });
 app.use(session({
     secret: '6542356733921bb813d3ca61002410fe',
