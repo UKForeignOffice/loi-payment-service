@@ -24,8 +24,6 @@ module.exports = function(router, configSmartPay, app) {
         .post('/submit-payment', function(req,res){submitPayment(req,res);});
 
 
-
-
     function submitPayment(req,res){
 
         // get the application ID from the request (redirected from application service)
@@ -139,15 +137,20 @@ module.exports = function(router, configSmartPay, app) {
 
                     var originalQueryString = req.query;
 
-                    // rebuild query string from JSON to pass to app service URL
-                    var queryString =  '?' +
-                        Object.keys(originalQueryString).map(function(key) {
-                            return encodeURIComponent(key) + '=' +
-                                encodeURIComponent(originalQueryString[key]);
-                        }).join('&');
+                    function buildQueryString (done) {
+                        var queryString = '?' +
+                            Object.keys(originalQueryString).map(function (key) {
+                                return encodeURIComponent(key) + '=' +
+                                    encodeURIComponent(originalQueryString[key]);
+                            }).join('&');
+                        done(queryString);
+                    }
 
+                    // rebuild query string from JSON to pass to app service URL then
                     // redirect to application confirmation page
-                    res.redirect(configSmartPay.configs.applicationServiceReturnUrl + queryString);
+                    buildQueryString(function (queryString) {
+                        res.redirect(configSmartPay.configs.applicationServiceReturnUrl + queryString);
+                    });
 
                 }
                 else {
