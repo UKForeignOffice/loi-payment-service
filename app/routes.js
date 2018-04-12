@@ -135,9 +135,12 @@ module.exports = function(router, configSmartPay, app) {
                 // check the payment was successful and that the data has not been tampered with (validated against HMAC)
                 if (paymentSuccessful && returnDataIsValid) {
 
+                    console.log(appId + ' - payment is successful');
+
                     var originalQueryString = req.query;
 
                     function buildQueryString (done) {
+                        console.log(appId + ' - constructing query string for application service');
                         var queryString = '?' +
                             Object.keys(originalQueryString).map(function (key) {
                                 return encodeURIComponent(key) + '=' +
@@ -149,11 +152,14 @@ module.exports = function(router, configSmartPay, app) {
                     // rebuild query string from JSON to pass to app service URL then
                     // redirect to application confirmation page
                     buildQueryString(function (queryString) {
+                        console.log(appId + ' - redirecting to application service');
                         res.redirect(configSmartPay.configs.applicationServiceReturnUrl + queryString);
                     });
 
                 }
                 else {
+
+                    console.log(appId + ' - payment is NOT successful');
 
                     // build data to pass to failed payment page (for resubmission)
 
@@ -199,6 +205,7 @@ module.exports = function(router, configSmartPay, app) {
                                     //create array of parameters
                                     var requestParameters = SmartPay.buildParameters(formFields, merchantSig);
 
+                                    console.log(appId + ' - rendering failed payment page');
                                     // display failed payment page (with link to start a new payment)
                                     res.render('payment-confirmation.ejs',
                                         {
@@ -224,7 +231,7 @@ module.exports = function(router, configSmartPay, app) {
                 }
 
             }).catch(function (error) {
-                //insert error handling
+                console.log(appId + ' - ' + error);
             });
 
         });
