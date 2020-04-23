@@ -9,6 +9,7 @@ var skinCode = JSON.parse(env.SKINCODE);
 var currencyCode = JSON.parse(env.CURRENCYCODE);
 var merchantAccount = JSON.parse(env.MERCHANTACCOUNT);
 var resultURL = JSON.parse(env.RESULTURL);
+var returnUrl = JSON.parse(env.ADDITIONALPAYMENTSRETURNURL);
 var sessionValidity = JSON.parse(env.SESSIONVALIDITY);
 var applicationServiceReturnUrl = JSON.parse(env.APPLICATIONSERVICERETURNURL);
 var smartPayUrl = JSON.parse(env.SMARTPAYURL);
@@ -26,6 +27,7 @@ var configs = {
     "currencyCode": currencyCode.currencyCode,
     "merchantAccount": merchantAccount.merchantAccount,
     "resultURL":resultURL.resultURL,
+    "additionalPaymentsReturnURL":returnUrl.returnURL,
     "sessionValidity":sessionValidity.sessionValidity,
     "applicationServiceReturnUrl" : applicationServiceReturnUrl.applicationServiceReturnUrl,
     "smartPayUrl" : smartPayUrl.smartPayUrl,
@@ -33,7 +35,6 @@ var configs = {
     "startNewApplicationUrl" : startNewApplicationUrl.startNewApplicationUrl,
     "mongoURL": mongoURL.mongoURL,
     "cookieDomain": cookieDomain.cookieDomain
-
 };
 
 var database = db.database;
