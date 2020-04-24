@@ -1,7 +1,6 @@
 
 var SmartPay = require('./../lib/smartpay-functions');
 var request = require('request');
-var numeral = require('numeral');
 
 module.exports = function(router, configSmartPay, app) {
 
@@ -13,6 +12,16 @@ module.exports = function(router, configSmartPay, app) {
         // healthcheck
         .get('/healthcheck', function(req, res) {
             res.json({message: 'Payment Service is running'});
+        });
+
+    // =====================================
+    // ERROR
+    // =====================================
+    router
+
+        //error handling
+        .get('/error', function(req,res) {
+            return res.view('error.ejs')
         });
 
 
@@ -28,13 +37,7 @@ module.exports = function(router, configSmartPay, app) {
     function submitAdditionalPayment(req,res){
 
         try {
-            // save some info to the session for later
             let sess = req.session;
-            sess.additionalPayments = {};
-            sess.additionalPayments.cost = formatMoney(req.body.cost);
-            console.log('sess.additionalPayments.cost = ' + sess.additionalPayments.cost);
-            sess.additionalPayments.email = req.body.email;
-
             // build smart pay required data
             let formFields = {};
             formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
@@ -49,12 +52,13 @@ module.exports = function(router, configSmartPay, app) {
                 smartPayUrl: configSmartPay.configs.smartPayUrl
             })
         } catch (err) {
+            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
+            return res.render('error', {
+                errorMessage:err,
+                startNewApplicationUrl:startNewApplicationUrl
+            })
         }
-    }
-
-    function formatMoney (num) {
-        return numeral(num).format('0.00');
     }
 
     router
@@ -106,7 +110,12 @@ module.exports = function(router, configSmartPay, app) {
                 });
             }
         } catch (err) {
+            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
+            return res.render('error', {
+                errorMessage:err,
+                startNewApplicationUrl:startNewApplicationUrl
+            })
         }
     }
 
