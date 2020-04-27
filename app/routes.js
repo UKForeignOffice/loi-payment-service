@@ -21,7 +21,11 @@ module.exports = function(router, configSmartPay, app) {
 
         //error handling
         .get('/error', function(req,res) {
-            return res.view('error.ejs')
+            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            return res.render('error', {
+                errorMessage:'',
+                startNewApplicationUrl:startNewApplicationUrl
+            })
         });
 
 
@@ -36,6 +40,8 @@ module.exports = function(router, configSmartPay, app) {
 
     function submitAdditionalPayment(req,res){
 
+        let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+
         try {
             let sess = req.session;
             // build smart pay required data
@@ -49,10 +55,10 @@ module.exports = function(router, configSmartPay, app) {
             res.render('additionalPayments/submit-additional-payment', {
                 cost:sess.additionalPayments.cost,
                 params:requestParameters,
-                smartPayUrl: configSmartPay.configs.smartPayUrl
+                smartPayUrl: configSmartPay.configs.smartPayUrl,
+                startNewApplicationUrl:startNewApplicationUrl
             })
         } catch (err) {
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
             return res.render('error', {
                 errorMessage:err,
@@ -84,6 +90,7 @@ module.exports = function(router, configSmartPay, app) {
 
             if (paymentSuccessful && returnDataIsValid) {
                 res.render('additionalPayments/additional-payment-confirmation', {
+                    req:req,
                     isSessionValid:isSessionValid,
                     paymentSuccessful:paymentSuccessful,
                     params:req.query,
