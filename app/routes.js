@@ -1,6 +1,7 @@
 
 var SmartPay = require('./../lib/smartpay-functions');
 var request = require('request');
+var EmailService =require('./../lib/EmailService')
 
 module.exports = function(router, configSmartPay, app) {
 
@@ -89,6 +90,14 @@ module.exports = function(router, configSmartPay, app) {
             req.query.merchantReference = moment.unix(Number(req.query.merchantReference)).format('DD MMMM YYYY, h:mm:ss A')
 
             if (paymentSuccessful && returnDataIsValid) {
+                EmailService.additionalPaymentReceipt(
+                    sess.additionalPayments.email,
+                    moment().format("DD/MM/YYYY"),
+                    req.query.pspReference,
+                    'Get Document Legalised – Additional Payments',
+                    sess.additionalPayments.cost,
+                    req.query.paymentMethod
+                    )
                 res.render('additionalPayments/additional-payment-confirmation', {
                     req:req,
                     isSessionValid:isSessionValid,
