@@ -1,0 +1,33 @@
+
+<% include ../partials/header %>
+
+<div class="container">
+
+    <h1 class="heading-xlarge">Check your payment amount</h1>
+
+    <div class="intro column-two-thirds">
+
+        <p>You will be charged <b>£<%=cost%></b> as an additional payment for your legalisation application.</p>
+        <p>If not used within 28 days your online payment will expire and no funds will be debited from your card or account.</p>
+
+        <!-- PAYMENT FORM -->
+        <form action="<%= smartPayUrl %>" method="post">
+
+            <div class="form-group">
+
+                <% let ordered = params; %>
+                <% for(let key in ordered){ %>
+                    <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
+                <% } %>
+
+                <button type="submit" class="button">Pay on Barclaycard SmartPay</button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<% include ../partials/footer %>

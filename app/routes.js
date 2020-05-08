@@ -1,6 +1,7 @@
 
 var SmartPay = require('./../lib/smartpay-functions');
 var request = require('request');
+var EmailService =require('./../lib/EmailService')
 
 module.exports = function(router, configSmartPay, app) {
 
@@ -13,6 +14,127 @@ module.exports = function(router, configSmartPay, app) {
         .get('/healthcheck', function(req, res) {
             res.json({message: 'Payment Service is running'});
         });
+
+    // =====================================
+    // ERROR
+    // =====================================
+    router
+
+        //error handling
+        .get('/error', function(req,res) {
+            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            return res.render('error', {
+                errorMessage:'',
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        });
+
+
+    // ===============================
+    // ADDITIONAL PAYMENTS
+    // ===============================
+    router
+        // process additional payments
+        .post('/submit-additional-payment', function (req, res) {
+            submitAdditionalPayment(req, res)
+        });
+
+    function submitAdditionalPayment(req,res){
+
+        let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+
+        try {
+            let sess = req.session;
+            // build smart pay required data
+            let formFields = {};
+            formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
+            formFields = SmartPay.addDateFields(formFields);
+            formFields = SmartPay.compressAndEncodeOrderData(formFields);
+            let merchantSignature = SmartPay.additionalPaymentsCalculateMerchantSignature(formFields);
+            let requestParameters = SmartPay.additionalPaymentsBuildParameters(formFields, merchantSignature);
+
+            res.render('additionalPayments/submit-additional-payment', {
+                cost:sess.additionalPayments.cost,
+                params:requestParameters,
+                smartPayUrl: configSmartPay.configs.smartPayUrl,
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        } catch (err) {
+            console.log(err);
+            return res.render('error', {
+                errorMessage:err,
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        }
+    }
+
+    router
+        // additional payment confirmation on return from Barclaycard
+        .get('/additional-payment-confirmation', function(req, res) {
+            processAdditionalPayment(req,res)
+        });
+
+    function processAdditionalPayment(req,res){
+
+        try {
+            let moment = require('moment');
+
+            let sess = req.session;
+            let isSessionValid = (typeof sess.additionalPayments.cost !== 'undefined');
+
+            // decode query string parameters to verify signature (HMAC)
+            let returnDataIsValid = SmartPay.decodeReturnedMerchantSignature(req.query);
+            let paymentSuccessful = (req.query.authResult === "AUTHORISED");
+            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            req.query.paymentMethod = SmartPay.lookupPaymentMethod(req.query.paymentMethod);
+            req.query.merchantReference = moment.unix(Number(req.query.merchantReference)).format('DD MMMM YYYY, h:mm:ss A')
+
+            if (paymentSuccessful && returnDataIsValid) {
+                EmailService.additionalPaymentReceipt(
+                    sess.additionalPayments.email,
+                    moment().format("DD/MM/YYYY"),
+                    req.query.pspReference,
+                    'Get Document Legalised – Additional Payments',
+                    sess.additionalPayments.cost,
+                    req.query.paymentMethod
+                    )
+                res.render('additionalPayments/additional-payment-confirmation', {
+                    req:req,
+                    isSessionValid:isSessionValid,
+                    paymentSuccessful:paymentSuccessful,
+                    params:req.query,
+                    cost:sess.additionalPayments.cost,
+                    email:sess.additionalPayments.email,
+                    startNewApplicationUrl:startNewApplicationUrl
+                });
+            } else {
+
+                // build smart pay required data....again
+                let formFields = {};
+                formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
+                formFields = SmartPay.addDateFields(formFields);
+                formFields = SmartPay.compressAndEncodeOrderData(formFields);
+                let merchantSignature = SmartPay.additionalPaymentsCalculateMerchantSignature(formFields);
+                let requestParameters = SmartPay.additionalPaymentsBuildParameters(formFields, merchantSignature);
+
+                res.render('additionalPayments/additional-payment-confirmation', {
+                    isSessionValid:isSessionValid,
+                    paymentSuccessful:false,
+                    cost:sess.cost,
+                    params:requestParameters,
+                    smartPayUrl: configSmartPay.configs.smartPayUrl
+                });
+            }
+        } catch (err) {
+            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            console.log(err);
+            return res.render('error', {
+                errorMessage:err,
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        }
+    }
+
 
 
     // =====================================

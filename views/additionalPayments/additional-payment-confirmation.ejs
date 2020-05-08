@@ -1,0 +1,121 @@
+<% include ../partials/header %>
+
+<div>
+
+    <% if (isSessionValid == false) { %>
+
+        <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+
+        <h1 class="heading-xlarge">Sorry, you'll have to start again</h1>
+
+        <div class="intro column-two-thirds">
+
+            <p>You took longer than 25 minutes to enter your payment details and we've cleared your information to keep it secure. Your application has not been submitted and payment has not been taken.</p>
+
+            <ul>
+                <li><a href="/start">Start a new application</a></li>
+                <li><a href="https://www.gov.uk">GOV.UK home page</a></li>
+            </ul>
+
+        </div>
+
+</div>
+
+<%} else { %>
+
+    <% if (paymentSuccessful == true) { %>
+
+        <div>
+
+            <title>Your payment was successful - Get a document legalised – GOV.UK</title>
+
+            <div class="intro column-two-thirds">
+
+                <div class="govuk-box-highlight">
+                    <h1 style="font-weight: 700; font-size: 36px; margin: 0px;">Payment complete</h1>
+                    <p style="margin: 0px;">Your FCO payment reference number is</p>
+                    <h2 style="margin: 0px;"><%= params.pspReference %></h2>
+                </div>
+
+                <p>Thank you for your order from the Foreign & Commonwealth Office. We've taken pre-authorisation for the following:</p>
+
+
+                <table id="review-personal-details" class="printable-summary">
+                    <tbody>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Amount</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span>£<%= cost %></span></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Card type</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span><%= params.paymentMethod %></span></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Date</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span><%= params.merchantReference %></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <br />
+
+                <p>We've emailed a confirmation to <b><%= email %></b>. If you don't receive the email please check your spam folder.</p>
+
+                <p><b>What to do next</b></p>
+
+                <p>
+                    Email the Legalisation Office at <a href="mailto:EpaymentEnquiries@fco.gov.uk">EpaymentEnquiries@fco.gov.uk</a> with the following information:
+                </p>
+                <ul style="padding: 0 20px;">
+                    <li>
+                        your FCO payment reference number <%= params.pspReference %>
+                    </li>
+                    <li>
+                        your existing application reference - this will start with the letter 'A' and be followed by a combination of letters and numbers eg A-C-16-1212-8274-064C
+                    </li>
+                </ul>
+
+                <p><a href="<%= startNewApplicationUrl %>">Make another payment</a></p>
+
+            </div>
+
+        </div>
+
+        <% req.session.destroy(); %>
+
+    <% } else { %>
+
+        <div>
+
+            <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+
+            <h1 class="heading-xlarge">Your payment was unsuccessful</h1>
+
+            <div class="intro column-two-thirds">
+
+                <p>We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card, or use a different card.</p>
+
+                <!-- PAYMENT FORM -->
+                <form action="<%= smartPayUrl %>" method="post">
+
+                    <div class="form-group">
+
+                        <% var ordered =  params; %>
+                        <% for(var key in ordered){ %>
+                            <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
+                        <% } %>
+
+                        <button type="submit" class="button">Pay on Barclaycard SmartPay</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    <% } %>
+
+<% } %>
+
+<% include ../partials/footer %>

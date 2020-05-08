@@ -1,0 +1,17 @@
+
+<% include partials/header %>
+
+<div class="container">
+
+    <div class="intro">
+        <h1 class="heading-xlarge">Sorry, there is a problem with the service</h1>
+        <p>Please try again later.</p>
+        <br />
+        <p>Error: <%= errorMessage %></p>
+        <br />
+        <a href="<%= startNewApplicationUrl %>" id="start" role="button" class="button">Start again</a>
+    </div>
+
+</div>
+
+<% include partials/footer %>
