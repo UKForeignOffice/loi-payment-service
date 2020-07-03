@@ -12,7 +12,7 @@ var cookieParser = require('cookie-parser');
 var common = require('./config/common.js');
 var configSmartPay = common.config();
 var session = require('express-session');
-var MongoDBStore = require('connect-mongo/es5')(session);
+var MongoDBStore = require('connect-mongo')(session);
 
 // =====================================
 // CONFIGURATION

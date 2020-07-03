@@ -2,24 +2,23 @@
  * Created by skaifem on 10/12/2015.
  */
 
-var dotenv = require("dotenv");
-var env = dotenv.config({path: process.env.DOTENV || '.env'});
-var HMAC = JSON.parse(env.HMAC);
-var skinCode = JSON.parse(env.SKINCODE);
-var currencyCode = JSON.parse(env.CURRENCYCODE);
-var merchantAccount = JSON.parse(env.MERCHANTACCOUNT);
-var resultURL = JSON.parse(env.RESULTURL);
-var notificationServiceURL = JSON.parse(env.NOTIFICATIONSERVICEURL);
-var sessionValidity = JSON.parse(env.SESSIONVALIDITY);
-var applicationServiceReturnUrl = JSON.parse(env.APPLICATIONSERVICERETURNURL);
-var smartPayUrl = JSON.parse(env.SMARTPAYURL);
-var smartPayHMACTestUrl = JSON.parse(env.SMARTPAYHMACTESTURL);
-var startNewApplicationUrl = JSON.parse(env.STARTNEWAPPLICATIONURL);
-var mongoURL = JSON.parse(env.MONGOURL);
-var cookieDomain = JSON.parse(env.COOKIEDOMAIN);
-var paymentMethods = JSON.parse(env.PAYMENTMETHODS);
-var db = JSON.parse(env.DATABASE);
-var live_variables = JSON.parse(env.LIVEVARIABLES);
+require('dotenv').config()
+var HMAC = JSON.parse(process.env.HMAC);
+var skinCode = JSON.parse(process.env.SKINCODE);
+var currencyCode = JSON.parse(process.env.CURRENCYCODE);
+var merchantAccount = JSON.parse(process.env.MERCHANTACCOUNT);
+var resultURL = JSON.parse(process.env.RESULTURL);
+var notificationServiceURL = JSON.parse(process.env.NOTIFICATIONSERVICEURL);
+var sessionValidity = JSON.parse(process.env.SESSIONVALIDITY);
+var applicationServiceReturnUrl = JSON.parse(process.env.APPLICATIONSERVICERETURNURL);
+var smartPayUrl = JSON.parse(process.env.SMARTPAYURL);
+var smartPayHMACTestUrl = JSON.parse(process.env.SMARTPAYHMACTESTURL);
+var startNewApplicationUrl = JSON.parse(process.env.STARTNEWAPPLICATIONURL);
+var mongoURL = JSON.parse(process.env.MONGOURL);
+var cookieDomain = JSON.parse(process.env.COOKIEDOMAIN);
+var paymentMethods = JSON.parse(process.env.PAYMENTMETHODS);
+var db = JSON.parse(process.env.DATABASE);
+var live_variables = JSON.parse(process.env.LIVEVARIABLES);
 
 var configs = {
     "HMAC" : HMAC.HMAC,
