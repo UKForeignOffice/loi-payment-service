@@ -32,7 +32,7 @@
     "mocha": "^8.0.1"
   },
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive -R xunit-file test/",
+    "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive test/ --exit",
     "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- --timeout 10000 --recursive -R tap \"test/\" > test.tap && istanbul report clover",
     "lint": "jshint --reporter checkstyle . > linting.xml",
     "local-lint": "jshint ."
