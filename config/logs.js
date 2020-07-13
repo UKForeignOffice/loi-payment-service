@@ -15,38 +15,6 @@ var logger = new winston.Logger({
             handleExceptions: true,
             humanReadableUnhandledException: true
         }),
-        /*Log info to file */
-        new (winston.transports.File)({
-            timestamp: function () {
-                return getTimeStamp();
-            },
-            formatter: function (options) {
-                return options.timestamp() + ' ' + options.level.toUpperCase() + ' ' + (undefined !== options.message ? options.message : '') +
-                    (options.meta && Object.keys(options.meta).length ? '\n\t' + JSON.stringify(options.meta) : '' );
-            },
-            name: 'info-file',
-            filename: process.env.INFOLOG || './logs/fco-loi-payment-service-info.log',
-            level: 'info',
-            handleExceptions: true,
-            humanReadableUnhandledException: true,
-            json: false
-        }),
-        /*Log errors to file */
-        new (winston.transports.File)({
-            timestamp: function () {
-                return getTimeStamp();
-            },
-            formatter: function (options) {
-                return options.timestamp() + ' ' + options.level.toUpperCase() + ' ' + (undefined !== options.message ? options.message : '') +
-                    (options.meta && Object.keys(options.meta).length ? '\n\t' + JSON.stringify(options.meta) : '' );
-            },
-            name: 'error-file',
-            filename: process.env.ERRORLOG || './logs/fco-loi-payment-service-error.log',
-            level: 'error',
-            handleExceptions: true,
-            humanReadableUnhandledException: true,
-            json: false
-        }),
         /*Log errors to console */
         new (winston.transports.Console)({
             timestamp: function () {

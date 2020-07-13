@@ -1,0 +1,8 @@
+.gitignore
+.jshintignore
+.nvmrc
+Dockerfile
+LICENSE
+README.md
+logs
+SmartPaySkin
