@@ -19,6 +19,7 @@ var cookieDomain = JSON.parse(process.env.COOKIEDOMAIN);
 var paymentMethods = JSON.parse(process.env.PAYMENTMETHODS);
 var db = JSON.parse(process.env.DATABASE);
 var live_variables = JSON.parse(process.env.LIVEVARIABLES);
+var sessionSettings = JSON.parse(process.env.THESESSION)
 
 var configs = {
     "HMAC" : HMAC.HMAC,
@@ -39,7 +40,7 @@ var configs = {
 
 var database = db.database;
 
-var config = {configs: configs, paymentMethods: paymentMethods, database: database, "live_variables":live_variables};
+var config = {configs: configs, paymentMethods: paymentMethods, database: database, "live_variables":live_variables, sessionSettings: sessionSettings};
 
 //console.log(JSON.stringify(configs));
 

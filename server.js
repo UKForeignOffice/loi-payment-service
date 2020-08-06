@@ -12,7 +12,7 @@ var cookieParser = require('cookie-parser');
 var common = require('./config/common.js');
 var configSmartPay = common.config();
 var session = require('express-session');
-var MongoDBStore = require('connect-mongo')(session);
+var RedisStore = require('connect-redis')(session);
 
 // =====================================
 // CONFIGURATION
@@ -22,12 +22,12 @@ require('./config/logs');
 
 app.use(bodyParser()); //get information from HTML forms
 app.use(cookieParser());
-var store = new MongoDBStore(
-    {
-        uri: configSmartPay.configs.mongoURL,
-        url: configSmartPay.configs.mongoURL,
-        db: 'User_Service',
-        collection: 'sessions'
+var store = new RedisStore({
+        host: configSmartPay.sessionSettings.host,
+        port: configSmartPay.sessionSettings.port,
+        prefix: configSmartPay.sessionSettings.prefix,
+        pass: configSmartPay.sessionSettings.password,
+        tls: {}
     });
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
@@ -47,15 +47,14 @@ app.use(function(req, res, next) {
     return next();
 });
 app.use(session({
-    secret: '6542356733921bb813d3ca61002410fe',
-    key: 'express.sid',
+    secret: configSmartPay.sessionSettings.secret,
+    key: configSmartPay.sessionSettings.key,
     store: store,
     resave: false,
-    rolling: true,
     saveUninitialized: false,
     cookie: {
-        domain: configSmartPay.configs.cookieDomain,
-        maxAge: 30 * 60 * 1000  //30 minutes
+        domain: configSmartPay.sessionSettings.cookie_domain ,//environmentVariables.cookieDomain,
+        maxAge: configSmartPay.sessionSettings.cookieMaxAge  //30 minutes
     }
 }));
 app.use(morgan('dev')); //log every request to the console
