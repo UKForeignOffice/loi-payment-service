@@ -14,7 +14,6 @@ var applicationServiceReturnUrl = JSON.parse(process.env.APPLICATIONSERVICERETUR
 var smartPayUrl = JSON.parse(process.env.SMARTPAYURL);
 var smartPayHMACTestUrl = JSON.parse(process.env.SMARTPAYHMACTESTURL);
 var startNewApplicationUrl = JSON.parse(process.env.STARTNEWAPPLICATIONURL);
-var mongoURL = JSON.parse(process.env.MONGOURL);
 var cookieDomain = JSON.parse(process.env.COOKIEDOMAIN);
 var paymentMethods = JSON.parse(process.env.PAYMENTMETHODS);
 var db = JSON.parse(process.env.DATABASE);
@@ -34,7 +33,6 @@ var configs = {
     "smartPayUrl" : smartPayUrl.smartPayUrl,
     "smartPayHMACTestUrl" : smartPayHMACTestUrl.smartPayHMACTestUrl,
     "startNewApplicationUrl" : startNewApplicationUrl.startNewApplicationUrl,
-    "mongoURL": mongoURL.mongoURL,
     "cookieDomain": cookieDomain.cookieDomain
 };
 
