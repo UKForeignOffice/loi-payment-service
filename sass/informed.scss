@@ -235,3 +235,10 @@ ul {
     font-size: 14pt;
     line-height: 1; } }
 
+@media (min-width: 40.0625em) {
+  .govuk-button {
+    font-size: 19px !important;
+  }
+}
+
+
