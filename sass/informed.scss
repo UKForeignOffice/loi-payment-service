@@ -186,5 +186,9 @@ ul {
 #footer .footer-meta .footer-meta-inner {
   padding-top: 30px;
 }
-
+@media (min-width: 40.0625em) {
+  .govuk-button {
+    font-size: 19px !important;
+  }
+}
 
