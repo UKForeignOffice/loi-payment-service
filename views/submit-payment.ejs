@@ -4,10 +4,9 @@
 <div class="container">
 
     <div class="inner_header">
-        <a href="<%if(applicationType>1){%>/business-additional-information<%}else{%>/declaration-agreement<%}%>" class="back_to_previous_button">Back</a>
+        <a href="<%if(applicationType>1){%>/business-additional-information<%}else{%>/declaration-agreement<%}%>" class="govuk-back-link">Back</a>
 
         <%if (loggedIn == true) { %>
-        <div class="inner_header">
             <%if(user_data.loggedIn){%>
                 <div class="inner-header-content">
                     <span class="email-logout-text">
@@ -15,14 +14,13 @@
                         <%= (user_data.account.first_name+' '+user_data.account.last_name).substr(0,50)%><%}else{%><%= user_data.user.email%><%}%>
                     </span>
                     <span class="email-logout-text">
-                        <a  href="/dashboard" class="btn btn-success btn-sm">Applications</a>
-                        <a  href="<%= user_data.url%>/account" class="btn btn-success btn-sm">Account</a>
-                        <a  href="<%=  user_data.url%>/addresses" class="btn btn-success btn-sm">Addresses</a>
-                        <a  href="/sign-out" id="sign-out-link" class="btn btn-success btn-sm">Sign out</a>
+                        <a  href="/dashboard" class="govuk-link">Applications</a>
+                        <a  href="<%= user_data.url%>/account" class="govuk-link">Account</a>
+                        <a  href="<%=  user_data.url%>/addresses" class="govuk-link">Addresses</a>
+                        <a  href="/sign-out" id="sign-out-link" class="govuk-link">Sign out</a>
                     </span>
                 </div>
             <%}%>
-        </div>
         <% } %>
     </div>
     <h1 class="heading-xlarge">Pay for your application</h1>
