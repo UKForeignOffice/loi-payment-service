@@ -13,8 +13,8 @@
             <p>You took longer than 25 minutes to enter your payment details and we've cleared your information to keep it secure. Your application has not been submitted and payment has not been taken.</p>
 
             <ul>
-                <li><a href="/start">Start a new application</a></li>
-                <li><a href="https://www.gov.uk">GOV.UK home page</a></li>
+                <li><a class="govuk-link" href="/start">Start a new application</a></li>
+                <li><a class="govuk-link" href="https://www.gov.uk">GOV.UK home page</a></li>
             </ul>
 
         </div>
@@ -64,7 +64,7 @@
                 <p><b>What to do next</b></p>
 
                 <p>
-                    Email the Legalisation Office at <a href="mailto:EpaymentEnquiries@fco.gov.uk">EpaymentEnquiries@fco.gov.uk</a> with the following information:
+                    Email the Legalisation Office at <a class="govuk-link" href="mailto:EpaymentEnquiries@fco.gov.uk">EpaymentEnquiries@fco.gov.uk</a> with the following information:
                 </p>
                 <ul style="padding: 0 20px;">
                     <li>
@@ -75,7 +75,7 @@
                     </li>
                 </ul>
 
-                <p><a href="<%= startNewApplicationUrl %>">Make another payment</a></p>
+                <p><a class="govuk-link" href="<%= startNewApplicationUrl %>">Make another payment</a></p>
 
             </div>
 
@@ -105,7 +105,7 @@
                             <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
                         <% } %>
 
-                        <button type="submit" class="button">Pay on Barclaycard SmartPay</button>
+                        <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
 
                     </div>
 

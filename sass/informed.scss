@@ -187,4 +187,31 @@ ul {
   padding-top: 30px;
 }
 
+.govuk-back-link {
+  font-size: 16px!important;
+}
+.govuk-details {
+  font-size: 19px!important;
+}
+
+.govuk-phase-banner__content {
+  font-size: 16px!important;
+}
+
+@media (min-width: 40.0625em) {
+  .govuk-tag {
+    font-size: 16px!important;
+ } }
+
+@media (min-width: 40.0625em) {
+  .govuk-button {
+    font-size: 19px !important;
+  }
+}
+@media (min-width: 40.0625em) {
+  .govuk-header__link--service-name {
+    font-size: 24px !important;
+  }
+}
+
 
