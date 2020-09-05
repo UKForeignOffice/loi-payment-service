@@ -1,8 +1,6 @@
 $path : '../images/govuk_frontend_toolkit/';
 $govuk-fonts-path : 'styles/govuk/stylesheets/fonts/';
 
-@import '../node_modules/govuk-frontend/govuk/all';
-
 
 //govuk_frontend_toolkit
 @import '../node_modules/govuk_frontend_toolkit/stylesheets/_colours';
@@ -53,6 +51,7 @@ $govuk-fonts-path : 'styles/govuk/stylesheets/fonts/';
 @import "../node_modules/govuk-elements-sass/public/sass/elements/_components";                    // GOV.UK prefixed styles - blue highlighted box
 
 
+@import '../node_modules/govuk-frontend/govuk/all';
 
 
 //INFORMED CSS
