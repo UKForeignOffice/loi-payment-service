@@ -24,7 +24,7 @@
     "pg": "^6.4.2",
     "pg-hstore": "^2.3.3",
     "request": "^2.88.2",
-    "sequelize": "^3.17.1",
+    "sequelize": "^5.15.1",
     "should": "^13.2.3",
     "supertest": "4.0.2",
     "winston": "^2.1.1"
