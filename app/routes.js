@@ -163,10 +163,11 @@ module.exports = function(router, configSmartPay, app) {
         var usersEmail = SmartPay.loggedInUserEmail(req);
 
         // get the relevant database models
-        var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
-        var Application = app.get('models').Application;
-        var UserDetails = app.get('models').UserDetails;
-        var UserDocumentCount = app.get('models').UserDocumentCount;
+        var ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails;
+        var Application = require('../models/index').Application;
+        var UserDetails = require('../models/index').UserDetails;
+        var UserDocumentCount = require('../models/index').UserDocumentCount;
+
 
         // lookup required data from database
         var formFieldsTemp = Application.findOne({ where: {application_id: appid}}).then(function(application){

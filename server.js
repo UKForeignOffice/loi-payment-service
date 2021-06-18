@@ -11,8 +11,6 @@ var cookieParser = require('cookie-parser');
 
 var common = require('./config/common.js');
 var configSmartPay = common.config();
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
 
 // =====================================
 // CONFIGURATION
@@ -22,13 +20,33 @@ require('./config/logs');
 
 app.use(bodyParser()); //get information from HTML forms
 app.use(cookieParser());
-var store = new RedisStore({
-        host: configSmartPay.sessionSettings.host,
-        port: configSmartPay.sessionSettings.port,
-        prefix: configSmartPay.sessionSettings.prefix,
-        pass: configSmartPay.sessionSettings.password,
-        tls: {}
-    });
+
+const redis = require('redis')
+const session = require('express-session')
+
+let RedisStore = require('connect-redis')(session)
+let redisClient = redis.createClient()
+
+app.use(
+    session({
+        store: new RedisStore({
+            client: redisClient,
+            host: configSmartPay.sessionSettings.host,
+            port: configSmartPay.sessionSettings.port,
+            prefix: configSmartPay.sessionSettings.prefix,
+            pass: configSmartPay.sessionSettings.password
+        }),
+        saveUninitialized: false,
+        secret: configSmartPay.sessionSettings.secret,
+        key: configSmartPay.sessionSettings.key,
+        resave: false,
+        cookie: {
+            domain: configSmartPay.sessionSettings.cookie_domain, //environmentVariables.cookieDomain,
+            maxAge: configSmartPay.sessionSettings.cookieMaxAge //30 minutes
+        }
+    })
+)
+
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
@@ -40,23 +58,14 @@ app.use(function (req, res, next) {
     };
     next();
 });
+
 app.use(function(req, res, next) {
     if (req.cookies['LoggedIn']){
         res.cookie('LoggedIn',true,{ maxAge: 1800000, httpOnly: true });
     }
     return next();
 });
-app.use(session({
-    secret: configSmartPay.sessionSettings.secret,
-    key: configSmartPay.sessionSettings.key,
-    store: store,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        domain: configSmartPay.sessionSettings.cookie_domain ,//environmentVariables.cookieDomain,
-        maxAge: configSmartPay.sessionSettings.cookieMaxAge  //30 minutes
-    }
-}));
+
 app.use(morgan('dev')); //log every request to the console
 
 app.use(function(req, res, next) {

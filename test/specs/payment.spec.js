@@ -1,50 +1,31 @@
-var supertest = require('supertest');
-var should = require('should');
+var expect  = require("chai").expect;
+var request = require("request");
 
-// get the code to test
-//var smartPayFunctions = require('../lib/smartpay-functions.js');
-
-// point test to where service is running
-//server = supertest.agent('http://localhost:4321/api/payment');
-
-var baseUrl = 'http://localhost:4321/api/payment';
-//var server = request.agent(baseUrl);
-
-describe('Work with Payments', function () {
-    it('runs health check', function (done) {
-        request(baseUrl).get('/healthcheck')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) return done(err);
-                expect(res.body.message).to.equal('Payment Service is running');
-                done();
-            });
-    });
+before("Run Server", function (done) {
+    server = require("../../server").getApp;
+    done();
 });
 
-//describe('Payment Service', function() {
-//
-//    it('should return valid application data fields', function (done) {
-//
-//        var formFields = {};
-//        var dummyAppId = 8888;
-//        var dummyApplicationDetail = { payment_amount : 12.34 };
-//        var dummyApplication = { unique_app_id: 1234 };
-//        var dummyDocumentCount = { doc_count: 1 };
+describe("Healthcheck is working", function() {
 
-//        smartPayFunctions.addApplicationData(
-//            dummyAppId,
-//            formFields,
-//            dummyApplicationDetail,
-//            dummyApplication,
-//            dummyDocumentCount, function (err, result) {
-//
-//            if (err) return done(err);
-//
-//            // should have array with inserted fields
-//            result.merchantReturnData.should.equal(dummyAppId);
-//            done();
-//        });
-//    });
-//
-//});
+    describe("GET /healthcheck", function() {
+
+        var url = "http://localhost:4321/api/payment/healthcheck";
+
+        it("returns status 200", function(done) {
+            request(url, function(error, response, body) {
+                expect(response.statusCode).to.equal(200);
+                done();
+            });
+        });
+
+        it("JSON body is correct", function(done) {
+            request(url, function(error, response, body) {
+                expect(body).to.contain('"message":"Payment Service is running"')
+                done();
+            });
+        });
+
+    });
+
+});

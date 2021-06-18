@@ -1,12 +1,11 @@
 
-var Sequelize = require('sequelize');
+var {Sequelize, DataTypes} = require('sequelize');
 
 // get environment specific config
 var commonConfig = require('../config/common.js');
 var environmentConfig = commonConfig.config();
 
-// options
-//database wide options
+// database options
 var opts = {
     define: {
         //prevent sequelize from pluralizing table names
@@ -17,15 +16,8 @@ var opts = {
 // initialise Sequelize
 var sequelize = new Sequelize(environmentConfig.database, opts);
 
-// load models
-var models = [
-    'ApplicationPaymentDetails',
-    'Application',
-    'UserDetails',
-    'UserDocumentCount'
-];
-models.forEach(function(model) {
-    module.exports[model] = sequelize.import(__dirname + '/' + model);
-});
-
 module.exports.sequelize = sequelize;
+module.exports.Application = require('./Application')(sequelize, DataTypes)
+module.exports.ApplicationPaymentDetails = require('./ApplicationPaymentDetails')(sequelize, DataTypes)
+module.exports.UserDetails = require('./UserDetails')(sequelize, DataTypes)
+module.exports.UserDocumentCount = require('./UserDocumentCount')(sequelize, DataTypes)
