@@ -169,7 +169,7 @@ module.exports = function(router, configSmartPay, app) {
         var UserDocumentCount = app.get('models').UserDocumentCount;
 
         // lookup required data from database
-        var formFieldsTemp = Application.findOne({ where: {application_id: appid}}).then(function(application){
+        Application.findOne({ where: {application_id: appid}}).then(function(application){
 
             ApplicationPaymentDetails.findOne({ where: {application_id: appid }}).then(function(applicationDetail){
 
@@ -177,42 +177,44 @@ module.exports = function(router, configSmartPay, app) {
 
                     UserDocumentCount.findOne({ where: {application_id: appid}}).then(function(userDocumentCount) {
 
-                        // array to hold data for encoding and sending to SmartPay API
+                        // array to hold data for sending to Payment API
                         var formFields = {};
 
-                        // add base application data
-                        formFields = SmartPay.addApplicationData(appid, formFields, applicationDetail, application, userDocumentCount, loggedIn);
+                        formFields = SmartPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
 
-                        // add calculated date fields for session expiry and shipping date
-                        formFields = SmartPay.addDateFields(formFields);
+                        request.post({
+                            headers: {
+                                "content-type": "application/json; charset=utf-8",
+                                "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                            },
+                            url: configSmartPay.configs.ukPayUrl,
+                            body: JSON.stringify(formFields)
+                        }, function (error, response) {
+                            if (error) {
+                                console.log(JSON.stringify(error));
+                            } else {
+                                var returnData = JSON.parse(response.body)
+                                var next_url = returnData._links.next_url.href
 
-                        // add required data for saving card details
-                        formFields = SmartPay.addOneClickFields(appid, formFields, userDetails, applicationDetail);
 
-                        // compress and encode order data
-                        formFields = SmartPay.compressAndEncodeOrderData(formFields);
+                              //redirect to next form page with parameters
+                              res.render('submit-payment.ejs', {
+                                  applicationId: appid,
+                                  applicationType: application.serviceType,
+                                  loggedIn: loggedIn,
+                                  usersEmail: usersEmail,
+                                  next_url: next_url,
+                                  user_data: {
+                                      loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                      user: req.session.user,
+                                      account: req.session.account,
+                                      url: '/api/user/'
+                                  }
+                              });
 
-                        //calculate merchant signature
-                        var merchantSig = SmartPay.calculateMerchantSignature(formFields);
-
-                        //create array of parameters
-                        var requestParameters = SmartPay.buildParameters(formFields, merchantSig);
-
-                        //redirect to next form page with parameters
-                        res.render('submit-payment.ejs', {
-                            params: requestParameters,
-                            applicationId: appid,
-                            applicationType: application.serviceType,
-                            loggedIn: loggedIn,
-                            usersEmail: usersEmail,
-                            smartPayUrl: configSmartPay.configs.smartPayUrl,
-                            user_data: {
-                                loggedIn: req.session && req.session.passport && req.session.passport.user,
-                                user: req.session.user,
-                                account: req.session.account,
-                                url: '/api/user/'
                             }
-                        });
+
+                        })
 
                     });
                 });

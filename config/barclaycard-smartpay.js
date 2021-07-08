@@ -18,7 +18,9 @@ var cookieDomain = JSON.parse(process.env.COOKIEDOMAIN);
 var paymentMethods = JSON.parse(process.env.PAYMENTMETHODS);
 var db = JSON.parse(process.env.DATABASE);
 var live_variables = JSON.parse(process.env.LIVEVARIABLES);
-var sessionSettings = JSON.parse(process.env.THESESSION)
+var sessionSettings = JSON.parse(process.env.THESESSION);
+var ukPayUrl = JSON.parse(process.env.UKPAYURL);
+var ukPayApiKey = JSON.parse(process.env.UKPAYAPIKEY);
 
 var configs = {
     "HMAC" : HMAC.HMAC,
@@ -33,7 +35,9 @@ var configs = {
     "smartPayUrl" : smartPayUrl.smartPayUrl,
     "smartPayHMACTestUrl" : smartPayHMACTestUrl.smartPayHMACTestUrl,
     "startNewApplicationUrl" : startNewApplicationUrl.startNewApplicationUrl,
-    "cookieDomain": cookieDomain.cookieDomain
+    "cookieDomain": cookieDomain.cookieDomain,
+    "ukPayApiKey": ukPayApiKey.ukPayApiKey,
+    "ukPayUrl": ukPayUrl.ukPayUrl
 };
 
 var database = db.database;

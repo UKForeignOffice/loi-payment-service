@@ -37,14 +37,9 @@
         <% } %>
 
         <!-- PAYMENT FORM -->
-        <form action="<%= smartPayUrl %>" method="post">
+        <form action="<%= next_url %>">
 
             <div class="form-group">
-
-                <% var ordered =  params; %>
-                <% for(var key in ordered){ %>
-                <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
-                <% } %>
 
                 <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
 
