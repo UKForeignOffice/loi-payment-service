@@ -69,7 +69,7 @@ module.exports = function(router, configSmartPay, app) {
     }
 
     router
-        // additional payment confirmation on return from Barclaycard
+        // additional payment confirmation on return from Gov Pay
         .get('/additional-payment-confirmation', function(req, res) {
             processAdditionalPayment(req,res)
         });
@@ -109,7 +109,7 @@ module.exports = function(router, configSmartPay, app) {
                 });
             } else {
 
-                // build smart pay required data....again
+
                 let formFields = {};
                 formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
                 formFields = SmartPay.addDateFields(formFields);
@@ -141,7 +141,7 @@ module.exports = function(router, configSmartPay, app) {
     // SEND PAYMENT
     // =====================================
     router
-        // redirect to Barclaycard to process payment
+        // redirect to Gov Pay to process payment
         .get('/submit-payment', function(req,res){submitPayment(req,res);})
         .post('/submit-payment', function(req,res){submitPayment(req,res);});
 
@@ -197,20 +197,32 @@ module.exports = function(router, configSmartPay, app) {
                                 var next_url = returnData._links.next_url.href
 
 
-                              //redirect to next form page with parameters
-                              res.render('submit-payment.ejs', {
-                                  applicationId: appid,
-                                  applicationType: application.serviceType,
-                                  loggedIn: loggedIn,
-                                  usersEmail: usersEmail,
-                                  next_url: next_url,
-                                  user_data: {
-                                      loggedIn: req.session && req.session.passport && req.session.passport.user,
-                                      user: req.session.user,
-                                      account: req.session.account,
-                                      url: '/api/user/'
-                                  }
-                              });
+                                // update database (add payment reference)
+                                ApplicationPaymentDetails.update({
+                                    payment_reference : returnData.payment_id
+                                },{
+                                    where: {
+                                        application_id: appid
+                                    }
+                                }).then( function() {
+                                    //redirect to next form page with parameters
+                                    res.render('submit-payment.ejs', {
+                                        applicationId: appid,
+                                        applicationType: application.serviceType,
+                                        loggedIn: loggedIn,
+                                        usersEmail: usersEmail,
+                                        next_url: next_url,
+                                        user_data: {
+                                            loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                            user: req.session.user,
+                                            account: req.session.account,
+                                            url: '/api/user/'
+                                        }
+                                    });
+
+                                }).catch(function (error) {
+                                    console.log(appId + ' - ' + error);
+                                });
 
                             }
 
@@ -231,132 +243,171 @@ module.exports = function(router, configSmartPay, app) {
         // prepare confirmation page
         .get('/payment-confirmation', function(req, res) {
 
+            // get appId from the session
+            var appId = req.session.appId;
+
             // get the relevant database models
             var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
 
-            // application ID will be in the database (use merchantReference to lookup)
-            var appId = req.query.merchantReturnData;
-            var loggedIn = SmartPay.loggedInStatus(req);
-            var usersEmail = SmartPay.loggedInUserEmail(req);
-
-            // decode query string parameters to verify signature (HMAC)
-            var returnDataIsValid = SmartPay.decodeReturnedMerchantSignature(req.query);
-
-            // update database (add payment reference, mark payment as authorised)
-            ApplicationPaymentDetails.update({
-                payment_complete  : true,
-                payment_reference : req.query.pspReference,
-                payment_status    : req.query.authResult
-            },{
-                where: {
-                    application_id: appId
-                }
-            }).then( function() {
-
-                // check if payment was successful
-                var paymentSuccessful = (req.query.authResult == "AUTHORISED");
-
-                // check the payment was successful and that the data has not been tampered with (validated against HMAC)
-                if (paymentSuccessful && returnDataIsValid) {
-
-                    console.log(appId + ' - payment is successful');
-
-                    var originalQueryString = req.query;
-
-                    function buildQueryString (done) {
-                        console.log(appId + ' - constructing query string for application service');
-                        var queryString = '?' +
-                            Object.keys(originalQueryString).map(function (key) {
-                                return encodeURIComponent(key) + '=' +
-                                    encodeURIComponent(originalQueryString[key]);
-                            }).join('&');
-                        done(queryString);
+            // check the payment id from the database
+            ApplicationPaymentDetails.findOne({
+                    where: {
+                        application_id: appId
                     }
-
-                    // rebuild query string from JSON to pass to app service URL then
-                    // redirect to application confirmation page
-                    buildQueryString(function (queryString) {
-                        console.log(appId + ' - redirecting to application service');
-                        res.redirect(configSmartPay.configs.applicationServiceReturnUrl + queryString);
-                    });
-
                 }
-                else {
+            ).then(function (results) {
+                var payment_id = results.payment_reference
 
-                    console.log(appId + ' - payment is NOT successful');
+                request.get({
+                    headers: {
+                        "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                    },
+                    url: configSmartPay.configs.ukPayUrl + payment_id,
+                }, function (error, response, body) {
+                    var returnData = JSON.parse(body)
+                    var status = returnData.state.status
+                    var finished = returnData.state.finished
+                    var appReference = returnData.reference
 
-                    // build data to pass to failed payment page (for resubmission)
+                    if (status && status === 'success' && finished && finished === true){
 
-                    // get the application ID from the request (redirected from application service)
-                    var appid = req.query.merchantReturnData;
-                    var loggedIn = SmartPay.loggedInStatus(req);
-                    var usersEmail = SmartPay.loggedInUserEmail(req);
-                    var isSessionValid = SmartPay.isSessionValid(req);
+                        ApplicationPaymentDetails.update({
+                            payment_complete: true,
+                            payment_status: 'AUTHORISED'
+                        }, {
+                            where: {
+                                application_id: appId
+                            }
+                        }).then(function() {
+                            console.log(appId + ' - payment is successful');
+                            res.redirect(configSmartPay.configs.applicationServiceReturnUrl + '?id=' + appId + '&appReference=' + appReference);
+                        })
 
-                    // get the relevant database models
-                    var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
-                    var Application = app.get('models').Application;
-                    var UserDetails = app.get('models').UserDetails;
-                    var UserDocumentCount = app.get('models').UserDocumentCount;
+                    } else {
 
-                    // lookup required data from database
-                    var formFieldsTemp = Application.findOne({ where: {application_id: appid}}).then(function(application) {
-
-                        ApplicationPaymentDetails.findOne({where: {application_id: appid}}).then(function (applicationDetail) {
-
-                            UserDetails.findOne({where: {application_id: appid}}).then(function (userDetails) {
-
-                                UserDocumentCount.findOne({where: {application_id: appid}}).then(function (userDocumentCount) {
-
-                                    // array to hold data for encoding and sending to SmartPay API
-                                    var formFields = {};
-
-                                    // add base application data
-                                    formFields = SmartPay.addApplicationData(appid, formFields, applicationDetail, application, userDocumentCount, loggedIn);
-
-                                    // add calculated date fields for session expiry and shipping date
-                                    formFields = SmartPay.addDateFields(formFields);
-
-                                    // add required data for saving card details
-                                    formFields = SmartPay.addOneClickFields(appid, formFields, userDetails, applicationDetail);
-
-                                    // compress and encode order data
-                                    formFields = SmartPay.compressAndEncodeOrderData(formFields);
-
-                                    //calculate merchant signature
-                                    var merchantSig = SmartPay.calculateMerchantSignature(formFields);
-
-                                    //create array of parameters
-                                    var requestParameters = SmartPay.buildParameters(formFields, merchantSig);
-
-                                    console.log(appId + ' - rendering failed payment page');
-                                    // display failed payment page (with link to start a new payment)
-                                    res.render('payment-confirmation.ejs',
-                                        {
-                                            params: requestParameters,
-                                            applicationId: appid,
-                                            applicationType: application.serviceType,
-                                            smartPayUrl: configSmartPay.configs.smartPayUrl,
-                                            startNewApplicationUrl: configSmartPay.configs.startNewApplicationUrl,
-                                            loggedIn: loggedIn,
-                                            isSessionValid: isSessionValid,
-                                            usersEmail: usersEmail,
-                                            user_data: {
-                                                loggedIn: req.session && req.session.passport && req.session.passport.user,
-                                                user: req.session.user,
-                                                account: req.session.account,
-                                                url: '/api/user/'
-                                            }
-                                        });
-                                });
-                            });
-                        });
-                    });
-                }
+                    }
+                });
 
             }).catch(function (error) {
                 console.log(appId + ' - ' + error);
             });
+
+
+            // update database (add payment reference, mark payment as authorised)
+            // ApplicationPaymentDetails.update({
+            //     payment_complete  : true,
+            //     payment_reference : req.query.pspReference,
+            //     payment_status    : req.query.authResult
+            // },{
+            //     where: {
+            //         application_id: appId
+            //     }
+            // }).then( function() {
+            //
+            //     // check if payment was successful
+            //     var paymentSuccessful = (req.query.authResult == "AUTHORISED");
+            //
+            //     // check the payment was successful and that the data has not been tampered with (validated against HMAC)
+            //     if (paymentSuccessful && returnDataIsValid) {
+            //
+            //         console.log(appId + ' - payment is successful');
+            //
+            //         var originalQueryString = req.query;
+            //
+            //         function buildQueryString (done) {
+            //             console.log(appId + ' - constructing query string for application service');
+            //             var queryString = '?' +
+            //                 Object.keys(originalQueryString).map(function (key) {
+            //                     return encodeURIComponent(key) + '=' +
+            //                         encodeURIComponent(originalQueryString[key]);
+            //                 }).join('&');
+            //             done(queryString);
+            //         }
+            //
+            //         // rebuild query string from JSON to pass to app service URL then
+            //         // redirect to application confirmation page
+            //         buildQueryString(function (queryString) {
+            //             console.log(appId + ' - redirecting to application service');
+            //             res.redirect(configSmartPay.configs.applicationServiceReturnUrl + queryString);
+            //         });
+            //
+            //     }
+            //     else {
+            //
+            //         console.log(appId + ' - payment is NOT successful');
+            //
+            //         // build data to pass to failed payment page (for resubmission)
+            //
+            //         // get the application ID from the request (redirected from application service)
+            //         var appid = req.query.merchantReturnData;
+            //         var loggedIn = SmartPay.loggedInStatus(req);
+            //         var usersEmail = SmartPay.loggedInUserEmail(req);
+            //         var isSessionValid = SmartPay.isSessionValid(req);
+            //
+            //         // get the relevant database models
+            //         var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
+            //         var Application = app.get('models').Application;
+            //         var UserDetails = app.get('models').UserDetails;
+            //         var UserDocumentCount = app.get('models').UserDocumentCount;
+            //
+            //         // lookup required data from database
+            //         var formFieldsTemp = Application.findOne({ where: {application_id: appid}}).then(function(application) {
+            //
+            //             ApplicationPaymentDetails.findOne({where: {application_id: appid}}).then(function (applicationDetail) {
+            //
+            //                 UserDetails.findOne({where: {application_id: appid}}).then(function (userDetails) {
+            //
+            //                     UserDocumentCount.findOne({where: {application_id: appid}}).then(function (userDocumentCount) {
+            //
+            //                         // array to hold data for encoding and sending to SmartPay API
+            //                         var formFields = {};
+            //
+            //                         // add base application data
+            //                         formFields = SmartPay.addApplicationData(appid, formFields, applicationDetail, application, userDocumentCount, loggedIn);
+            //
+            //                         // add calculated date fields for session expiry and shipping date
+            //                         formFields = SmartPay.addDateFields(formFields);
+            //
+            //                         // add required data for saving card details
+            //                         formFields = SmartPay.addOneClickFields(appid, formFields, userDetails, applicationDetail);
+            //
+            //                         // compress and encode order data
+            //                         formFields = SmartPay.compressAndEncodeOrderData(formFields);
+            //
+            //                         //calculate merchant signature
+            //                         var merchantSig = SmartPay.calculateMerchantSignature(formFields);
+            //
+            //                         //create array of parameters
+            //                         var requestParameters = SmartPay.buildParameters(formFields, merchantSig);
+            //
+            //                         console.log(appId + ' - rendering failed payment page');
+            //                         // display failed payment page (with link to start a new payment)
+            //                         res.render('payment-confirmation.ejs',
+            //                             {
+            //                                 params: requestParameters,
+            //                                 applicationId: appid,
+            //                                 applicationType: application.serviceType,
+            //                                 smartPayUrl: configSmartPay.configs.smartPayUrl,
+            //                                 startNewApplicationUrl: configSmartPay.configs.startNewApplicationUrl,
+            //                                 loggedIn: loggedIn,
+            //                                 isSessionValid: isSessionValid,
+            //                                 usersEmail: usersEmail,
+            //                                 user_data: {
+            //                                     loggedIn: req.session && req.session.passport && req.session.passport.user,
+            //                                     user: req.session.user,
+            //                                     account: req.session.account,
+            //                                     url: '/api/user/'
+            //                                 }
+            //                             });
+            //                     });
+            //                 });
+            //             });
+            //         });
+            //     }
+            //
+            // }).catch(function (error) {
+            //     console.log(appId + ' - ' + error);
+            // });
 
         });
 };
