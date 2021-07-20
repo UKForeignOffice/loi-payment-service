@@ -45,20 +45,36 @@ module.exports = function(router, configSmartPay, app) {
 
         try {
             let sess = req.session;
-            // build smart pay required data
+            // build required data
             let formFields = {};
             formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
-            formFields = SmartPay.addDateFields(formFields);
-            formFields = SmartPay.compressAndEncodeOrderData(formFields);
-            let merchantSignature = SmartPay.additionalPaymentsCalculateMerchantSignature(formFields);
-            let requestParameters = SmartPay.additionalPaymentsBuildParameters(formFields, merchantSignature);
 
-            res.render('additionalPayments/submit-additional-payment', {
-                cost:sess.additionalPayments.cost,
-                params:requestParameters,
-                smartPayUrl: configSmartPay.configs.smartPayUrl,
-                startNewApplicationUrl:startNewApplicationUrl
+            request.post({
+                headers: {
+                    "content-type": "application/json; charset=utf-8",
+                    "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                },
+                url: configSmartPay.configs.ukPayUrl,
+                body: JSON.stringify(formFields)
+            }, function (error, response) {
+                if (error) {
+                    console.log(JSON.stringify(error));
+                } else {
+                    var returnData = JSON.parse(response.body)
+                    var next_url = returnData._links.next_url.href
+                    sess.additionalPayments.paymentReference = returnData.payment_id
+
+                    res.render('additionalPayments/submit-additional-payment', {
+                        cost:sess.additionalPayments.cost,
+                        next_url: next_url,
+                        startNewApplicationUrl:startNewApplicationUrl
+                    })
+
+                }
+
             })
+
+
         } catch (err) {
             console.log(err);
             return res.render('error', {
@@ -77,55 +93,77 @@ module.exports = function(router, configSmartPay, app) {
     function processAdditionalPayment(req,res){
 
         try {
-            let moment = require('moment');
-
+            
             let sess = req.session;
             let isSessionValid = (typeof sess.additionalPayments.cost !== 'undefined');
-
-            // decode query string parameters to verify signature (HMAC)
-            let returnDataIsValid = SmartPay.decodeReturnedMerchantSignature(req.query);
-            let paymentSuccessful = (req.query.authResult === "AUTHORISED");
+            let payment_id = sess.additionalPayments.paymentReference
             let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
-            req.query.paymentMethod = SmartPay.lookupPaymentMethod(req.query.paymentMethod);
-            req.query.merchantReference = moment.unix(Number(req.query.merchantReference)).format('DD MMMM YYYY, h:mm:ss A')
 
-            if (paymentSuccessful && returnDataIsValid) {
-                EmailService.additionalPaymentReceipt(
-                    sess.additionalPayments.email,
-                    moment().format("DD/MM/YYYY"),
-                    req.query.pspReference,
-                    'Get Document Legalised – Additional Payments',
-                    sess.additionalPayments.cost,
-                    req.query.paymentMethod
-                    )
-                res.render('additionalPayments/additional-payment-confirmation', {
-                    req:req,
-                    isSessionValid:isSessionValid,
-                    paymentSuccessful:paymentSuccessful,
-                    params:req.query,
-                    cost:sess.additionalPayments.cost,
-                    email:sess.additionalPayments.email,
-                    startNewApplicationUrl:startNewApplicationUrl
-                });
-            } else {
+            request.get({
+                headers: {
+                    "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                },
+                url: configSmartPay.configs.ukPayUrl + payment_id,
+            }, function (error, response, body) {
+                let returnData = JSON.parse(body)
+                let status = returnData.state.status
+                let finished = returnData.state.finished
+                let appReference = returnData.reference
+                let paymentMethod = returnData.card_details.card_brand
+                let createdDate = returnData.created_date
 
+                if (status && status === 'success' && finished && finished === true){
 
-                let formFields = {};
-                formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
-                formFields = SmartPay.addDateFields(formFields);
-                formFields = SmartPay.compressAndEncodeOrderData(formFields);
-                let merchantSignature = SmartPay.additionalPaymentsCalculateMerchantSignature(formFields);
-                let requestParameters = SmartPay.additionalPaymentsBuildParameters(formFields, merchantSignature);
+                    console.log(payment_id + ' - payment is successful');
+                    res.render('additionalPayments/additional-payment-confirmation', {
+                        req:req,
+                        isSessionValid:isSessionValid,
+                        paymentSuccessful:true,
+                        appReference:appReference,
+                        createdDate:createdDate,
+                        paymentMethod:paymentMethod,
+                        cost:sess.additionalPayments.cost,
+                        email:sess.additionalPayments.email,
+                        startNewApplicationUrl:startNewApplicationUrl
+                    });
 
-                res.render('additionalPayments/additional-payment-confirmation', {
-                    isSessionValid:isSessionValid,
-                    paymentSuccessful:false,
-                    cost:sess.cost,
-                    params:requestParameters,
-                    smartPayUrl: configSmartPay.configs.smartPayUrl
-                });
-            }
-        } catch (err) {
+                } else {
+
+                    console.log(payment_id + ' - payment is NOT successful');
+                    let formFields = {};
+                    formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
+
+                    request.post({
+                        headers: {
+                            "content-type": "application/json; charset=utf-8",
+                            "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                        },
+                        url: configSmartPay.configs.ukPayUrl,
+                        body: JSON.stringify(formFields)
+                    }, function (error, response) {
+                        if (error) {
+                            console.log(JSON.stringify(error));
+                        } else {
+                            var returnData = JSON.parse(response.body)
+                            var next_url = returnData._links.next_url.href
+                            sess.additionalPayments.paymentReference = returnData.payment_id
+
+                            res.render('additionalPayments/additional-payment-confirmation', {
+                                isSessionValid:isSessionValid,
+                                paymentSuccessful:false,
+                                cost:sess.cost,
+                                next_url: next_url
+                            });
+
+                        }
+
+                    })
+
+                }
+
+        })
+
+        }catch (err) {
             let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
             return res.render('error', {
