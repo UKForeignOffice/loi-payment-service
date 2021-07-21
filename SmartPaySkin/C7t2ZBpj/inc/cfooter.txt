@@ -1,6 +1,0 @@
-<p class="bcfoot">	
-		
-		&copy; Barclaycard 2009
-		
-	 </p>
-</div>

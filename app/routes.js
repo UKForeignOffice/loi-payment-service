@@ -1,5 +1,5 @@
 
-var SmartPay = require('./../lib/smartpay-functions');
+var SmartPay = require('../lib/helper');
 var request = require('request');
 var EmailService =require('./../lib/EmailService')
 
@@ -93,7 +93,7 @@ module.exports = function(router, configSmartPay, app) {
     function processAdditionalPayment(req,res){
 
         try {
-            
+            let moment = require('moment');
             let sess = req.session;
             let isSessionValid = (typeof sess.additionalPayments.cost !== 'undefined');
             let payment_id = sess.additionalPayments.paymentReference
@@ -110,11 +110,21 @@ module.exports = function(router, configSmartPay, app) {
                 let finished = returnData.state.finished
                 let appReference = returnData.reference
                 let paymentMethod = returnData.card_details.card_brand
-                let createdDate = returnData.created_date
+                let createdDate = moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A')
+
 
                 if (status && status === 'success' && finished && finished === true){
 
                     console.log(payment_id + ' - payment is successful');
+                    EmailService.additionalPaymentReceipt(
+                        sess.additionalPayments.email,
+                        createdDate,
+                        appReference,
+                        'Get Document Legalised – Additional Payments',
+                        sess.additionalPayments.cost,
+                        paymentMethod
+                    )
+
                     res.render('additionalPayments/additional-payment-confirmation', {
                         req:req,
                         isSessionValid:isSessionValid,
