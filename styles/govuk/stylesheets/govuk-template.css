@@ -556,14 +556,14 @@ button:focus,
 
 /* Global footer */
 #footer {
-  /* background-color: #dee0e2; */
+  background-color: #dee0e2;
   border-top: 1px solid #a1acb2; }
   #footer .footer-wrapper {
     margin: 0 auto;
     width: auto;
     max-width: 1020px;
     padding-top: 20px;
-    /* background-color: #dee0e2; */
+    background-color: #dee0e2;
     margin: 0 auto; }
     @media (min-width: 641px) {
       #footer .footer-wrapper {

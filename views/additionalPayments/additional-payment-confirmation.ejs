@@ -1,7 +1,5 @@
 <% include ../partials/header %>
 
-<div>
-
     <% if (isSessionValid == false) { %>
 
         <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
@@ -19,17 +17,15 @@
 
         </div>
 
-</div>
+    <%} else { %>
 
-<%} else { %>
+        <% if (paymentSuccessful == true) { %>
 
-    <% if (paymentSuccessful == true) { %>
+            <div>
 
-        <div>
+                <title>Your payment was successful - Get a document legalised – GOV.UK</title>
 
-            <title>Your payment was successful - Get a document legalised – GOV.UK</title>
-
-            <div class="intro column-two-thirds">
+                <div class="intro column-two-thirds">
 
                 <div class="govuk-box-highlight">
                     <h1 style="font-weight: 700; font-size: 36px; margin: 0px;">Payment complete</h1>
@@ -75,21 +71,21 @@
 
                 <p><a class="govuk-link" href="<%= startNewApplicationUrl %>">Make another payment</a></p>
 
+                </div>
+
             </div>
 
-        </div>
+            <% req.session.destroy(); %>
 
-        <% req.session.destroy(); %>
+        <% } else { %>
 
-    <% } else { %>
+            <div>
 
-        <div>
+                <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
 
-            <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+                <h1 class="heading-xlarge">Your payment was unsuccessful</h1>
 
-            <h1 class="heading-xlarge">Your payment was unsuccessful</h1>
-
-            <div class="intro column-two-thirds">
+                <div class="intro column-two-thirds">
 
                 <p>We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card, or use a different card.</p>
                 <p>Please try again.</p>
@@ -97,19 +93,14 @@
                 <!-- PAYMENT FORM -->
                 <form action="<%= next_url %>">
 
-                    <div class="form-group">
-
                         <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
 
-                    </div>
-
                 </form>
-
+                </div>
             </div>
-        </div>
+
+        <% } %>
 
     <% } %>
-
-<% } %>
 
 <% include ../partials/footer %>
