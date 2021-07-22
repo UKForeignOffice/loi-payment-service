@@ -31,7 +31,8 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^8.0.1"
+    "mocha": "^8.0.1",
+    "nock": "^13.1.1"
   },
   "scripts": {
     "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive test/ --exit",
