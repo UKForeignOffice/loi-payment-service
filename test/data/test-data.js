@@ -52,7 +52,7 @@ const mockGetResponse = {
                 "status": "success",
                 "finished": true,
         },
-        "description": "Pay your council tax",
+        "description": "Make an additional payment",
         "reference": "12345",
         "language": "en",
         "metadata": {
