@@ -27,7 +27,7 @@ var store = new RedisStore({
         port: configSmartPay.sessionSettings.port,
         prefix: configSmartPay.sessionSettings.prefix,
         pass: configSmartPay.sessionSettings.password,
-        tls: {}
+        tls: process.env.NODE_ENV === 'development' ? undefined : {}
     });
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
