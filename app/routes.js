@@ -1,9 +1,9 @@
 
-var SmartPay = require('../lib/helper');
+var GovPay = require('../lib/helper');
 var request = require('request');
 var EmailService =require('./../lib/EmailService')
 
-module.exports = function(router, configSmartPay, app) {
+module.exports = function(router, configGovPay, app) {
 
     // =====================================
     // HEALTHCHECK
@@ -22,7 +22,7 @@ module.exports = function(router, configSmartPay, app) {
 
         //error handling
         .get('/error', function(req,res) {
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
             return res.render('error', {
                 errorMessage:'',
                 startNewApplicationUrl:startNewApplicationUrl
@@ -41,20 +41,20 @@ module.exports = function(router, configSmartPay, app) {
 
     function submitAdditionalPayment(req,res){
 
-        let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+        let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
 
         try {
             let sess = req.session;
             // build required data
             let formFields = {};
-            formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
+            formFields = GovPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
 
             request.post({
                 headers: {
                     "content-type": "application/json; charset=utf-8",
-                    "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                    "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                 },
-                url: configSmartPay.configs.ukPayUrl,
+                url: configGovPay.configs.ukPayUrl,
                 body: JSON.stringify(formFields)
             }, function (error, response) {
                 if (error) {
@@ -97,13 +97,13 @@ module.exports = function(router, configSmartPay, app) {
             let sess = req.session;
             let isSessionValid = (typeof sess.additionalPayments.cost !== 'undefined');
             let payment_id = sess.additionalPayments.paymentReference
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
 
             request.get({
                 headers: {
-                    "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                    "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                 },
-                url: configSmartPay.configs.ukPayUrl + payment_id,
+                url: configGovPay.configs.ukPayUrl + payment_id,
             }, function (error, response, body) {
                 let returnData = JSON.parse(body)
                 let status = returnData.state.status
@@ -141,14 +141,14 @@ module.exports = function(router, configSmartPay, app) {
 
                     console.log(payment_id + ' - payment is NOT successful');
                     let formFields = {};
-                    formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
+                    formFields = GovPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
 
                     request.post({
                         headers: {
                             "content-type": "application/json; charset=utf-8",
-                            "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                            "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                         },
-                        url: configSmartPay.configs.ukPayUrl,
+                        url: configGovPay.configs.ukPayUrl,
                         body: JSON.stringify(formFields)
                     }, function (error, response) {
                         if (error) {
@@ -174,7 +174,7 @@ module.exports = function(router, configSmartPay, app) {
         })
 
         }catch (err) {
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
             return res.render('error', {
                 errorMessage:err,
@@ -207,8 +207,8 @@ module.exports = function(router, configSmartPay, app) {
             req.session.appId = false;
             return res.redirect('/session-expired?LoggedIn=false');
         }
-        var loggedIn = SmartPay.loggedInStatus(req);
-        var usersEmail = SmartPay.loggedInUserEmail(req);
+        var loggedIn = GovPay.loggedInStatus(req);
+        var usersEmail = GovPay.loggedInUserEmail(req);
 
         // get the relevant database models
         var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
@@ -228,14 +228,14 @@ module.exports = function(router, configSmartPay, app) {
                         // array to hold data for sending to Payment API
                         var formFields = {};
 
-                        formFields = SmartPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
+                        formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
 
                         request.post({
                             headers: {
                                 "content-type": "application/json; charset=utf-8",
-                                "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                                "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                             },
-                            url: configSmartPay.configs.ukPayUrl,
+                            url: configGovPay.configs.ukPayUrl,
                             body: JSON.stringify(formFields)
                         }, function (error, response) {
                             if (error) {
@@ -311,9 +311,9 @@ module.exports = function(router, configSmartPay, app) {
 
                 request.get({
                     headers: {
-                        "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                        "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                     },
-                    url: configSmartPay.configs.ukPayUrl + payment_id,
+                    url: configGovPay.configs.ukPayUrl + payment_id,
                 }, function (error, response, body) {
                     var returnData = JSON.parse(body)
                     var status = returnData.state.status
@@ -331,7 +331,7 @@ module.exports = function(router, configSmartPay, app) {
                             }
                         }).then(function() {
                             console.log(appId + ' - payment is successful');
-                            res.redirect(configSmartPay.configs.applicationServiceReturnUrl + '?id=' + appId + '&appReference=' + appReference);
+                            res.redirect(configGovPay.configs.applicationServiceReturnUrl + '?id=' + appId + '&appReference=' + appReference);
                         }).catch(function (error) {
                             console.log(appId + ' - ' + error);
                         });
@@ -339,9 +339,9 @@ module.exports = function(router, configSmartPay, app) {
                     } else {
 
                         console.log(appId + ' - payment is NOT successful');
-                        var loggedIn = SmartPay.loggedInStatus(req);
-                        var usersEmail = SmartPay.loggedInUserEmail(req);
-                        var isSessionValid = SmartPay.isSessionValid(req);
+                        var loggedIn = GovPay.loggedInStatus(req);
+                        var usersEmail = GovPay.loggedInUserEmail(req);
+                        var isSessionValid = GovPay.isSessionValid(req);
 
                                 // lookup required data from database
                                 var formFieldsTemp = Application.findOne({ where: {application_id: appId}}).then(function(application) {
@@ -355,14 +355,14 @@ module.exports = function(router, configSmartPay, app) {
                                                 // array to hold data for sending to Payment API
                                                 var formFields = {};
 
-                                                formFields = SmartPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
+                                                formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
 
                                                 request.post({
                                                     headers: {
                                                         "content-type": "application/json; charset=utf-8",
-                                                        "Authorization": "Bearer " + configSmartPay.configs.ukPayApiKey
+                                                        "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                                                     },
-                                                    url: configSmartPay.configs.ukPayUrl,
+                                                    url: configGovPay.configs.ukPayUrl,
                                                     body: JSON.stringify(formFields)
                                                 }, function (error, response) {
                                                     if (error) {
@@ -388,7 +388,7 @@ module.exports = function(router, configSmartPay, app) {
                                                                     applicationId: appId,
                                                                     applicationType: application.serviceType,
                                                                     next_url: next_url,
-                                                                    startNewApplicationUrl: configSmartPay.configs.startNewApplicationUrl,
+                                                                    startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
                                                                     loggedIn: loggedIn,
                                                                     isSessionValid: isSessionValid,
                                                                     usersEmail: usersEmail,
