@@ -208,7 +208,7 @@ module.exports = function(router, configGovPay, app) {
             return res.redirect('/session-expired?LoggedIn=false');
         }
         var loggedIn = GovPay.loggedInStatus(req);
-        var usersEmail = GovPay.loggedInUserEmail(req);
+        var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
 
         // get the relevant database models
         var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
@@ -340,7 +340,7 @@ module.exports = function(router, configGovPay, app) {
 
                         console.log(appId + ' - payment is NOT successful');
                         var loggedIn = GovPay.loggedInStatus(req);
-                        var usersEmail = GovPay.loggedInUserEmail(req);
+                        var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
                         var isSessionValid = GovPay.isSessionValid(req);
 
                                 // lookup required data from database
