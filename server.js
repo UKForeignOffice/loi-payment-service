@@ -116,6 +116,20 @@ fs.readdir('images/govuk_frontend_toolkit', function(err, items) {
 });
 
 // =====================================
+// JOB SCHEDULER
+// =====================================
+//Schedule and run account expiry job every day
+var schedule = require('node-schedule');
+var jobs = require('./config/jobs.js');
+
+// As there are 2 instances running, we need a random time, or the job will be executed on both instances
+var randomSecond = Math.floor(Math.random() * 60);
+var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
+//var jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
+var jobScheduleRandom = "0 * * * * *";
+var paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
+
+// =====================================
 // LAUNCH
 // =====================================
 app.listen(port);

@@ -16,14 +16,28 @@ module.exports = function(router, configGovPay, app) {
         });
 
     // =====================================
-    // ERROR
+    // ERROR - PAYMENTS
     // =====================================
     router
 
         //error handling
-        .get('/error', function(req,res) {
+        .get('/payment-error', function(req,res) {
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+            return res.render('payment-error', {
+                errorMessage:'',
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        });
+
+    // =====================================
+    // ERROR - ADDITIONAL PAYMENTS
+    // =====================================
+    router
+
+        //error handling
+        .get('/additional-payment-error', function(req,res) {
             let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
-            return res.render('error', {
+            return res.render('additional-payment-error', {
                 errorMessage:'',
                 startNewApplicationUrl:startNewApplicationUrl
             })
@@ -77,7 +91,7 @@ module.exports = function(router, configGovPay, app) {
 
         } catch (err) {
             console.log(err);
-            return res.render('error', {
+            return res.render('additional-payment-error', {
                 errorMessage:err,
                 startNewApplicationUrl:startNewApplicationUrl
             })
@@ -176,7 +190,7 @@ module.exports = function(router, configGovPay, app) {
         }catch (err) {
             let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
-            return res.render('error', {
+            return res.render('additional-payment-error', {
                 errorMessage:err,
                 startNewApplicationUrl:startNewApplicationUrl
             })
@@ -198,14 +212,18 @@ module.exports = function(router, configGovPay, app) {
 
         // get the application ID from the request (redirected from application service)
         var appid = req.session.appId;
-        if(req.session.appId && req.session.appId !==0 ){
+        if( req.session.appId && req.session.appId !==0 ){
             //Do nothing
         }
         else{
 
             res.clearCookie('LoggedIn');
             req.session.appId = false;
-            return res.redirect('/session-expired?LoggedIn=false');
+            var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+            return res.render('payment-error', {
+                errorMessage:'Missing user session',
+                startNewApplicationUrl:startNewApplicationUrl
+            })
         }
         var loggedIn = GovPay.loggedInStatus(req);
         var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
@@ -292,7 +310,20 @@ module.exports = function(router, configGovPay, app) {
         .get('/payment-confirmation', function(req, res) {
 
             // get appId from the session
+            // else send user to error page
             var appId = req.session.appId;
+            if (req.session.appId && req.session.appId !==0) {
+                //Do nothing
+            }
+            else{
+                res.clearCookie('LoggedIn');
+                req.session.appId = false;
+                var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+                return res.render('payment-error', {
+                    errorMessage:'Missing user session',
+                    startNewApplicationUrl:startNewApplicationUrl
+                })
+            }
 
             // get the relevant database models
             var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;

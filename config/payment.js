@@ -13,6 +13,7 @@ var live_variables = JSON.parse(process.env.LIVEVARIABLES);
 var sessionSettings = JSON.parse(process.env.THESESSION);
 var ukPayUrl = JSON.parse(process.env.UKPAYURL);
 var ukPayApiKey = JSON.parse(process.env.UKPAYAPIKEY);
+var jobScheduleHourlyInterval = JSON.parse(process.env.JOBSCHEDULEHOURLYINTERVAL);
 
 var configs = {
     "resultURL":resultURL.resultURL,
@@ -22,7 +23,8 @@ var configs = {
     "startNewApplicationUrl" : startNewApplicationUrl.startNewApplicationUrl,
     "cookieDomain": cookieDomain.cookieDomain,
     "ukPayApiKey": ukPayApiKey.ukPayApiKey,
-    "ukPayUrl": ukPayUrl.ukPayUrl
+    "ukPayUrl": ukPayUrl.ukPayUrl,
+    "jobScheduleHourlyInterval": jobScheduleHourlyInterval
 };
 
 var database = db.database;
