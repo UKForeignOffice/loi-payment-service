@@ -125,8 +125,7 @@ var jobs = require('./config/jobs.js');
 // As there are 2 instances running, we need a random time, or the job will be executed on both instances
 var randomSecond = Math.floor(Math.random() * 60);
 var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
-//var jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
-var jobScheduleRandom = "0 * * * * *";
+var jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
 var paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
 
 // =====================================
@@ -134,6 +133,7 @@ var paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.pay
 // =====================================
 app.listen(port);
 console.log('is-payment-service running on port: ' + port);
+console.log('payment cleanup job will run every %s hours at %sm %ss past the hour', configGovPay.configs.jobScheduleHourlyInterval, randomMin, randomSecond);
 module.exports.getApp = app;
 
 

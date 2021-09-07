@@ -24,7 +24,7 @@ var configs = {
     "cookieDomain": cookieDomain.cookieDomain,
     "ukPayApiKey": ukPayApiKey.ukPayApiKey,
     "ukPayUrl": ukPayUrl.ukPayUrl,
-    "jobScheduleHourlyInterval": jobScheduleHourlyInterval
+    "jobScheduleHourlyInterval": jobScheduleHourlyInterval.jobScheduleHourlyInterval
 };
 
 var database = db.database;
