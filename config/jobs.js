@@ -10,6 +10,7 @@ var jobs ={
     //THIS JOB ATTEMPTS TO CALL
     //GOV PAY AND OBTAIN A PAYMENT STATUS
     //THEN UPDATE THE DATABASE
+    //ALSO WORKS FOR ADDITIONAL PAYMENTS
     //====================================
     paymentCleanup: async function() {
 
@@ -30,6 +31,7 @@ var jobs ={
                 await lockDb()
 
                 let problemPayments = await searchEligiblePayments()
+                let problemAdditionalPayments = await searchEligibleAdditionalPayments()
 
                 if (problemPayments.length === 0) {
 
@@ -38,6 +40,16 @@ var jobs ={
                 } else {
 
                     await processPayments(problemPayments)
+
+                }
+
+                if (problemAdditionalPayments.length === 0) {
+
+                    await abort('AS NO ELIGIBLE ADDITIONAL PAYMENTS EXIST')
+
+                } else {
+
+                    await processAdditionalPayments(problemAdditionalPayments)
 
                 }
 
@@ -112,8 +124,8 @@ var jobs ={
                 // No point searching the entire DB each time
                 return await Model.ApplicationPaymentDetails.findAll({
                     where:{
-                        payment_status:null,
-                        payment_complete:false,
+                        payment_status: null,
+                        payment_complete: false,
                         payment_reference:{
                             $ne: null
                         },
@@ -127,10 +139,48 @@ var jobs ={
             }
         }
 
+        async function searchEligibleAdditionalPayments() {
+            try {
+                // Only search the past 3 days of transactions
+                // No point searching the entire DB each time
+                return await Model.AdditionalPaymentDetails.findAll({
+                    where:{
+                        payment_status: 'created',
+                        payment_complete: false,
+                        payment_reference:{
+                            $ne: null
+                        },
+                        created_at: {
+                            $gte: moment().subtract(3, 'days').toDate()
+                        },
+                        submitted: 'draft'
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
         async function updatePaymentStatus(problemCase, status) {
             console.log('[%s][PAYMENT CLEANUP JOB] UPDATING STATUS FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
             try {
                 return await Model.ApplicationPaymentDetails.update({
+                    payment_complete: true,
+                    payment_status: (status === 'success') ? 'AUTHORISED' : status
+                }, {
+                    where:{
+                        payment_reference: problemCase.payment_reference
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        async function updateAdditionalPaymentStatus(problemCase, status) {
+            console.log('[%s][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+            try {
+                return await Model.AdditionalPaymentDetails.update({
                     payment_complete: true,
                     payment_status: (status === 'success') ? 'AUTHORISED' : status
                 }, {
@@ -164,11 +214,39 @@ var jobs ={
             }
         }
 
+        async function checkAdditionalPaymentAppStatus(appId) {
+            try {
+                return await Model.AdditionalPaymentDetails.find({
+                    where:{
+                        application_id:appId
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
         async function queueApplication(problemCase) {
             try {
                 console.log('[%s][PAYMENT CLEANUP JOB] QUEUING APPLICATION %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
                 return await Model.Application.update({
                     submitted: 'queued'
+                }, {
+                    where:{
+                        application_id: problemCase.application_id
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        async function queueAdditionalPayment(problemCase) {
+            try {
+                console.log('[%s][PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                return await Model.AdditionalPaymentDetails.update({
+                    submitted: 'queued',
+                    updated_at: moment().format('DD MMMM YYYY, h:mm:ss A')
                 }, {
                     where:{
                         application_id: problemCase.application_id
@@ -230,6 +308,42 @@ var jobs ={
                         }
                     } else {
                         await abort('AS APPLICATION ' + problemCase.application_id + ' - ' + problemCase.payment_reference + ' ISN\'T OLD ENOUGH TO PROCESS')
+                    }
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        async function processAdditionalPayments(problemAdditionalPayments) {
+            try {
+                for (let problemCase of problemAdditionalPayments) {
+                    let returnData = JSON.parse(await callGovPaymentsApi(problemCase))
+                    let status = returnData.state.status
+                    let paymentIsFinished = returnData.state.finished
+                    let createdDate = returnData.created_date
+                    let paymentIsOldEnough = moment(createdDate).isBefore(moment().subtract(3, 'hours').toDate());
+
+                    // Give the payment time to complete. We check if
+                    // it was created more than 3 hours ago
+                    // If so, do stuff
+                    if (paymentIsOldEnough) {
+                        if (paymentIsFinished && paymentIsFinished === true) {
+                            console.log('[%s][PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                            await updateAdditionalPaymentStatus(problemCase, status)
+
+                            if (status === 'success') {
+                                let appStatus = await checkAdditionalPaymentAppStatus(problemCase.application_id)
+
+                                // If the payment is still draft in the AdditionalPaymentDetails table
+                                // Update the status to queued
+                                if (appStatus && appStatus.submitted === 'draft') {
+                                    await queueAdditionalPayment(problemCase)
+                                }
+                            }
+                        }
+                    } else {
+                        await abort('AS ADDITIONAL PAYMENT ' + problemCase.application_id + ' - ' + problemCase.payment_reference + ' ISN\'T OLD ENOUGH TO PROCESS')
                     }
                 }
             } catch (error) {

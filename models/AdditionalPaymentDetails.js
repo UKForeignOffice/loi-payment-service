@@ -4,7 +4,7 @@ module.exports = function(sequelize, DataTypes) {
     return sequelize.define('AdditionalPaymentDetails', {
 
         application_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
             primaryKey: true
         },
@@ -35,6 +35,14 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: true
         },
         submitted: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        submission_attempts: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        casebook_response_code: {
             type: DataTypes.STRING,
             allowNull: true
         }
