@@ -144,6 +144,7 @@ module.exports = function(router, configGovPay, app) {
                 url: configGovPay.configs.ukPayUrl + payment_id,
             }, function (error, response, body) {
                 let returnData = JSON.parse(body)
+                let cost = returnData.amount / 100
                 let status = returnData.state.status
                 let finished = returnData.state.finished
                 let appReference = returnData.reference
@@ -170,6 +171,8 @@ module.exports = function(router, configGovPay, app) {
                             let AdditionalPaymentDetails = app.get('models').AdditionalPaymentDetails;
                             AdditionalPaymentDetails.update({
                                 payment_status: 'AUTHORISED',
+                                payment_reference: payment_id,
+                                payment_amount: cost,
                                 payment_complete: true,
                                 updated_at: moment().format('DD MMMM YYYY, h:mm:ss A'),
                                 submitted: 'queued'
