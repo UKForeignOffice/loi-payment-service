@@ -155,6 +155,16 @@ module.exports = function(router, configGovPay, app) {
                     console.log(payment_id + ' - payment is successful');
 
                     if (isSessionValid) {
+
+                        EmailService.additionalPaymentReceipt(
+                            sess.additionalPayments.email,
+                            createdDate,
+                            appReference,
+                            'Get Document Legalised – Additional Payments',
+                            sess.additionalPayments.cost,
+                            paymentMethod
+                        )
+
                         let casebookRef = sess.additionalPayments.casebookRef
                         if (casebookRef) {
                             let AdditionalPaymentDetails = app.get('models').AdditionalPaymentDetails;
