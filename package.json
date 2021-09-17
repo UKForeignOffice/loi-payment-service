@@ -21,9 +21,11 @@
     "moment": "^2.27.0",
     "morgan": "^1.10.0",
     "node-sass-middleware": "^0.11.0",
+    "node-schedule": "^2.0.0",
     "pg": "^6.4.2",
     "pg-hstore": "^2.3.3",
     "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "sequelize": "^3.17.1",
     "should": "^13.2.3",
     "supertest": "4.0.2",
@@ -31,7 +33,8 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^8.0.1"
+    "mocha": "^8.0.1",
+    "nock": "^13.1.1"
   },
   "scripts": {
     "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive test/ --exit",

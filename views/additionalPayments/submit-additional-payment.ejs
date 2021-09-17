@@ -8,19 +8,14 @@
     <div class="intro column-two-thirds">
 
         <p>You will be charged <b>£<%=cost%></b> as an additional payment for your legalisation application.</p>
-        <p>If not used within 28 days your online payment will expire and no funds will be debited from your card or account.</p>
+        <p>You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
 
         <!-- PAYMENT FORM -->
-        <form action="<%= smartPayUrl %>" method="post">
+        <form action="<%= next_url %>">
 
             <div class="form-group">
 
-                <% let ordered = params; %>
-                <% for(let key in ordered){ %>
-                    <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
-                <% } %>
-
-                <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
+                <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
 
             </div>
 

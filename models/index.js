@@ -22,7 +22,9 @@ var models = [
     'ApplicationPaymentDetails',
     'Application',
     'UserDetails',
-    'UserDocumentCount'
+    'UserDocumentCount',
+    'PaymentsCleanupJob',
+    'AdditionalPaymentDetails'
 ];
 models.forEach(function(model) {
     module.exports[model] = sequelize.import(__dirname + '/' + model);

@@ -27,51 +27,49 @@
 
                 <div class="intro column-two-thirds">
 
-                    <div class="govuk-box-highlight">
-                        <h1 style="font-weight: 700; font-size: 36px; margin: 0px;">Payment complete</h1>
-                        <p style="margin: 0px;">Your FCO payment reference number is</p>
-                        <h2 style="margin: 0px;"><%= params.pspReference %></h2>
-                    </div>
+                <div class="govuk-box-highlight">
+                    <h1 style="font-weight: 700; font-size: 36px; margin: 0px;">Payment complete</h1>
+                    <p style="margin: 0px;">Your FCDO payment reference number is</p>
+                    <h2 style="margin: 0px;"><%= appReference %></h2>
+                </div>
 
-                    <p>Thank you for your order from the Foreign & Commonwealth Office. We've taken pre-authorisation for the following:</p>
+                <p>Thank you for your order from the Foreign, Commonwealth & Development Office. We've taken payment for the following:</p>
 
 
-                    <table id="review-personal-details" class="printable-summary">
-                        <tbody>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Amount</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span>£<%= cost %></span></td>
-                        </tr>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Card type</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span><%= params.paymentMethod %></span></td>
-                        </tr>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Date</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span><%= params.merchantReference %></span></td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <table id="review-personal-details" class="printable-summary">
+                    <tbody>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Amount</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span>£<%= cost %></span></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Card type</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span><%= paymentMethod %></span></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Date</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span><%= createdDate %></span></td>
+                    </tr>
+                    </tbody>
+                </table>
 
-                    <br />
+                <br />
 
-                    <p>We've emailed a confirmation to <b><%= email %></b>. If you don't receive the email please check your spam folder.</p>
+                <p>We've emailed a confirmation to <b><%= email %></b>. If you don't receive the email please check your spam folder.</p>
 
-                    <p><b>What to do next</b></p>
+                <p><b>What to do next</b></p>
 
-                    <p>
-                        Email the Legalisation Office at <a class="govuk-link" href="mailto:legalisationpayments@fcdo.gov.uk">legalisationpayments@fcdo.gov.uk</a> with the following information:
-                    </p>
-                    <ul style="padding: 0 20px;">
-                        <li>
-                            your FCO payment reference number <%= params.pspReference %>
-                        </li>
-                        <li>
-                            your existing application reference - this will start with the letter 'A' and be followed by a combination of letters and numbers eg A-C-16-1212-8274-064C
-                        </li>
-                    </ul>
+                <p>
+                    Email the Legalisation Office at <a class="govuk-link" href="mailto:legalisationpayments@fcdo.gov.uk">legalisationpayments@fcdo.gov.uk</a> with the following information:
+                </p>
+                <ul style="padding: 0 20px;">
+                    <li>
+                        your FCDO payment reference number <b><%= appReference %></b>
+                    </li>
 
-                    <p><a class="govuk-link" href="<%= startNewApplicationUrl %>">Make another payment</a></p>
+                </ul>
+
+                <p><a class="govuk-link" href="<%= startNewApplicationUrl %>">Make another payment</a></p>
 
                 </div>
 
@@ -89,24 +87,15 @@
 
                 <div class="intro column-two-thirds">
 
-                    <p>We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card, or use a different card.</p>
+                <p>We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card, or use a different card.</p>
+                <p>Please try again.</p>
 
-                    <!-- PAYMENT FORM -->
-                    <form action="<%= smartPayUrl %>" method="post">
+                <!-- PAYMENT FORM -->
+                <form action="<%= next_url %>">
 
-                        <div class="form-group">
+                        <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
 
-                            <% var ordered =  params; %>
-                            <% for(var key in ordered){ %>
-                                <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
-                            <% } %>
-
-                            <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
-
-                        </div>
-
-                    </form>
-
+                </form>
                 </div>
             </div>
 

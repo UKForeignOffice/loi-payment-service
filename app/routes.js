@@ -1,9 +1,9 @@
 
-var SmartPay = require('./../lib/smartpay-functions');
+var GovPay = require('../lib/helper');
 var request = require('request');
 var EmailService =require('./../lib/EmailService')
 
-module.exports = function(router, configSmartPay, app) {
+module.exports = function(router, configGovPay, app) {
 
     // =====================================
     // HEALTHCHECK
@@ -16,14 +16,28 @@ module.exports = function(router, configSmartPay, app) {
         });
 
     // =====================================
-    // ERROR
+    // ERROR - PAYMENTS
     // =====================================
     router
 
         //error handling
-        .get('/error', function(req,res) {
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
-            return res.render('error', {
+        .get('/payment-error', function(req,res) {
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+            return res.render('payment-error', {
+                errorMessage:'',
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        });
+
+    // =====================================
+    // ERROR - ADDITIONAL PAYMENTS
+    // =====================================
+    router
+
+        //error handling
+        .get('/additional-payment-error', function(req,res) {
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
+            return res.render('additional-payment-error', {
                 errorMessage:'',
                 startNewApplicationUrl:startNewApplicationUrl
             })
@@ -41,27 +55,67 @@ module.exports = function(router, configSmartPay, app) {
 
     function submitAdditionalPayment(req,res){
 
-        let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+        let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
 
         try {
-            let sess = req.session;
-            // build smart pay required data
-            let formFields = {};
-            formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
-            formFields = SmartPay.addDateFields(formFields);
-            formFields = SmartPay.compressAndEncodeOrderData(formFields);
-            let merchantSignature = SmartPay.additionalPaymentsCalculateMerchantSignature(formFields);
-            let requestParameters = SmartPay.additionalPaymentsBuildParameters(formFields, merchantSignature);
+            let moment = require('moment');
+            let sess = req.session
+            let casebookRef = sess.additionalPayments.casebookRef
 
-            res.render('additionalPayments/submit-additional-payment', {
-                cost:sess.additionalPayments.cost,
-                params:requestParameters,
-                smartPayUrl: configSmartPay.configs.smartPayUrl,
-                startNewApplicationUrl:startNewApplicationUrl
+            // build required data
+            let formFields = {};
+            formFields = GovPay.additionalPaymentsAddBaseData(formFields, casebookRef, sess.additionalPayments.cost, sess.additionalPayments.email);
+
+            request.post({
+                headers: {
+                    "content-type": "application/json; charset=utf-8",
+                    "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                },
+                url: configGovPay.configs.ukPayUrl,
+                body: JSON.stringify(formFields)
+            }, function (error, response) {
+                if (error) {
+                    console.log(JSON.stringify(error));
+                } else {
+                    let returnData = JSON.parse(response.body)
+                    let next_url = returnData._links.next_url.href
+                    sess.additionalPayments.paymentReference = returnData.payment_id
+
+                    if (casebookRef) {
+                        let AdditionalPaymentDetails = app.get('models').AdditionalPaymentDetails;
+                        AdditionalPaymentDetails.find({
+                            where: {
+                                application_id: returnData.reference
+                            }
+                        }).then( function(additionalPayment) {
+                            if (!additionalPayment) {
+                                AdditionalPaymentDetails.create({
+                                    application_id: returnData.reference,
+                                    payment_reference: returnData.payment_id,
+                                    payment_amount: returnData.amount / 100,
+                                    payment_status: returnData.state.status,
+                                    payment_complete: false,
+                                    created_at: moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A'),
+                                    submitted: 'draft'
+                                })
+                            }
+                        })
+                    }
+
+                    res.render('additionalPayments/submit-additional-payment', {
+                        cost:sess.additionalPayments.cost,
+                        next_url: next_url,
+                        startNewApplicationUrl:startNewApplicationUrl
+                    })
+
+                }
+
             })
+
+
         } catch (err) {
             console.log(err);
-            return res.render('error', {
+            return res.render('additional-payment-error', {
                 errorMessage:err,
                 startNewApplicationUrl:startNewApplicationUrl
             })
@@ -69,7 +123,7 @@ module.exports = function(router, configSmartPay, app) {
     }
 
     router
-        // additional payment confirmation on return from Barclaycard
+        // additional payment confirmation on return from Gov Pay
         .get('/additional-payment-confirmation', function(req, res) {
             processAdditionalPayment(req,res)
         });
@@ -77,58 +131,111 @@ module.exports = function(router, configSmartPay, app) {
     function processAdditionalPayment(req,res){
 
         try {
-            let moment = require('moment');
-
-            let sess = req.session;
+            let moment = require('moment')
+            let sess = req.session
             let isSessionValid = (typeof sess.additionalPayments.cost !== 'undefined');
+            let payment_id = sess.additionalPayments.paymentReference
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
 
-            // decode query string parameters to verify signature (HMAC)
-            let returnDataIsValid = SmartPay.decodeReturnedMerchantSignature(req.query);
-            let paymentSuccessful = (req.query.authResult === "AUTHORISED");
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
-            req.query.paymentMethod = SmartPay.lookupPaymentMethod(req.query.paymentMethod);
-            req.query.merchantReference = moment.unix(Number(req.query.merchantReference)).format('DD MMMM YYYY, h:mm:ss A')
+            request.get({
+                headers: {
+                    "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                },
+                url: configGovPay.configs.ukPayUrl + payment_id,
+            }, function (error, response, body) {
+                let returnData = JSON.parse(body)
+                let cost = returnData.amount / 100
+                let status = returnData.state.status
+                let finished = returnData.state.finished
+                let appReference = returnData.reference
+                let paymentMethod = returnData.card_details.card_brand
+                let createdDate = moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A')
 
-            if (paymentSuccessful && returnDataIsValid) {
-                EmailService.additionalPaymentReceipt(
-                    sess.additionalPayments.email,
-                    moment().format("DD/MM/YYYY"),
-                    req.query.pspReference,
-                    'Get Document Legalised – Additional Payments',
-                    sess.additionalPayments.cost,
-                    req.query.paymentMethod
-                    )
-                res.render('additionalPayments/additional-payment-confirmation', {
-                    req:req,
-                    isSessionValid:isSessionValid,
-                    paymentSuccessful:paymentSuccessful,
-                    params:req.query,
-                    cost:sess.additionalPayments.cost,
-                    email:sess.additionalPayments.email,
-                    startNewApplicationUrl:startNewApplicationUrl
-                });
-            } else {
+                if (status && status === 'success' && finished && finished === true){
 
-                // build smart pay required data....again
-                let formFields = {};
-                formFields = SmartPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.cost, sess.additionalPayments.email);
-                formFields = SmartPay.addDateFields(formFields);
-                formFields = SmartPay.compressAndEncodeOrderData(formFields);
-                let merchantSignature = SmartPay.additionalPaymentsCalculateMerchantSignature(formFields);
-                let requestParameters = SmartPay.additionalPaymentsBuildParameters(formFields, merchantSignature);
+                    console.log(payment_id + ' - payment is successful');
 
-                res.render('additionalPayments/additional-payment-confirmation', {
-                    isSessionValid:isSessionValid,
-                    paymentSuccessful:false,
-                    cost:sess.cost,
-                    params:requestParameters,
-                    smartPayUrl: configSmartPay.configs.smartPayUrl
-                });
-            }
-        } catch (err) {
-            let startNewApplicationUrl = configSmartPay.configs.startNewApplicationUrl + '/additional-payments';
+                    if (isSessionValid) {
+
+                        EmailService.additionalPaymentReceipt(
+                            sess.additionalPayments.email,
+                            createdDate,
+                            appReference,
+                            'Get Document Legalised – Additional Payments',
+                            sess.additionalPayments.cost,
+                            paymentMethod
+                        )
+
+                        let casebookRef = sess.additionalPayments.casebookRef
+                        if (casebookRef) {
+                            let AdditionalPaymentDetails = app.get('models').AdditionalPaymentDetails;
+                            AdditionalPaymentDetails.update({
+                                payment_status: 'AUTHORISED',
+                                payment_reference: payment_id,
+                                payment_amount: cost,
+                                payment_complete: true,
+                                updated_at: moment().format('DD MMMM YYYY, h:mm:ss A'),
+                                submitted: 'queued'
+                            }, {
+                                where:{
+                                    application_id: returnData.reference
+                                }
+                            })
+                        }
+                    }
+
+                    res.render('additionalPayments/additional-payment-confirmation', {
+                        req:req,
+                        isSessionValid:isSessionValid,
+                        paymentSuccessful:true,
+                        appReference:appReference,
+                        createdDate:createdDate,
+                        paymentMethod:paymentMethod,
+                        cost:sess.additionalPayments.cost,
+                        email:sess.additionalPayments.email,
+                        startNewApplicationUrl:startNewApplicationUrl
+                    });
+
+                } else {
+
+                    console.log(payment_id + ' - payment is NOT successful');
+                    let formFields = {};
+                    formFields = GovPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.casebookRef, sess.additionalPayments.cost, sess.additionalPayments.email);
+
+                    request.post({
+                        headers: {
+                            "content-type": "application/json; charset=utf-8",
+                            "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                        },
+                        url: configGovPay.configs.ukPayUrl,
+                        body: JSON.stringify(formFields)
+                    }, function (error, response) {
+                        if (error) {
+                            console.log(JSON.stringify(error));
+                        } else {
+                            var returnData = JSON.parse(response.body)
+                            var next_url = returnData._links.next_url.href
+                            sess.additionalPayments.paymentReference = returnData.payment_id
+
+                            res.render('additionalPayments/additional-payment-confirmation', {
+                                isSessionValid:isSessionValid,
+                                paymentSuccessful:false,
+                                cost:sess.cost,
+                                next_url: next_url
+                            });
+
+                        }
+
+                    })
+
+                }
+
+        })
+
+        }catch (err) {
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
             console.log(err);
-            return res.render('error', {
+            return res.render('additional-payment-error', {
                 errorMessage:err,
                 startNewApplicationUrl:startNewApplicationUrl
             })
@@ -141,7 +248,7 @@ module.exports = function(router, configSmartPay, app) {
     // SEND PAYMENT
     // =====================================
     router
-        // redirect to Barclaycard to process payment
+        // redirect to Gov Pay to process payment
         .get('/submit-payment', function(req,res){submitPayment(req,res);})
         .post('/submit-payment', function(req,res){submitPayment(req,res);});
 
@@ -150,17 +257,21 @@ module.exports = function(router, configSmartPay, app) {
 
         // get the application ID from the request (redirected from application service)
         var appid = req.session.appId;
-        if(req.session.appId && req.session.appId !==0 ){
+        if( req.session.appId && req.session.appId !==0 ){
             //Do nothing
         }
         else{
 
             res.clearCookie('LoggedIn');
             req.session.appId = false;
-            return res.redirect('/session-expired?LoggedIn=false');
+            var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+            return res.render('payment-error', {
+                errorMessage:'Missing user session',
+                startNewApplicationUrl:startNewApplicationUrl
+            })
         }
-        var loggedIn = SmartPay.loggedInStatus(req);
-        var usersEmail = SmartPay.loggedInUserEmail(req);
+        var loggedIn = GovPay.loggedInStatus(req);
+        var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
 
         // get the relevant database models
         var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
@@ -169,7 +280,7 @@ module.exports = function(router, configSmartPay, app) {
         var UserDocumentCount = app.get('models').UserDocumentCount;
 
         // lookup required data from database
-        var formFieldsTemp = Application.findOne({ where: {application_id: appid}}).then(function(application){
+        Application.findOne({ where: {application_id: appid}}).then(function(application){
 
             ApplicationPaymentDetails.findOne({ where: {application_id: appid }}).then(function(applicationDetail){
 
@@ -177,42 +288,56 @@ module.exports = function(router, configSmartPay, app) {
 
                     UserDocumentCount.findOne({ where: {application_id: appid}}).then(function(userDocumentCount) {
 
-                        // array to hold data for encoding and sending to SmartPay API
+                        // array to hold data for sending to Payment API
                         var formFields = {};
 
-                        // add base application data
-                        formFields = SmartPay.addApplicationData(appid, formFields, applicationDetail, application, userDocumentCount, loggedIn);
+                        formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
 
-                        // add calculated date fields for session expiry and shipping date
-                        formFields = SmartPay.addDateFields(formFields);
+                        request.post({
+                            headers: {
+                                "content-type": "application/json; charset=utf-8",
+                                "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                            },
+                            url: configGovPay.configs.ukPayUrl,
+                            body: JSON.stringify(formFields)
+                        }, function (error, response) {
+                            if (error) {
+                                console.log(JSON.stringify(error));
+                            } else {
+                                var returnData = JSON.parse(response.body)
+                                var next_url = returnData._links.next_url.href
 
-                        // add required data for saving card details
-                        formFields = SmartPay.addOneClickFields(appid, formFields, userDetails, applicationDetail);
 
-                        // compress and encode order data
-                        formFields = SmartPay.compressAndEncodeOrderData(formFields);
+                                // update database (add payment reference)
+                                ApplicationPaymentDetails.update({
+                                    payment_reference : returnData.payment_id
+                                },{
+                                    where: {
+                                        application_id: appid
+                                    }
+                                }).then( function() {
+                                    //redirect to next form page with parameters
+                                    res.render('submit-payment.ejs', {
+                                        applicationId: appid,
+                                        applicationType: application.serviceType,
+                                        loggedIn: loggedIn,
+                                        usersEmail: usersEmail,
+                                        next_url: next_url,
+                                        user_data: {
+                                            loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                            user: req.session.user,
+                                            account: req.session.account,
+                                            url: '/api/user/'
+                                        }
+                                    });
 
-                        //calculate merchant signature
-                        var merchantSig = SmartPay.calculateMerchantSignature(formFields);
+                                }).catch(function (error) {
+                                    console.log(appId + ' - ' + error);
+                                });
 
-                        //create array of parameters
-                        var requestParameters = SmartPay.buildParameters(formFields, merchantSig);
-
-                        //redirect to next form page with parameters
-                        res.render('submit-payment.ejs', {
-                            params: requestParameters,
-                            applicationId: appid,
-                            applicationType: application.serviceType,
-                            loggedIn: loggedIn,
-                            usersEmail: usersEmail,
-                            smartPayUrl: configSmartPay.configs.smartPayUrl,
-                            user_data: {
-                                loggedIn: req.session && req.session.passport && req.session.passport.user,
-                                user: req.session.user,
-                                account: req.session.account,
-                                url: '/api/user/'
                             }
-                        });
+
+                        })
 
                     });
                 });
@@ -229,128 +354,151 @@ module.exports = function(router, configSmartPay, app) {
         // prepare confirmation page
         .get('/payment-confirmation', function(req, res) {
 
+            // get appId from the session
+            // else send user to error page
+            var appId = req.session.appId;
+            if (req.session.appId && req.session.appId !==0) {
+                //Do nothing
+            }
+            else{
+                res.clearCookie('LoggedIn');
+                req.session.appId = false;
+                var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+                return res.render('payment-error', {
+                    errorMessage:'Missing user session',
+                    startNewApplicationUrl:startNewApplicationUrl
+                })
+            }
+
             // get the relevant database models
             var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
+            var Application = app.get('models').Application;
+            var UserDetails = app.get('models').UserDetails;
+            var UserDocumentCount = app.get('models').UserDocumentCount;
 
-            // application ID will be in the database (use merchantReference to lookup)
-            var appId = req.query.merchantReturnData;
-            var loggedIn = SmartPay.loggedInStatus(req);
-            var usersEmail = SmartPay.loggedInUserEmail(req);
-
-            // decode query string parameters to verify signature (HMAC)
-            var returnDataIsValid = SmartPay.decodeReturnedMerchantSignature(req.query);
-
-            // update database (add payment reference, mark payment as authorised)
-            ApplicationPaymentDetails.update({
-                payment_complete  : true,
-                payment_reference : req.query.pspReference,
-                payment_status    : req.query.authResult
-            },{
-                where: {
-                    application_id: appId
-                }
-            }).then( function() {
-
-                // check if payment was successful
-                var paymentSuccessful = (req.query.authResult == "AUTHORISED");
-
-                // check the payment was successful and that the data has not been tampered with (validated against HMAC)
-                if (paymentSuccessful && returnDataIsValid) {
-
-                    console.log(appId + ' - payment is successful');
-
-                    var originalQueryString = req.query;
-
-                    function buildQueryString (done) {
-                        console.log(appId + ' - constructing query string for application service');
-                        var queryString = '?' +
-                            Object.keys(originalQueryString).map(function (key) {
-                                return encodeURIComponent(key) + '=' +
-                                    encodeURIComponent(originalQueryString[key]);
-                            }).join('&');
-                        done(queryString);
+            // check the payment id from the database
+            ApplicationPaymentDetails.findOne({
+                    where: {
+                        application_id: appId
                     }
-
-                    // rebuild query string from JSON to pass to app service URL then
-                    // redirect to application confirmation page
-                    buildQueryString(function (queryString) {
-                        console.log(appId + ' - redirecting to application service');
-                        res.redirect(configSmartPay.configs.applicationServiceReturnUrl + queryString);
-                    });
-
                 }
-                else {
+            ).then(function (results) {
+                var payment_id = results.payment_reference
 
-                    console.log(appId + ' - payment is NOT successful');
+                request.get({
+                    headers: {
+                        "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                    },
+                    url: configGovPay.configs.ukPayUrl + payment_id,
+                }, function (error, response, body) {
+                    var returnData = JSON.parse(body)
+                    var status = returnData.state.status
+                    var finished = returnData.state.finished
+                    var appReference = returnData.reference
 
-                    // build data to pass to failed payment page (for resubmission)
+                    if (status && status === 'success' && finished && finished === true){
 
-                    // get the application ID from the request (redirected from application service)
-                    var appid = req.query.merchantReturnData;
-                    var loggedIn = SmartPay.loggedInStatus(req);
-                    var usersEmail = SmartPay.loggedInUserEmail(req);
-                    var isSessionValid = SmartPay.isSessionValid(req);
-
-                    // get the relevant database models
-                    var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
-                    var Application = app.get('models').Application;
-                    var UserDetails = app.get('models').UserDetails;
-                    var UserDocumentCount = app.get('models').UserDocumentCount;
-
-                    // lookup required data from database
-                    var formFieldsTemp = Application.findOne({ where: {application_id: appid}}).then(function(application) {
-
-                        ApplicationPaymentDetails.findOne({where: {application_id: appid}}).then(function (applicationDetail) {
-
-                            UserDetails.findOne({where: {application_id: appid}}).then(function (userDetails) {
-
-                                UserDocumentCount.findOne({where: {application_id: appid}}).then(function (userDocumentCount) {
-
-                                    // array to hold data for encoding and sending to SmartPay API
-                                    var formFields = {};
-
-                                    // add base application data
-                                    formFields = SmartPay.addApplicationData(appid, formFields, applicationDetail, application, userDocumentCount, loggedIn);
-
-                                    // add calculated date fields for session expiry and shipping date
-                                    formFields = SmartPay.addDateFields(formFields);
-
-                                    // add required data for saving card details
-                                    formFields = SmartPay.addOneClickFields(appid, formFields, userDetails, applicationDetail);
-
-                                    // compress and encode order data
-                                    formFields = SmartPay.compressAndEncodeOrderData(formFields);
-
-                                    //calculate merchant signature
-                                    var merchantSig = SmartPay.calculateMerchantSignature(formFields);
-
-                                    //create array of parameters
-                                    var requestParameters = SmartPay.buildParameters(formFields, merchantSig);
-
-                                    console.log(appId + ' - rendering failed payment page');
-                                    // display failed payment page (with link to start a new payment)
-                                    res.render('payment-confirmation.ejs',
-                                        {
-                                            params: requestParameters,
-                                            applicationId: appid,
-                                            applicationType: application.serviceType,
-                                            smartPayUrl: configSmartPay.configs.smartPayUrl,
-                                            startNewApplicationUrl: configSmartPay.configs.startNewApplicationUrl,
-                                            loggedIn: loggedIn,
-                                            isSessionValid: isSessionValid,
-                                            usersEmail: usersEmail,
-                                            user_data: {
-                                                loggedIn: req.session && req.session.passport && req.session.passport.user,
-                                                user: req.session.user,
-                                                account: req.session.account,
-                                                url: '/api/user/'
-                                            }
-                                        });
-                                });
-                            });
+                        ApplicationPaymentDetails.update({
+                            payment_complete: true,
+                            payment_status: 'AUTHORISED'
+                        }, {
+                            where: {
+                                application_id: appId
+                            }
+                        }).then(function() {
+                            console.log(appId + ' - payment is successful');
+                            res.redirect(configGovPay.configs.applicationServiceReturnUrl + '?id=' + appId + '&appReference=' + appReference);
+                        }).catch(function (error) {
+                            console.log(appId + ' - ' + error);
                         });
-                    });
-                }
+
+                    } else {
+
+                        console.log(appId + ' - payment is NOT successful');
+                        var loggedIn = GovPay.loggedInStatus(req);
+                        var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
+                        var isSessionValid = GovPay.isSessionValid(req);
+
+                                // lookup required data from database
+                                var formFieldsTemp = Application.findOne({ where: {application_id: appId}}).then(function(application) {
+
+                                    ApplicationPaymentDetails.findOne({where: {application_id: appId}}).then(function (applicationDetail) {
+
+                                        UserDetails.findOne({where: {application_id: appId}}).then(function (userDetails) {
+
+                                            UserDocumentCount.findOne({where: {application_id: appId}}).then(function (userDocumentCount) {
+
+                                                // array to hold data for sending to Payment API
+                                                var formFields = {};
+
+                                                formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
+
+                                                request.post({
+                                                    headers: {
+                                                        "content-type": "application/json; charset=utf-8",
+                                                        "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                                                    },
+                                                    url: configGovPay.configs.ukPayUrl,
+                                                    body: JSON.stringify(formFields)
+                                                }, function (error, response) {
+                                                    if (error) {
+                                                        console.log(JSON.stringify(error));
+                                                    } else {
+                                                        var returnData = JSON.parse(response.body)
+                                                        var next_url = returnData._links.next_url.href
+
+
+                                                        // update database (add payment reference)
+                                                        ApplicationPaymentDetails.update({
+                                                            payment_reference : returnData.payment_id
+                                                        },{
+                                                            where: {
+                                                                application_id: appId
+                                                            }
+                                                        }).then( function() {
+                                                            console.log(appId + ' - rendering failed payment page');
+                                                            // display failed payment page (with link to start a new payment)
+
+                                                            res.render('payment-confirmation.ejs',
+                                                                {
+                                                                    applicationId: appId,
+                                                                    applicationType: application.serviceType,
+                                                                    next_url: next_url,
+                                                                    startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
+                                                                    loggedIn: loggedIn,
+                                                                    isSessionValid: isSessionValid,
+                                                                    usersEmail: usersEmail,
+                                                                    user_data: {
+                                                                        loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                                                        user: req.session.user,
+                                                                        account: req.session.account,
+                                                                        url: '/api/user/'
+                                                                    }
+                                                                });
+
+                                                        }).catch(function (error) {
+                                                            console.log(appId + ' - ' + error);
+                                                        });
+
+                                                    }
+
+                                                })
+
+                                            }).catch(function (error) {
+                                                console.log(appId + ' - ' + error);
+                                            });
+                                        }).catch(function (error) {
+                                            console.log(appId + ' - ' + error);
+                                        });
+                                    }).catch(function (error) {
+                                        console.log(appId + ' - ' + error);
+                                    });
+                                }).catch(function (error) {
+                                    console.log(appId + ' - ' + error);
+                                });
+
+                    }
+                });
 
             }).catch(function (error) {
                 console.log(appId + ' - ' + error);

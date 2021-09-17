@@ -45,26 +45,15 @@
 
     <div class="intro column-two-thirds">
 
-        <p>You'll now be taken to Barclaycard SmartPay, where you can pay with Maestro, MasterCard or Visa.</p>
-
-        <% if (loggedIn == true) { %>
-
-        <p>When entering a new card tick the 'Remember these details' box if you wish to save it. This will help you make applications more quickly in future.</p>
-        <p>If you've previously saved a card you'll be able to use it to pay, or enter new card details.</p>
-
-        <% } %>
+        <p>You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
+        <p>Once you’ve provided your payment information your application will be submitted.</p>
 
         <!-- PAYMENT FORM -->
-        <form action="<%= smartPayUrl %>" method="post">
+        <form action="<%= next_url %>">
 
             <div class="form-group">
 
-                <% var ordered =  params; %>
-                <% for(var key in ordered){ %>
-                <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
-                <% } %>
-
-                <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
+                <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
 
             </div>
 
