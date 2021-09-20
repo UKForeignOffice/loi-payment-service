@@ -54,19 +54,16 @@
 
             <p>We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card to pay for your documents, or use a different card.</p>
 
+            <p>Please try again.</p>
+
             <!-- PAYMENT FORM -->
-            <form action="<%= smartPayUrl %>" method="post">
+            <form action="<%= next_url %>">
 
-              <div class="form-group">
+                <div class="form-group">
 
-                <% var ordered =  params; %>
-                <% for(var key in ordered){ %>
-                <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
-                <% } %>
+                    <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
 
-                <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
-
-              </div>
+                </div>
 
             </form>
 

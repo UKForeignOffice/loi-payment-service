@@ -1,0 +1,22 @@
+
+<% include partials/header %>
+
+<div class="container">
+
+    <div class="intro">
+        <h1 class="heading-xlarge">Sorry, there is a problem with the service</h1>
+        <p>Error: <%= errorMessage %></p>
+        <br />
+        <p>If you have attempted to pay and have received a payment confirmation via email, please contact the Legalisation Office to discuss your application<br /><br />
+            legalisation@fcdo.gov.uk<br />
+            Telephone: 03700 00 22 44<br />
+            Monday to Friday, 9am to 5pm</p>
+        <br />
+        <p>Otherwise, please try again later</p>
+        <br />
+        <a href="<%= startNewApplicationUrl %>" id="start" role="button" class="govuk-button" data-module="govuk-button">Start again</a>
+    </div>
+
+</div>
+
+<% include partials/footer %>

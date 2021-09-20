@@ -10,7 +10,7 @@ var morgan = require('morgan');
 var cookieParser = require('cookie-parser');
 
 var common = require('./config/common.js');
-var configSmartPay = common.config();
+var configGovPay = common.config();
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 
@@ -23,20 +23,20 @@ require('./config/logs');
 app.use(bodyParser()); //get information from HTML forms
 app.use(cookieParser());
 var store = new RedisStore({
-        host: configSmartPay.sessionSettings.host,
-        port: configSmartPay.sessionSettings.port,
-        prefix: configSmartPay.sessionSettings.prefix,
-        pass: configSmartPay.sessionSettings.password,
-         tls: process.env.NODE_ENV === 'development' ? undefined : {},
-    });
+        host: configGovPay.sessionSettings.host,
+        port: configGovPay.sessionSettings.port,
+        prefix: configGovPay.sessionSettings.prefix,
+        pass: configGovPay.sessionSettings.password,
+        tls: {}
+});
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
-        piwikID: configSmartPay.live_variables.piwikId,
-        feedbackURL:configSmartPay.live_variables.Public ? configSmartPay.live_variables.feedbackURL : "http://www.smartsurvey.co.uk/s/2264M/",
-        service_public: configSmartPay.live_variables.Public,
-        start_url: configSmartPay.live_variables.startPageURL,
-        govuk_url: configSmartPay.live_variables.GOVUKURL
+        piwikID: configGovPay.live_variables.piwikId,
+        feedbackURL:configGovPay.live_variables.Public ? configGovPay.live_variables.feedbackURL : "http://www.smartsurvey.co.uk/s/2264M/",
+        service_public: configGovPay.live_variables.Public,
+        start_url: configGovPay.live_variables.startPageURL,
+        govuk_url: configGovPay.live_variables.GOVUKURL
     };
     next();
 });
@@ -47,14 +47,14 @@ app.use(function(req, res, next) {
     return next();
 });
 app.use(session({
-    secret: configSmartPay.sessionSettings.secret,
-    key: configSmartPay.sessionSettings.key,
+    secret: configGovPay.sessionSettings.secret,
+    key: configGovPay.sessionSettings.key,
     store: store,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        domain: configSmartPay.sessionSettings.cookie_domain ,//environmentVariables.cookieDomain,
-        maxAge: configSmartPay.sessionSettings.cookieMaxAge  //30 minutes
+        domain: configGovPay.sessionSettings.cookie_domain ,//environmentVariables.cookieDomain,
+        maxAge: configGovPay.sessionSettings.cookieMaxAge  //30 minutes
     }
 }));
 app.use(morgan('dev')); //log every request to the console
@@ -94,7 +94,7 @@ app.use("/api/payment/images",express.static(__dirname + "/images")); //static d
 // ROUTES
 // =====================================
 var router = express.Router(); //get instance of Express router
-require('./app/routes.js')(router, configSmartPay, app); //load routes passing in app and configuration
+require('./app/routes.js')(router, configGovPay, app); //load routes passing in app and configuration
 app.use('/api/payment', router); //prefix all requests with 'api/payment'
 
 //Pull in images from GOVUK packages
@@ -116,8 +116,22 @@ fs.readdir('images/govuk_frontend_toolkit', function(err, items) {
 });
 
 // =====================================
+// JOB SCHEDULER
+// =====================================
+//Schedule and run account expiry job every day
+var schedule = require('node-schedule');
+var jobs = require('./config/jobs.js');
+
+// As there are 2 instances running, we need a random time, or the job will be executed on both instances
+var randomSecond = Math.floor(Math.random() * 60);
+var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
+var jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
+var paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
+
+// =====================================
 // LAUNCH
 // =====================================
 app.listen(port);
 console.log('is-payment-service running on port: ' + port);
+console.log('payment cleanup job will run every %s hours at %sm %ss past the hour', configGovPay.configs.jobScheduleHourlyInterval, randomMin, randomSecond);
 module.exports.getApp = app;

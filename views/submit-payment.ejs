@@ -23,30 +23,37 @@
             <%}%>
         <% } %>
     </div>
+
+    <div class="column-two-thirds">
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title" style="font-size: 19px">
+                Important
+            </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading" style="font-size: 24px">
+                This service will change to a new payment provider during September 2021. 
+                If you make a payment before the change, but you do not send your documents by 17 September, 
+                you may be contacted about your payment.
+            </p>
+            </div>
+        </div>
+    </div>
+
     <h1 class="heading-xlarge">Pay for your application</h1>
 
     <div class="intro column-two-thirds">
 
-        <p>You'll now be taken to Barclaycard SmartPay, where you can pay with Maestro, MasterCard or Visa.</p>
-
-        <% if (loggedIn == true) { %>
-
-        <p>When entering a new card tick the 'Remember these details' box if you wish to save it. This will help you make applications more quickly in future.</p>
-        <p>If you've previously saved a card you'll be able to use it to pay, or enter new card details.</p>
-
-        <% } %>
+        <p>You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
+        <p>Once you’ve provided your payment information your application will be submitted.</p>
 
         <!-- PAYMENT FORM -->
-        <form action="<%= smartPayUrl %>" method="post">
+        <form action="<%= next_url %>">
 
             <div class="form-group">
 
-                <% var ordered =  params; %>
-                <% for(var key in ordered){ %>
-                <input type="hidden" name="<%= key %>" value="<%= ordered[key] %>" />
-                <% } %>
-
-                <button type="submit" class="govuk-button" data-module="govuk-button">Pay on Barclaycard SmartPay</button>
+                <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
 
             </div>
 

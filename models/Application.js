@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
         case_reference: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        submitted: {
+            type: DataTypes.STRING(),
+            allowNull: true
         }
     });
 };
