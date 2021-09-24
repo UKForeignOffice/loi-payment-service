@@ -50,6 +50,10 @@
                         <td class="summary-table-cell-label summary-label">Date</td>
                         <td id="summary-name" class="summary-table-cell-content"><span><%= createdDate %></span></td>
                     </tr>
+                    <tr>
+                        <td class="summary-table-cell-label summary-label">Payment Reference</td>
+                        <td id="summary-name" class="summary-table-cell-content"><span><%= appReference %></span></td>
+                    </tr>
                     </tbody>
                 </table>
 
@@ -60,14 +64,8 @@
                 <p><b>What to do next</b></p>
 
                 <p>
-                    Email the Legalisation Office at <a class="govuk-link" href="mailto:legalisationpayments@fcdo.gov.uk">legalisationpayments@fcdo.gov.uk</a> with the following information:
+                    Your payment has been successfully submitted and the Legalisation Office has been notified. No further action is required.
                 </p>
-                <ul style="padding: 0 20px;">
-                    <li>
-                        your FCDO payment reference number <b><%= appReference %></b>
-                    </li>
-
-                </ul>
 
                 <p><a class="govuk-link" href="<%= startNewApplicationUrl %>">Make another payment</a></p>
 
