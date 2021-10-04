@@ -27,7 +27,7 @@ var store = new RedisStore({
   port: configGovPay.sessionSettings.port,
   prefix: configGovPay.sessionSettings.prefix,
   pass: configGovPay.sessionSettings.password,
-  tls: process.env.NODE_ENV === 'development' ? undefined : {},
+  tls: process.env.NODE_ENV === 'development' ? undefined : {}
 });
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
