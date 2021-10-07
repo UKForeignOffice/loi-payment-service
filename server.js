@@ -23,11 +23,11 @@ require('./config/logs');
 app.use(bodyParser()); //get information from HTML forms
 app.use(cookieParser());
 var store = new RedisStore({
-        host: configGovPay.sessionSettings.host,
-        port: configGovPay.sessionSettings.port,
-        prefix: configGovPay.sessionSettings.prefix,
-        pass: configGovPay.sessionSettings.password,
-        tls: {}
+  host: configGovPay.sessionSettings.host,
+  port: configGovPay.sessionSettings.port,
+  prefix: configGovPay.sessionSettings.prefix,
+  pass: configGovPay.sessionSettings.password,
+  tls: process.env.NODE_ENV === 'development' ? undefined : {}
 });
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
@@ -135,7 +135,3 @@ app.listen(port);
 console.log('is-payment-service running on port: ' + port);
 console.log('payment cleanup job will run every %s hours at %sm %ss past the hour', configGovPay.configs.jobScheduleHourlyInterval, randomMin, randomSecond);
 module.exports.getApp = app;
-
-
-
-
