@@ -143,6 +143,14 @@ module.exports = function(router, configGovPay, app) {
                 },
                 url: configGovPay.configs.ukPayUrl + payment_id,
             }, function (error, response, body) {
+                if (error) {
+                    let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
+                    console.log(error);
+                    return res.render('additional-payment-error', {
+                        errorMessage:'Payment system error',
+                        startNewApplicationUrl:startNewApplicationUrl
+                    })
+                }
                 let returnData = JSON.parse(body)
                 let cost = returnData.amount / 100
                 let status = returnData.state.status
@@ -391,6 +399,14 @@ module.exports = function(router, configGovPay, app) {
                     },
                     url: configGovPay.configs.ukPayUrl + payment_id,
                 }, function (error, response, body) {
+                    if (error) {
+                        console.log(appId + ' - ' + error);
+                        let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+                        return res.render('payment-error', {
+                            errorMessage:'Payment system error',
+                            startNewApplicationUrl:startNewApplicationUrl
+                        })
+                    }
                     var returnData = JSON.parse(body)
                     var status = returnData.state.status
                     var finished = returnData.state.finished
