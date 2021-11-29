@@ -20,6 +20,7 @@
     "jshint": "^2.11.1",
     "moment": "^2.27.0",
     "morgan": "^1.10.0",
+    "node-sass": "^6.0.1",
     "node-sass-middleware": "^0.11.0",
     "node-schedule": "^2.0.0",
     "pg": "^6.4.2",
@@ -37,6 +38,7 @@
     "nock": "^13.1.1"
   },
   "scripts": {
+    "start": "NODE_ENV=development node server.js 4321",
     "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive test/ --exit",
     "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- --timeout 10000 --recursive -R tap \"test/\" > test.tap && istanbul report clover",
     "lint": "jshint --reporter checkstyle . > linting.xml",
