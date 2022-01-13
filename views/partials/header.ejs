@@ -106,72 +106,61 @@
         </p>
     </div>
 
-
     <script>
-        //Modal Popup Controller
-        function toggle_visibility(id){
-            var e = document.getElementById(id);
-            if (e.style.display == 'none') {
-                e.style.display = 'block';
-            }
-            else if (e.style.display == 'block'){
-                e.style.display = 'none'
-            }
-        };
 
-        function startTimer(duration, display) {
-            var timer = duration, minutes, seconds;
-            var e = document.getElementById('sessionAlert');
-            e.innerText = "Session will expire in 5 minutes";
-            setInterval(function () {
+        function startTimer(timerDuration) {
+            var timeoutDurationInSeconds = timerDuration / 1000;
+            var display = document.querySelector('#displayTime');
+            var timer = timeoutDurationInSeconds,
+                minutes,
+                seconds;
+            set_visible('expiry-warning');
+            var interval = setInterval(function(){
                 minutes = parseInt(timer / 60, 10);
                 seconds = parseInt(timer % 60, 10);
-
-                display.textContent = minutes + " minute(s) and " + seconds + " seconds";
-
-                if (--timer < 0) {
-                    timer = duration;
+                display.textContent =
+                    minutes + ' minute(s) and ' + seconds + ' seconds';
+                timer = timer - 1;
+                if (timer < 0) {
+                    clearInterval(interval);
+                    set_invisible('expiry-warning');
+                    window.location.href = '/api/payment/session-expired';
                 }
             }, 1000);
-            toggle_visibility('expiry-warning');
-        };
+        }
 
-        function refreshSession() {
-            location.reload();
+        var sessionTimeoutWarning = 300000; // Show warning x milliseconds before session expiry
+        var sessionTimeoutDisplay = 1500000; //Show popup after x milliseconds of inactivity
+        setTimeout(function () {
+            var timerDuration = sessionTimeoutWarning;
+            startTimer(timerDuration)
+        }, sessionTimeoutDisplay);
+
+        function set_visible(id) {
+            var e = document.getElementById(id);
+            e.style.display = 'block';
+        }
+
+        function set_invisible(id) {
+            var e = document.getElementById(id);
+            e.style.display = 'none';
         }
     </script>
 
-    <script>
-        var originalSessionAge = 1800000; // Session length
-        var sessionTimeoutWarning = 300000; // When to show warning before session expiry
-        var sessionTimeoutDisplay = originalSessionAge - sessionTimeoutWarning;
-
-        setTimeout(function () {
-            var timeoutDuration = sessionTimeoutWarning / 1000, // timeout in seconds
-                display = document.querySelector('#displayTime');
-            startTimer(timeoutDuration, display)
-        }, sessionTimeoutDisplay);
-
-    </script>
-
-    <div id="expiry-warning" class="modal-container" aria-hidden="true" style="display: none;">
-        <div id="sessionAlert" role="alert" aria-live="assertive" style="position:absolute; width:0; height:0; clip: rect(0,0,0,0);"></div>
-        <div class='modal-content-area'>
-            <h1 class='heading-large'>
+    <div id="expiry-warning" class="modal-container" role="dialog" aria-live="polite"
+         aria-labelledby="dialog-title" aria-describedby="displayTime">
+        <div class="modal-content-area">
+            <h1 id="dialog-title" class="heading-large">
                 Your application will time out soon
             </h1>
-            <p>We will reset your application if you do not respond in</p>
-            <p style="margin: 0; padding: 0 10px; float: left;">
-                <img class='countdown-clock' src='/api/payment/images/icon-countdown-clock.png' alt='Countdown clock'/>
-            <div style="margin-top: 1.3em;">
-                <span id="displayTime"></span>
+            <p class="govuk-body">We will reset your application if you do not respond in <span id="displayTime"></span></p>
+            <div class="session-expiry-popup__clock" aria-hidden="true" aria-relevant="additions">
+                <img class='countdown-clock' src='/api/payment/images/icon-countdown-clock.png' alt='Countdown clock' />
             </div>
-            </p>
-            <p>We do this to keep your information secure.</p>
+            <div class="govuk-body session-expiry-popup__countdown" role="status"></div>
+            <p class="govuk-body">We do this to keep your information secure.</p>
             <p>
-                <a onClick={function (e) {
-                   this.refreshSession(e)
-                   }.bind(this)} href="" class="govuk-button govuk-button--secondary">Continue application</a>
+                <button onclick="window.location.reload();" class="govuk-button govuk-button--secondary">Continue application</button>
             </p>
         </div>
     </div>

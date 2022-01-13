@@ -6,6 +6,19 @@ var EmailService =require('./../lib/EmailService')
 module.exports = function(router, configGovPay, app) {
 
     // =====================================
+    // SESSION EXPIRED
+    // =====================================
+    router
+
+        // healthcheck
+        .get('/session-expired', function(req, res) {
+            let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+            return res.render('session-expired', {
+                startNewApplicationUrl:startNewApplicationUrl
+            })
+        });
+
+    // =====================================
     // HEALTHCHECK
     // =====================================
     router
@@ -229,7 +242,8 @@ module.exports = function(router, configGovPay, app) {
                                 isSessionValid:isSessionValid,
                                 paymentSuccessful:false,
                                 cost:sess.cost,
-                                next_url: next_url
+                                next_url: next_url,
+                                startNewApplicationUrl:startNewApplicationUrl
                             });
 
                         }
@@ -331,6 +345,7 @@ module.exports = function(router, configGovPay, app) {
                                         loggedIn: loggedIn,
                                         usersEmail: usersEmail,
                                         next_url: next_url,
+                                        startNewApplicationUrl:startNewApplicationUrl,
                                         user_data: {
                                             loggedIn: req.session && req.session.passport && req.session.passport.user,
                                             user: req.session.user,
