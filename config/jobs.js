@@ -1,20 +1,25 @@
-var Model = require('../models/index'),
-    sequelize = require('../models/index').sequelize,
-    common = require('./common.js'),
+const common = require('./common.js'),
     moment = require('moment'),
     configGovPay = common.config(),
     request = require('request-promise');
 
-var jobs ={
+const jobs ={
     //====================================
     //THIS JOB ATTEMPTS TO CALL
     //GOV PAY AND OBTAIN A PAYMENT STATUS
     //THEN UPDATE THE DATABASE
     //ALSO WORKS FOR ADDITIONAL PAYMENTS
     //====================================
+
     paymentCleanup: async function() {
 
-        let formattedDate = moment().toISOString();
+        const formattedDate = moment().toISOString(),
+            { Op } = require("sequelize"),
+            sequelize = require('../models/index').sequelize,
+            PaymentsCleanupJob = require('../models/index').PaymentsCleanupJob,
+            ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails,
+            Application = require('../models/index').Application,
+            AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails
 
         try {
 
@@ -77,7 +82,7 @@ var jobs ={
 
         async function checkIfDbIsUnLocked() {
             try {
-                return await Model.PaymentsCleanupJob.find({
+                return await PaymentsCleanupJob.findOne({
                     where:{
                         id:1,
                         lock:false
@@ -91,7 +96,7 @@ var jobs ={
         async function lockDb() {
             try {
                 console.log('[%s][PAYMENT CLEANUP JOB] LOCKING DB', formattedDate);
-                return await Model.PaymentsCleanupJob.update({
+                return await PaymentsCleanupJob.update({
                     lock:true
                 }, {
                     where:{
@@ -106,7 +111,7 @@ var jobs ={
         async function unLockDb() {
             try {
                 console.log('[%s][PAYMENT CLEANUP JOB] UNLOCKING DB', formattedDate);
-                return await Model.PaymentsCleanupJob.update({
+                return await PaymentsCleanupJob.update({
                     lock:false
                 }, {
                     where:{
@@ -122,15 +127,15 @@ var jobs ={
             try {
                 // Only search the past 3 days of transactions
                 // No point searching the entire DB each time
-                return await Model.ApplicationPaymentDetails.findAll({
+                return await ApplicationPaymentDetails.findAll({
                     where:{
                         payment_status: null,
                         payment_complete: false,
                         payment_reference:{
-                            $ne: null
+                            [Op.ne]: null
                         },
                         createdAt: {
-                            $gte: moment().subtract(3, 'days').toDate()
+                            [Op.gte]: moment().subtract(3, 'days').toDate()
                         }
                     }
                 })
@@ -143,15 +148,15 @@ var jobs ={
             try {
                 // Only search the past 3 days of transactions
                 // No point searching the entire DB each time
-                return await Model.AdditionalPaymentDetails.findAll({
+                return await AdditionalPaymentDetails.findAll({
                     where:{
                         payment_status: 'created',
                         payment_complete: false,
                         payment_reference:{
-                            $ne: null
+                            [Op.ne]: null
                         },
                         created_at: {
-                            $gte: moment().subtract(3, 'days').toDate()
+                            [Op.gte]: moment().subtract(3, 'days').toDate()
                         },
                         submitted: 'draft'
                     }
@@ -164,7 +169,7 @@ var jobs ={
         async function updatePaymentStatus(problemCase, status) {
             console.log('[%s][PAYMENT CLEANUP JOB] UPDATING STATUS FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
             try {
-                return await Model.ApplicationPaymentDetails.update({
+                return await ApplicationPaymentDetails.update({
                     payment_complete: true,
                     payment_status: (status === 'success') ? 'AUTHORISED' : status
                 }, {
@@ -180,7 +185,7 @@ var jobs ={
         async function updateAdditionalPaymentStatus(problemCase, status) {
             console.log('[%s][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
             try {
-                return await Model.AdditionalPaymentDetails.update({
+                return await AdditionalPaymentDetails.update({
                     payment_complete: true,
                     payment_status: (status === 'success') ? 'AUTHORISED' : status
                 }, {
@@ -204,7 +209,7 @@ var jobs ={
 
         async function checkAppStatus(appId) {
             try {
-                return await Model.Application.find({
+                return await Application.findOne({
                     where:{
                         application_id:appId
                     }
@@ -216,7 +221,7 @@ var jobs ={
 
         async function checkAdditionalPaymentAppStatus(appId) {
             try {
-                return await Model.AdditionalPaymentDetails.find({
+                return await AdditionalPaymentDetails.findOne({
                     where:{
                         application_id:appId
                     }
@@ -229,7 +234,7 @@ var jobs ={
         async function queueApplication(problemCase) {
             try {
                 console.log('[%s][PAYMENT CLEANUP JOB] QUEUING APPLICATION %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
-                return await Model.Application.update({
+                return await Application.update({
                     submitted: 'queued'
                 }, {
                     where:{
@@ -244,7 +249,7 @@ var jobs ={
         async function queueAdditionalPayment(problemCase) {
             try {
                 console.log('[%s][PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
-                return await Model.AdditionalPaymentDetails.update({
+                return await AdditionalPaymentDetails.update({
                     submitted: 'queued',
                     updated_at: moment().format('DD MMMM YYYY, h:mm:ss A')
                 }, {

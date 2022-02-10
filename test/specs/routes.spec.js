@@ -9,10 +9,18 @@ describe('GET /healthcheck', function() {
     });
 });
 
-describe('GET /error', function() {
+describe('GET /payment-error', function() {
     it('returns 200', function(done) {
         request(app)
-            .get('/api/payment/error')
+            .get('/api/payment/payment-error')
+            .expect(200, done);
+    });
+});
+
+describe('GET /additional-payment-error', function() {
+    it('returns 200', function(done) {
+        request(app)
+            .get('/api/payment/additional-payment-error')
             .expect(200, done);
     });
 });

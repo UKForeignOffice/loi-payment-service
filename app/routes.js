@@ -1,7 +1,6 @@
-
-var GovPay = require('../lib/helper');
-var request = require('request');
-var EmailService =require('./../lib/EmailService')
+const GovPay = require('../lib/helper');
+const request = require('request');
+const EmailService =require('./../lib/EmailService')
 
 module.exports = function(router, configGovPay, app) {
 
@@ -95,7 +94,7 @@ module.exports = function(router, configGovPay, app) {
                     sess.additionalPayments.paymentReference = returnData.payment_id
 
                     if (casebookRef) {
-                        let AdditionalPaymentDetails = app.get('models').AdditionalPaymentDetails;
+                        let AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails;
                         AdditionalPaymentDetails.find({
                             where: {
                                 application_id: returnData.reference
@@ -189,7 +188,7 @@ module.exports = function(router, configGovPay, app) {
 
                         let casebookRef = sess.additionalPayments.casebookRef
                         if (casebookRef) {
-                            let AdditionalPaymentDetails = app.get('models').AdditionalPaymentDetails;
+                            let AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails;
                             AdditionalPaymentDetails.update({
                                 payment_status: 'AUTHORISED',
                                 payment_reference: payment_id,
@@ -296,10 +295,10 @@ module.exports = function(router, configGovPay, app) {
         var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
 
         // get the relevant database models
-        var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
-        var Application = app.get('models').Application;
-        var UserDetails = app.get('models').UserDetails;
-        var UserDocumentCount = app.get('models').UserDocumentCount;
+        var ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails;
+        var Application = require('../models/index').Application;
+        var UserDetails = require('../models/index').UserDetails;
+        var UserDocumentCount = require('../models/index').UserDocumentCount;
 
         // lookup required data from database
         Application.findOne({ where: {application_id: appid}}).then(function(application){
@@ -394,10 +393,11 @@ module.exports = function(router, configGovPay, app) {
             }
 
             // get the relevant database models
-            var ApplicationPaymentDetails = app.get('models').ApplicationPaymentDetails;
-            var Application = app.get('models').Application;
-            var UserDetails = app.get('models').UserDetails;
-            var UserDocumentCount = app.get('models').UserDocumentCount;
+            var ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails;
+            var Application = require('../models/index').Application;
+            var UserDetails = require('../models/index').UserDetails;
+            var UserDocumentCount = require('../models/index').UserDocumentCount;
+
 
             // check the payment id from the database
             ApplicationPaymentDetails.findOne({

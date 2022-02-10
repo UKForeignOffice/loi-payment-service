@@ -21,6 +21,7 @@ const application = {
     }
 const usersEmail = "test.user@email.com"
 const additionalPaymentsCost = "30"
+const casebookRef = "12345"
 const mockPostResponse = {
         "created_date": "2021-07-22T16:17:19.554Z",
         "state": {
@@ -102,6 +103,7 @@ module.exports = {
         applicationDetail,
         application,
         usersEmail,
+        casebookRef,
         additionalPaymentsCost,
         mockPostResponse,
         mockGetResponse
