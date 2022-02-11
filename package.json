@@ -20,7 +20,7 @@
     "jshint": "^2.11.1",
     "moment": "^2.27.0",
     "morgan": "^1.10.0",
-    "node-sass": "^6.0.1",
+    "node-sass": "^7.0.0",
     "node-sass-middleware": "^0.11.0",
     "node-schedule": "^2.0.0",
     "pg": "^6.4.2",
