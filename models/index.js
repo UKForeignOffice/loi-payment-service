@@ -1,13 +1,12 @@
 
-var Sequelize = require('sequelize');
+const {Sequelize, DataTypes} = require('sequelize');
 
 // get environment specific config
-var commonConfig = require('../config/common.js');
-var environmentConfig = commonConfig.config();
+const commonConfig = require('../config/common.js');
+const environmentConfig = commonConfig.config();
 
-// options
-//database wide options
-var opts = {
+//database options
+const opts = {
     define: {
         //prevent sequelize from pluralizing table names
         freezeTableName: true
@@ -15,19 +14,12 @@ var opts = {
 };
 
 // initialise Sequelize
-var sequelize = new Sequelize(environmentConfig.database, opts);
-
-// load models
-var models = [
-    'ApplicationPaymentDetails',
-    'Application',
-    'UserDetails',
-    'UserDocumentCount',
-    'PaymentsCleanupJob',
-    'AdditionalPaymentDetails'
-];
-models.forEach(function(model) {
-    module.exports[model] = sequelize.import(__dirname + '/' + model);
-});
+const sequelize = new Sequelize(environmentConfig.database, opts);
 
 module.exports.sequelize = sequelize;
+module.exports.Application = require('./Application')(sequelize, DataTypes)
+module.exports.ApplicationPaymentDetails = require('./ApplicationPaymentDetails')(sequelize, DataTypes)
+module.exports.UserDetails = require('./UserDetails')(sequelize, DataTypes)
+module.exports.UserDocumentCount = require('./UserDocumentCount')(sequelize, DataTypes)
+module.exports.PaymentsCleanupJob = require('./PaymentsCleanupJob')(sequelize, DataTypes)
+module.exports.AdditionalPaymentDetails = require('./AdditionalPaymentDetails')(sequelize, DataTypes)

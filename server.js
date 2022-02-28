@@ -2,17 +2,15 @@
 // =====================================
 // SETUP
 // =====================================
-var port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 4321));
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var morgan = require('morgan');
-var cookieParser = require('cookie-parser');
+const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 4321));
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
-var common = require('./config/common.js');
-var configGovPay = common.config();
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
+const common = require('./config/common.js');
+const configGovPay = common.config();
 
 // =====================================
 // CONFIGURATION
@@ -22,13 +20,40 @@ require('./config/logs');
 
 app.use(bodyParser()); //get information from HTML forms
 app.use(cookieParser());
-var store = new RedisStore({
-  host: configGovPay.sessionSettings.host,
-  port: configGovPay.sessionSettings.port,
-  prefix: configGovPay.sessionSettings.prefix,
-  pass: configGovPay.sessionSettings.password,
-  tls: process.env.NODE_ENV === 'development' ? undefined : {}
-});
+
+const session = require("express-session")
+let RedisStore = require("connect-redis")(session)
+
+const { createClient } = require("redis")
+let redisClient = createClient({
+    legacyMode: true,
+    password: configGovPay.sessionSettings.password,
+    socket: {
+        port: configGovPay.sessionSettings.port,
+        host: configGovPay.sessionSettings.host,
+        tls: process.env.NODE_ENV !== 'development'
+    }
+})
+
+redisClient.connect().catch(console.error)
+
+app.use(
+    session({
+        store: new RedisStore({ client: redisClient }),
+        prefix: configGovPay.sessionSettings.prefix,
+        saveUninitialized: false,
+        secret: configGovPay.sessionSettings.secret,
+        key: configGovPay.sessionSettings.key,
+        resave: false,
+        rolling: true,
+        cookie: {
+            domain: configGovPay.sessionSettings.domain,
+            maxAge: configGovPay.sessionSettings.maxAge,
+            secure: 'auto'
+        }
+    })
+)
+
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
@@ -46,17 +71,6 @@ app.use(function(req, res, next) {
     }
     return next();
 });
-app.use(session({
-    secret: configGovPay.sessionSettings.secret,
-    key: configGovPay.sessionSettings.key,
-    store: store,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        domain: configGovPay.sessionSettings.cookie_domain ,//environmentVariables.cookieDomain,
-        maxAge: configGovPay.sessionSettings.cookieMaxAge  //30 minutes
-    }
-}));
 app.use(morgan('dev')); //log every request to the console
 
 app.use(function(req, res, next) {
@@ -73,18 +87,7 @@ app.set('models', require('./models'));
 // =====================================
 // ASSETS
 // =====================================
-var path = require('path');
-var sassMiddleware = require('node-sass-middleware');
-var srcPath = __dirname + '/sass';
-var destPath = __dirname + '/public';
-
-app.use('/api/payment',sassMiddleware({
-    src: srcPath,
-    dest: destPath,
-    debug: false,
-    outputStyle: 'compressed',
-    prefix: '/api/payment/'
-}));
+const path = require('path');
 
 app.use("/api/payment/",express.static(__dirname + "/public"));
 app.use("/api/payment/styles",express.static(__dirname + "/styles")); //static directory for stylesheets
@@ -93,12 +96,12 @@ app.use("/api/payment/images",express.static(__dirname + "/images")); //static d
 // =====================================
 // ROUTES
 // =====================================
-var router = express.Router(); //get instance of Express router
+const router = express.Router(); //get instance of Express router
 require('./app/routes.js')(router, configGovPay, app); //load routes passing in app and configuration
 app.use('/api/payment', router); //prefix all requests with 'api/payment'
 
 //Pull in images from GOVUK packages
-var fs = require('fs-extra');
+const fs = require('fs-extra');
 fs.copy('node_modules/govuk_frontend_toolkit/images', 'images/govuk_frontend_toolkit', function (err) {
     if (err) return null;
 });
@@ -119,14 +122,14 @@ fs.readdir('images/govuk_frontend_toolkit', function(err, items) {
 // JOB SCHEDULER
 // =====================================
 //Schedule and run account expiry job every day
-var schedule = require('node-schedule');
-var jobs = require('./config/jobs.js');
+const schedule = require('node-schedule');
+const jobs = require('./config/jobs.js');
 
 // As there are 2 instances running, we need a random time, or the job will be executed on both instances
-var randomSecond = Math.floor(Math.random() * 60);
-var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
-var jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
-var paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
+const randomSecond = Math.floor(Math.random() * 60);
+const randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
+const jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
+const paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
 
 // =====================================
 // LAUNCH
