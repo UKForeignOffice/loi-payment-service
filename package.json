@@ -16,7 +16,7 @@
     "govuk-frontend": "^3.13.0",
     "govuk_frontend_toolkit": "4.10.0",
     "jshint": "^2.13.1",
-    "moment": "^2.29.0",
+    "moment": "^2.29.2",
     "morgan": "^1.10.0",
     "node-schedule": "^2.1.0",
     "pg": "^8.0.3",
