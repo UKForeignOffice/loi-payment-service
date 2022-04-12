@@ -95,7 +95,7 @@ module.exports = function(router, configGovPay, app) {
 
                     if (casebookRef) {
                         let AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails;
-                        AdditionalPaymentDetails.find({
+                        AdditionalPaymentDetails.findOne({
                             where: {
                                 application_id: returnData.reference
                             }
