@@ -58,7 +58,7 @@ app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
         piwikID: configGovPay.live_variables.piwikId,
-        feedbackURL:configGovPay.live_variables.Public ? configGovPay.live_variables.feedbackURL : "https://www.smartsurvey.co.uk/s/legalisation1/",
+        feedbackURL:configGovPay.live_variables.feedbackURL,
         service_public: configGovPay.live_variables.Public,
         start_url: configGovPay.live_variables.startPageURL,
         govuk_url: configGovPay.live_variables.GOVUKURL
