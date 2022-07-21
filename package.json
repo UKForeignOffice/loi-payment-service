@@ -16,6 +16,7 @@
     "govuk-frontend": "^3.13.0",
     "govuk_frontend_toolkit": "4.10.0",
     "jshint": "^2.13.1",
+    "lusca": "1.7.0",
     "moment": "^2.29.0",
     "morgan": "^1.10.0",
     "node-schedule": "^2.1.0",
@@ -36,7 +37,7 @@
     "sass": "^1.49.7"
   },
   "scripts": {
-    "start": "NODE_ENV=development node server.js 4321",
+    "start": "NODE_ENV=development node server.js 3003",
     "test": "node_modules/mocha/bin/mocha --timeout 10000 --recursive test/ --exit",
     "lint": "jshint --reporter checkstyle . > linting.xml",
     "local-lint": "jshint ."
