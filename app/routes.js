@@ -338,6 +338,9 @@ module.exports = function(router, configGovPay, app) {
                                     }
                                 }).then( function() {
                                     //redirect to next form page with parameters
+                                    if (req.query.skipConfirmation) {
+                                        return res.redirect(next_url);
+                                    }
                                     res.render('submit-payment.ejs', {
                                         applicationId: appid,
                                         applicationType: application.serviceType,
@@ -537,4 +540,3 @@ module.exports = function(router, configGovPay, app) {
 
         });
 };
-
