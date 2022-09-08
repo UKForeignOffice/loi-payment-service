@@ -2,13 +2,11 @@
 // =====================================
 // SETUP
 // =====================================
-const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3003));
+const serverPort = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3003));
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-
 const common = require('./config/common.js');
 const configGovPay = common.config();
 
@@ -18,24 +16,39 @@ const configGovPay = common.config();
 
 require('./config/logs');
 
-app.use(bodyParser()); //get information from HTML forms
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+app.use(bodyParser.json());
 app.use(cookieParser());
 
 const session = require("express-session")
 let RedisStore = require("connect-redis")(session)
 
-const { createClient } = require("redis")
-let redisClient = createClient({
-    legacyMode: true,
-    password: configGovPay.sessionSettings.password,
-    socket: {
-        port: configGovPay.sessionSettings.port,
-        host: configGovPay.sessionSettings.host,
-        tls: process.env.NODE_ENV !== 'development'
-    }
-})
+const { createClient } = require("redis");
 
-redisClient.connect().catch(console.error)
+const { password, port, host } = configGovPay.sessionSettings;
+const connectTimeout = 15000;
+const redisClient = createClient({
+    legacyMode: true,
+    password,
+    socket: { connectTimeout, port, host, tls: process.env.NODE_ENV !== "development" },
+});
+
+redisClient.on("connect", () => {
+    console.log("Redis client connected successfully");
+});
+
+(async () => {
+    try {
+        await redisClient.connect();
+    } catch (err) {
+        console.log(`Redis client failed to connect with ${err}`);
+    }
+})();
+
+
 
 app.use(
     session({
@@ -71,7 +84,6 @@ app.use(function(req, res, next) {
     }
     return next();
 });
-app.use(morgan('dev')); //log every request to the console
 
 app.use(function(req, res, next) {
     res.removeHeader("X-Powered-By");
@@ -128,13 +140,15 @@ const jobs = require('./config/jobs.js');
 // As there are 2 instances running, we need a random time, or the job will be executed on both instances
 const randomSecond = Math.floor(Math.random() * 60);
 const randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
-const jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + configGovPay.configs.jobScheduleHourlyInterval + " * * *";
-const paymentCleanup = schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
+const hourlyInterval = configGovPay.configs.jobScheduleHourlyInterval
+const jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + hourlyInterval + " * * *";
+schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
 
 // =====================================
 // LAUNCH
 // =====================================
-app.listen(port);
-console.log('is-payment-service running on port: ' + port);
-console.log('payment cleanup job will run every %s hours at %sm %ss past the hour', configGovPay.configs.jobScheduleHourlyInterval, randomMin, randomSecond);
+app.listen(serverPort);
+console.log('is-payment-service running on port: ' + serverPort);
+console.log(`payment cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`);
+
 module.exports.getApp = app;
