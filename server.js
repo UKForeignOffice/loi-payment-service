@@ -2,7 +2,7 @@
 // =====================================
 // SETUP
 // =====================================
-const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 4321));
+const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3003));
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');

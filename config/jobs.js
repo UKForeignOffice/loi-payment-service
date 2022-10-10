@@ -309,6 +309,7 @@ const jobs ={
                                 // If the payment is still draft in the Application table
                                 // Export the app data and update the status to queued
                                 if (appStatus && appStatus.submitted === 'draft') {
+
                                     const isEApp = problemCase.serviceType === 4;
                                     let exportedAppData = isEApp ? await exportEAppData(problemCase) : await exportAppData(problemCase)
                                     let exportedAppDataResult = isEApp ? exportedAppData[0][0].populate_exportedeApostilleAppdata : exportedAppData[0][0].populate_exportedapplicationdata
