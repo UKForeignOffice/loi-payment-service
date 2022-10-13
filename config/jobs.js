@@ -207,6 +207,15 @@ const jobs ={
             }
         }
 
+        async function exportEAppData(problemCase) {
+            try {
+                console.log('[%s][PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                return await sequelize.query('SELECT * FROM populate_exportedeApostilleAppdata(' + problemCase.application_id + ')');
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
         async function checkAppStatus(appId) {
             try {
                 return await Application.findOne({
@@ -300,8 +309,9 @@ const jobs ={
                                 // If the payment is still draft in the Application table
                                 // Export the app data and update the status to queued
                                 if (appStatus && appStatus.submitted === 'draft') {
-                                    let exportedAppData = await exportAppData(problemCase)
-                                    let exportedAppDataResult = exportedAppData[0][0].populate_exportedapplicationdata
+                                    const isEApp = problemCase.serviceType === 4;
+                                    let exportedAppData = isEApp ? await exportEAppData(problemCase) : await exportAppData(problemCase)
+                                    let exportedAppDataResult = isEApp ? exportedAppData[0][0].populate_exportedeApostilleAppdata : exportedAppData[0][0].populate_exportedapplicationdata
 
                                     //If the return value is 1 indicating success
                                     //then queue the application.

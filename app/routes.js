@@ -379,6 +379,8 @@ module.exports = function(router, configGovPay, app) {
         // prepare confirmation page
         .get('/payment-confirmation', function(req, res) {
 
+            var appIdFromGovPay = req.query.id
+
             // get appId from the session
             // else send user to error page
             var appId = req.session.appId;
@@ -386,6 +388,7 @@ module.exports = function(router, configGovPay, app) {
                 //Do nothing
             }
             else{
+                console.log(appIdFromGovPay + ' - Application has missing session. Rendering error page.')
                 res.clearCookie('LoggedIn');
                 req.session.appId = false;
                 var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
