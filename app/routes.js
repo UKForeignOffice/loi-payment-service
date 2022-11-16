@@ -349,7 +349,7 @@ module.exports = function(router, configGovPay, app) {
                                         next_url: next_url,
                                         startNewApplicationUrl:startNewApplicationUrl,
                                         user_data: {
-                                            loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                            loggedIn: loggedIn,
                                             user: req.session.user,
                                             account: req.session.account,
                                             url: '/api/user/'
@@ -506,7 +506,7 @@ module.exports = function(router, configGovPay, app) {
                                                                     isSessionValid: isSessionValid,
                                                                     usersEmail: usersEmail,
                                                                     user_data: {
-                                                                        loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                                                        loggedIn: loggedIn,
                                                                         user: req.session.user,
                                                                         account: req.session.account,
                                                                         url: '/api/user/'
