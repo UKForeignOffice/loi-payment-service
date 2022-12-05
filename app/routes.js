@@ -72,11 +72,13 @@ module.exports = function(router, configGovPay, app) {
         try {
             let moment = require('moment');
             let sess = req.session
-            let casebookRef = sess.additionalPayments.casebookRef
+            let applicationRef = sess.additionalPayments.applicationRef
+            let applicationAmount = sess.additionalPayments.applicationAmount
+            let applicationEmail = sess.additionalPayments.applicationEmail
 
             // build required data
             let formFields = {};
-            formFields = GovPay.additionalPaymentsAddBaseData(formFields, casebookRef, sess.additionalPayments.cost, sess.additionalPayments.email);
+            formFields = GovPay.additionalPaymentsAddBaseData(formFields, applicationRef, applicationAmount, applicationEmail);
 
             request.post({
                 headers: {
@@ -93,7 +95,7 @@ module.exports = function(router, configGovPay, app) {
                     let next_url = returnData._links.next_url.href
                     sess.additionalPayments.paymentReference = returnData.payment_id
 
-                    if (casebookRef) {
+                    if (applicationRef) {
                         let AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails;
                         AdditionalPaymentDetails.findOne({
                             where: {
@@ -115,7 +117,7 @@ module.exports = function(router, configGovPay, app) {
                     }
 
                     res.render('additionalPayments/submit-additional-payment', {
-                        cost:sess.additionalPayments.cost,
+                        cost:sess.additionalPayments.applicationAmount,
                         next_url: next_url,
                         startNewApplicationUrl:startNewApplicationUrl
                     })
@@ -145,7 +147,7 @@ module.exports = function(router, configGovPay, app) {
         try {
             let moment = require('moment')
             let sess = req.session
-            let isSessionValid = (typeof sess.additionalPayments.cost !== 'undefined');
+            let isSessionValid = (typeof sess.additionalPayments.applicationAmount !== 'undefined');
             let payment_id = sess.additionalPayments.paymentReference
             let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
 
@@ -178,16 +180,16 @@ module.exports = function(router, configGovPay, app) {
                     if (isSessionValid) {
 
                         EmailService.additionalPaymentReceipt(
-                            sess.additionalPayments.email,
+                            sess.additionalPayments.applicationEmail,
                             createdDate,
                             appReference,
                             'Get Document Legalised – Additional Payments',
-                            sess.additionalPayments.cost,
+                            sess.additionalPayments.applicationAmount,
                             paymentMethod
                         )
 
-                        let casebookRef = sess.additionalPayments.casebookRef
-                        if (casebookRef) {
+                        let applicationRef = sess.additionalPayments.applicationRef
+                        if (applicationRef) {
                             let AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails;
                             AdditionalPaymentDetails.update({
                                 payment_status: 'AUTHORISED',
@@ -211,8 +213,8 @@ module.exports = function(router, configGovPay, app) {
                         appReference:appReference,
                         createdDate:createdDate,
                         paymentMethod:paymentMethod,
-                        cost:sess.additionalPayments.cost,
-                        email:sess.additionalPayments.email,
+                        cost:sess.additionalPayments.applicationAmount,
+                        email:sess.additionalPayments.applicationEmail,
                         startNewApplicationUrl:startNewApplicationUrl
                     });
 
@@ -220,7 +222,7 @@ module.exports = function(router, configGovPay, app) {
 
                     console.log(payment_id + ' - payment is NOT successful');
                     let formFields = {};
-                    formFields = GovPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.casebookRef, sess.additionalPayments.cost, sess.additionalPayments.email);
+                    formFields = GovPay.additionalPaymentsAddBaseData(formFields, sess.additionalPayments.applicationRef, sess.additionalPayments.applicationAmount, sess.additionalPayments.applicationEmail);
 
                     request.post({
                         headers: {
@@ -240,7 +242,7 @@ module.exports = function(router, configGovPay, app) {
                             res.render('additionalPayments/additional-payment-confirmation', {
                                 isSessionValid:isSessionValid,
                                 paymentSuccessful:false,
-                                cost:sess.cost,
+                                cost:sess.additionalPayments.applicationAmount,
                                 next_url: next_url,
                                 startNewApplicationUrl:startNewApplicationUrl
                             });
