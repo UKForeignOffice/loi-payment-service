@@ -69,15 +69,15 @@ const jobs ={
 
 
         async function start() {
-            console.log('[%s][PAYMENT CLEANUP JOB] STARTED', formattedDate);
+            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] STARTED`);
         }
 
         async function stop() {
-            console.log('[%s][PAYMENT CLEANUP JOB] FINISHED', formattedDate);
+            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] FINISHED`);
         }
 
         async function abort(reason) {
-            console.log('[%s][PAYMENT CLEANUP JOB] ABORTED %s', formattedDate, reason);
+            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] ABORTED ${reason}`);
         }
 
         async function checkIfDbIsUnLocked() {
@@ -95,7 +95,7 @@ const jobs ={
 
         async function lockDb() {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] LOCKING DB', formattedDate);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] LOCKING DB`);
                 return await PaymentsCleanupJob.update({
                     lock:true
                 }, {
@@ -110,7 +110,7 @@ const jobs ={
 
         async function unLockDb() {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] UNLOCKING DB', formattedDate);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UNLOCKING DB`);
                 return await PaymentsCleanupJob.update({
                     lock:false
                 }, {
@@ -167,7 +167,7 @@ const jobs ={
         }
 
         async function updatePaymentStatus(problemCase, status) {
-            console.log('[%s][PAYMENT CLEANUP JOB] UPDATING STATUS FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
                 return await ApplicationPaymentDetails.update({
                     payment_complete: true,
@@ -183,7 +183,7 @@ const jobs ={
         }
 
         async function updateAdditionalPaymentStatus(problemCase, status) {
-            console.log('[%s][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
                 return await AdditionalPaymentDetails.update({
                     payment_complete: true,
@@ -200,7 +200,7 @@ const jobs ={
 
         async function exportAppData(problemCase) {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] EXPORT APP DATA FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await sequelize.query('SELECT * FROM populate_exportedapplicationdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
@@ -242,7 +242,7 @@ const jobs ={
 
         async function queueApplication(problemCase) {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] QUEUING APPLICATION %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await Application.update({
                     submitted: 'queued'
                 }, {
@@ -257,7 +257,7 @@ const jobs ={
 
         async function queueAdditionalPayment(problemCase) {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await AdditionalPaymentDetails.update({
                     submitted: 'queued',
                     updated_at: moment().format('DD MMMM YYYY, h:mm:ss A')
@@ -300,7 +300,7 @@ const jobs ={
                     // If so, do stuff
                     if (paymentIsOldEnough) {
                         if (paymentIsFinished && paymentIsFinished === true) {
-                            console.log('[%s][PAYMENT CLEANUP JOB] PROCESSING %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updatePaymentStatus(problemCase, status)
 
                             if (status === 'success') {
@@ -345,7 +345,7 @@ const jobs ={
                     // If so, do stuff
                     if (paymentIsOldEnough) {
                         if (paymentIsFinished && paymentIsFinished === true) {
-                            console.log('[%s][PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updateAdditionalPaymentStatus(problemCase, status)
 
                             if (status === 'success') {
