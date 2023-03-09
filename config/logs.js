@@ -1,45 +1,44 @@
-var winston = require('winston');
-var logger = new winston.Logger({
+const { createLogger, transports, format } = require('winston');
+const { combine, timestamp, printf, colorize } = format;
+
+const logger = createLogger({
     transports: [
-        /*Log info to console*/
-        new (winston.transports.Console)({
-            timestamp: function () {
-                return getTimeStamp();
-            },
-            formatter: function (options) {
-                return '' + (undefined !== options.message ? options.message : '') +
-                    (options.meta && Object.keys(options.meta).length ? '\n\t' + JSON.stringify(options.meta) : '' );
-            },
-            name: 'info-console',
+        /* Log info to console */
+        new transports.Console({
+            format: combine(
+                colorize(),
+                timestamp({
+                    format: 'YYYY-MM-DD HH:mm:ss',
+                }),
+                printf((info) => {
+                    const { message, timestamp, meta } = info;
+                    return `${timestamp} ${info.level}: ${message}` + (meta ? `\n${JSON.stringify(meta)}` : '');
+                }),
+            ),
             level: 'info',
             handleExceptions: true,
-            humanReadableUnhandledException: true
         }),
-        /*Log errors to console */
-        new (winston.transports.Console)({
-            timestamp: function () {
-                return getTimeStamp();
-            },
-            formatter: function (options) {
-                return '' + (undefined !== options.message ? options.message : '') +
-                    (options.meta && Object.keys(options.meta).length ? '\n\t' + JSON.stringify(options.meta) : '' );
-            },
-            name: 'error-console',
+        /* Log errors to console */
+        new transports.Console({
+            format: combine(
+                colorize(),
+                timestamp({
+                    format: 'YYYY-MM-DD HH:mm:ss',
+                }),
+                printf((info) => {
+                    const { message, timestamp, meta } = info;
+                    return `${timestamp} ${info.level}: ${message}` + (meta ? `\n${JSON.stringify(meta)}` : '');
+                }),
+            ),
             level: 'error',
             handleExceptions: true,
-            humanReadableUnhandledException: true
-        })
-    ]
+        }),
+    ],
 });
 
-// Overwrite some of the build-in console functions
-console.error = logger.error;
-console.log = logger.info;
-console.info = logger.info;
-console.debug = logger.debug;
-console.warn = logger.warn;
-
-function getTimeStamp() {
-    var date = new Date();
-    return date.toISOString();
-}
+// Overwrite some built-in console functions
+console.error = logger.error.bind(logger);
+console.log = logger.info.bind(logger);
+console.info = logger.info.bind(logger);
+console.debug = logger.debug.bind(logger);
+console.warn = logger.warn.bind(logger);

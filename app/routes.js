@@ -9,7 +9,6 @@ module.exports = function(router, configGovPay, app) {
     // =====================================
     router
 
-        // healthcheck
         .get('/session-expired', function(req, res) {
             let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
             return res.render('session-expired', {
@@ -65,82 +64,151 @@ module.exports = function(router, configGovPay, app) {
             submitAdditionalPayment(req, res)
         });
 
-    function submitAdditionalPayment(req,res){
+    function isReturnDataValidForSubmitAdditionalPayment(returnData) {
+        return (
+            returnData &&
+            returnData._links &&
+            returnData._links.next_url &&
+            returnData._links.next_url.href &&
+            returnData.payment_id &&
+            returnData.reference &&
+            returnData.amount &&
+            returnData.created_date &&
+            returnData.state &&
+            returnData.state.status
+        );
+    }
 
-        let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
+    function submitAdditionalPayment(req, res) {
+        let startNewApplicationUrl =
+            configGovPay.configs.startNewApplicationUrl + "/additional-payments";
 
         try {
-            let moment = require('moment');
-            let sess = req.session
+
+            let moment = require("moment");
+            let sess = req.session;
             let applicationRef = sess.additionalPayments.applicationRef
             let applicationAmount = sess.additionalPayments.applicationAmount
             let applicationEmail = sess.additionalPayments.applicationEmail
 
             // build required data
             let formFields = {};
-            formFields = GovPay.additionalPaymentsAddBaseData(formFields, applicationRef, applicationAmount, applicationEmail);
+            formFields = GovPay.additionalPaymentsAddBaseData(
+                formFields,
+                applicationRef,
+                applicationAmount,
+                applicationEmail
+            );
 
-            request.post({
-                headers: {
-                    "content-type": "application/json; charset=utf-8",
-                    "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+            request.post(
+                {
+                    headers: {
+                        "content-type": "application/json; charset=utf-8",
+                        Authorization: "Bearer " + configGovPay.configs.ukPayApiKey,
+                    },
+                    url: configGovPay.configs.ukPayUrl,
+                    body: JSON.stringify(formFields),
                 },
-                url: configGovPay.configs.ukPayUrl,
-                body: JSON.stringify(formFields)
-            }, function (error, response) {
-                if (error) {
-                    console.log(JSON.stringify(error));
-                } else {
-                    let returnData = JSON.parse(response.body)
-                    let next_url = returnData._links.next_url.href
-                    sess.additionalPayments.paymentReference = returnData.payment_id
+                function (error, response) {
+                    if (error) {
+                        console.log(JSON.stringify(error));
+                        return res.render("additional-payment-error", {
+                            errorMessage: "Problem with Gov Pay response",
+                            startNewApplicationUrl: startNewApplicationUrl,
+                        });
+                    } else {
+                        let returnData;
+                        try {
+                            returnData = JSON.parse(response.body);
+                        } catch (err) {
+                            console.log(err);
+                            return res.render("additional-payment-error", {
+                                errorMessage: "Invalid Gov Pay return data",
+                                startNewApplicationUrl: startNewApplicationUrl,
+                            });
+                        }
 
-                    if (applicationRef) {
-                        let AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails;
-                        AdditionalPaymentDetails.findOne({
-                            where: {
-                                application_id: returnData.reference
-                            }
-                        }).then( function(additionalPayment) {
-                            if (!additionalPayment) {
-                                AdditionalPaymentDetails.create({
-                                    application_id: returnData.reference,
-                                    payment_reference: returnData.payment_id,
-                                    payment_amount: returnData.amount / 100,
-                                    payment_status: returnData.state.status,
-                                    payment_complete: false,
-                                    created_at: moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A'),
-                                    submitted: 'draft'
-                                })
-                            }
-                        })
+                        if (!isReturnDataValidForSubmitAdditionalPayment(returnData)) {
+                            return res.render("additional-payment-error", {
+                                errorMessage: "Invalid Gov Pay return data",
+                                startNewApplicationUrl: startNewApplicationUrl,
+                            });
+                        }
+
+                        let next_url = returnData._links.next_url.href;
+                        sess.additionalPayments.paymentReference = returnData.payment_id;
+
+                        if (applicationRef) {
+                            let AdditionalPaymentDetails = require("../models/index")
+                                .AdditionalPaymentDetails;
+                            AdditionalPaymentDetails.findOne({
+                                where: {
+                                    application_id: returnData.reference
+                                }
+                            }).then( function(additionalPayment) {
+                                if (!additionalPayment) {
+                                    AdditionalPaymentDetails.create({
+                                        application_id: returnData.reference,
+                                        payment_reference: returnData.payment_id,
+                                        payment_amount: returnData.amount / 100,
+                                        payment_status: returnData.state.status,
+                                        payment_complete: false,
+                                        created_at: moment(returnData.created_date).format(
+                                            "DD MMMM YYYY, h:mm:ss A"
+                                        ),
+                                        submitted: "draft",
+                                    });
+                                }
+                            });
+                        }
+
+                        res.render("additionalPayments/submit-additional-payment", {
+                            cost: applicationAmount,
+                            next_url: next_url,
+                            startNewApplicationUrl: startNewApplicationUrl,
+                        });
                     }
-
-                    res.render('additionalPayments/submit-additional-payment', {
-                        cost:sess.additionalPayments.applicationAmount,
-                        next_url: next_url,
-                        startNewApplicationUrl:startNewApplicationUrl
-                    })
-
                 }
-
-            })
-
-
+            );
         } catch (err) {
             console.log(err);
-            return res.render('additional-payment-error', {
-                errorMessage:err,
-                startNewApplicationUrl:startNewApplicationUrl
-            })
+            return res.render("additional-payment-error", {
+                errorMessage: err,
+                startNewApplicationUrl: startNewApplicationUrl,
+            });
         }
     }
+
 
     router
         // additional payment confirmation on return from Gov Pay
         .get('/additional-payment-confirmation', function(req, res) {
             processAdditionalPayment(req,res)
         });
+
+    function isReturnDataValidForProcessAdditionalPayment(returnData) {
+        return (
+            returnData &&
+            returnData.amount &&
+            returnData.state &&
+            returnData.state.status &&
+            returnData.state.finished &&
+            returnData.reference &&
+            returnData.card_details &&
+            returnData.card_details.card_brand &&
+            returnData.created_date
+        );
+    }
+
+    function isReturnDataValidForUnsuccessfulAdditionalPayment(returnData) {
+        return (
+            returnData &&
+            returnData._links &&
+            returnData._links.next_url &&
+            returnData._links.next_url.href &&
+            returnData.payment_id
+        );
+    }
 
     function processAdditionalPayment(req,res){
 
@@ -158,14 +226,29 @@ module.exports = function(router, configGovPay, app) {
                 url: configGovPay.configs.ukPayUrl + payment_id,
             }, function (error, response, body) {
                 if (error) {
-                    let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
                     console.log(error);
                     return res.render('additional-payment-error', {
-                        errorMessage:'Payment system error',
+                        errorMessage:"Payment system error",
                         startNewApplicationUrl:startNewApplicationUrl
                     })
                 }
-                let returnData = JSON.parse(body)
+                let returnData;
+                try {
+                    returnData = JSON.parse(body);
+                } catch (err) {
+                    console.log(err);
+                    return res.render("additional-payment-error", {
+                        errorMessage: "Problem with Gov Pay response",
+                        startNewApplicationUrl: startNewApplicationUrl,
+                    });
+                }
+
+                if (!isReturnDataValidForProcessAdditionalPayment(returnData)) {
+                    return res.render("additional-payment-error", {
+                        errorMessage: "Invalid Gov Pay return data",
+                        startNewApplicationUrl: startNewApplicationUrl,
+                    });
+                }
                 let cost = returnData.amount / 100
                 let status = returnData.state.status
                 let finished = returnData.state.finished
@@ -235,8 +318,23 @@ module.exports = function(router, configGovPay, app) {
                         if (error) {
                             console.log(JSON.stringify(error));
                         } else {
-                            var returnData = JSON.parse(response.body)
-                            var next_url = returnData._links.next_url.href
+                            let returnData;
+                            try {
+                                returnData = JSON.parse(response.body);
+                            } catch (err) {
+                                console.log(err);
+                                return res.render("additional-payment-error", {
+                                    errorMessage: "Problem with Gov Pay response",
+                                    startNewApplicationUrl: startNewApplicationUrl,
+                                });
+                            }
+                            if (!isReturnDataValidForUnsuccessfulAdditionalPayment(returnData)) {
+                                return res.render("additional-payment-error", {
+                                    errorMessage: "Invalid Gov Pay return data",
+                                    startNewApplicationUrl: startNewApplicationUrl,
+                                });
+                            }
+                            let next_url = returnData._links.next_url?.href
                             sess.additionalPayments.paymentReference = returnData.payment_id
 
                             res.render('additionalPayments/additional-payment-confirmation', {
@@ -253,7 +351,7 @@ module.exports = function(router, configGovPay, app) {
 
                 }
 
-        })
+            })
 
         }catch (err) {
             let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments';
@@ -275,11 +373,22 @@ module.exports = function(router, configGovPay, app) {
         .get('/submit-payment', function(req,res){submitPayment(req,res);})
         .post('/submit-payment', function(req,res){submitPayment(req,res);});
 
+    function isReturnDataValidForSubmitPayment(returnData) {
+        return (
+            returnData &&
+            returnData._links &&
+            returnData._links.next_url &&
+            returnData._links.next_url.href &&
+            returnData.payment_id
+        );
+    }
 
     function submitPayment(req,res){
 
         // get the application ID from the request (redirected from application service)
         var appid = req.session.appId;
+        var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
+
         if( req.session.appId && req.session.appId !==0 ){
             //Do nothing
         }
@@ -287,7 +396,6 @@ module.exports = function(router, configGovPay, app) {
 
             res.clearCookie('LoggedIn');
             req.session.appId = false;
-            var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
             return res.render('payment-error', {
                 errorMessage:'Missing user session',
                 startNewApplicationUrl:startNewApplicationUrl
@@ -327,9 +435,23 @@ module.exports = function(router, configGovPay, app) {
                             if (error) {
                                 console.log(JSON.stringify(error));
                             } else {
-                                var returnData = JSON.parse(response.body)
-                                var next_url = returnData._links.next_url.href
-
+                                let returnData;
+                                try {
+                                    returnData = JSON.parse(response.body);
+                                } catch (err) {
+                                    console.log(err);
+                                    return res.render("payment-error", {
+                                        errorMessage: "Problem with Gov Pay response",
+                                        startNewApplicationUrl: startNewApplicationUrl,
+                                    });
+                                }
+                                if (!isReturnDataValidForSubmitPayment(returnData)) {
+                                    return res.render("payment-error", {
+                                        errorMessage: "Invalid Gov Pay return data",
+                                        startNewApplicationUrl: startNewApplicationUrl,
+                                    });
+                                }
+                                let next_url = returnData._links.next_url.href
 
                                 // update database (add payment reference)
                                 ApplicationPaymentDetails.update({
@@ -351,7 +473,7 @@ module.exports = function(router, configGovPay, app) {
                                         next_url: next_url,
                                         startNewApplicationUrl:startNewApplicationUrl,
                                         user_data: {
-                                            loggedIn: req.session && req.session.passport && req.session.passport.user,
+                                            loggedIn: loggedIn,
                                             user: req.session.user,
                                             account: req.session.account,
                                             url: '/api/user/'
@@ -359,7 +481,7 @@ module.exports = function(router, configGovPay, app) {
                                     });
 
                                 }).catch(function (error) {
-                                    console.log(appId + ' - ' + error);
+                                    console.log(appid + ' - ' + error);
                                 });
 
                             }
@@ -376,12 +498,33 @@ module.exports = function(router, configGovPay, app) {
     // PAYMENT CONFIRMATION
     // =====================================
 
+    function isReturnDataValidForPaymentConfirmation(returnData) {
+        return (
+            returnData &&
+            returnData.state &&
+            returnData.state.status &&
+            returnData.state.finished &&
+            returnData.reference
+        );
+    }
+
+    function isReturnDataValidForUnsuccessfulPaymentConfirmation(returnData) {
+        return (
+            returnData &&
+            returnData._links &&
+            returnData._links.next_url &&
+            returnData._links.next_url.href &&
+            returnData.payment_id
+        );
+    }
+
     router
 
         // prepare confirmation page
         .get('/payment-confirmation', function(req, res) {
 
             var appIdFromGovPay = req.query.id
+            var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
 
             // get appId from the session
             // else send user to error page
@@ -393,7 +536,6 @@ module.exports = function(router, configGovPay, app) {
                 console.log(appIdFromGovPay + ' - Application has missing session. Rendering error page.')
                 res.clearCookie('LoggedIn');
                 req.session.appId = false;
-                var startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
                 return res.render('payment-error', {
                     errorMessage:'Missing user session',
                     startNewApplicationUrl:startNewApplicationUrl
@@ -424,16 +566,30 @@ module.exports = function(router, configGovPay, app) {
                 }, function (error, response, body) {
                     if (error) {
                         console.log(appId + ' - ' + error);
-                        let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
                         return res.render('payment-error', {
                             errorMessage:'Payment system error',
                             startNewApplicationUrl:startNewApplicationUrl
                         })
                     }
-                    var returnData = JSON.parse(body)
-                    var status = returnData.state.status
-                    var finished = returnData.state.finished
-                    var appReference = returnData.reference
+                    let returnData;
+                    try {
+                        returnData = JSON.parse(body);
+                    } catch (err) {
+                        console.log(err);
+                        return res.render("payment-error", {
+                            errorMessage: "Problem with Gov Pay response",
+                            startNewApplicationUrl: startNewApplicationUrl,
+                        });
+                    }
+                    if (!isReturnDataValidForPaymentConfirmation(returnData)) {
+                        return res.render("payment-error", {
+                            errorMessage: "Invalid Gov Pay return data",
+                            startNewApplicationUrl: startNewApplicationUrl,
+                        });
+                    }
+                    let status = returnData.state.status
+                    let finished = returnData.state.finished
+                    let appReference = returnData.reference
 
                     if (status && status === 'success' && finished && finished === true){
 
@@ -458,83 +614,97 @@ module.exports = function(router, configGovPay, app) {
                         var usersEmail = (loggedIn) ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
                         var isSessionValid = GovPay.isSessionValid(req);
 
-                                // lookup required data from database
-                                var formFieldsTemp = Application.findOne({ where: {application_id: appId}}).then(function(application) {
+                        // lookup required data from database
+                        var formFieldsTemp = Application.findOne({ where: {application_id: appId}}).then(function(application) {
 
-                                    ApplicationPaymentDetails.findOne({where: {application_id: appId}}).then(function (applicationDetail) {
+                            ApplicationPaymentDetails.findOne({where: {application_id: appId}}).then(function (applicationDetail) {
 
-                                        UserDetails.findOne({where: {application_id: appId}}).then(function (userDetails) {
+                                UserDetails.findOne({where: {application_id: appId}}).then(function (userDetails) {
 
-                                            UserDocumentCount.findOne({where: {application_id: appId}}).then(function (userDocumentCount) {
+                                    UserDocumentCount.findOne({where: {application_id: appId}}).then(function (userDocumentCount) {
 
-                                                // array to hold data for sending to Payment API
-                                                var formFields = {};
+                                        // array to hold data for sending to Payment API
+                                        var formFields = {};
 
-                                                formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
+                                        formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail);
 
-                                                request.post({
-                                                    headers: {
-                                                        "content-type": "application/json; charset=utf-8",
-                                                        "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
-                                                    },
-                                                    url: configGovPay.configs.ukPayUrl,
-                                                    body: JSON.stringify(formFields)
-                                                }, function (error, response) {
-                                                    if (error) {
-                                                        console.log(JSON.stringify(error));
-                                                    } else {
-                                                        var returnData = JSON.parse(response.body)
-                                                        var next_url = returnData._links.next_url.href
+                                        request.post({
+                                            headers: {
+                                                "content-type": "application/json; charset=utf-8",
+                                                "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
+                                            },
+                                            url: configGovPay.configs.ukPayUrl,
+                                            body: JSON.stringify(formFields)
+                                        }, function (error, response) {
+                                            if (error) {
+                                                console.log(JSON.stringify(error));
+                                            } else {
+                                                let returnData;
+                                                try {
+                                                    returnData = JSON.parse(response.body);
+                                                } catch (err) {
+                                                    console.log(err);
+                                                    return res.render("payment-error", {
+                                                        errorMessage: "Problem with Gov Pay response",
+                                                        startNewApplicationUrl: startNewApplicationUrl,
+                                                    });
+                                                }
+                                                if (!isReturnDataValidForUnsuccessfulPaymentConfirmation(returnData)) {
+                                                    return res.render("payment-error", {
+                                                        errorMessage: "Invalid Gov Pay return data",
+                                                        startNewApplicationUrl: startNewApplicationUrl,
+                                                    });
+                                                }
+                                                let next_url = returnData._links.next_url.href
 
+                                                // update database (add payment reference)
+                                                ApplicationPaymentDetails.update({
+                                                    payment_reference : returnData.payment_id
+                                                },{
+                                                    where: {
+                                                        application_id: appId
+                                                    }
+                                                }).then( function() {
+                                                    console.log(appId + ' - rendering failed payment page');
+                                                    // display failed payment page (with link to start a new payment)
 
-                                                        // update database (add payment reference)
-                                                        ApplicationPaymentDetails.update({
-                                                            payment_reference : returnData.payment_id
-                                                        },{
-                                                            where: {
-                                                                application_id: appId
+                                                    res.render('payment-confirmation.ejs',
+                                                        {
+                                                            applicationId: appId,
+                                                            applicationType: application.serviceType,
+                                                            next_url: next_url,
+                                                            startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
+                                                            loggedIn: loggedIn,
+                                                            isSessionValid: isSessionValid,
+                                                            usersEmail: usersEmail,
+                                                            user_data: {
+                                                                loggedIn: loggedIn,
+                                                                user: req.session.user,
+                                                                account: req.session.account,
+                                                                url: '/api/user/'
                                                             }
-                                                        }).then( function() {
-                                                            console.log(appId + ' - rendering failed payment page');
-                                                            // display failed payment page (with link to start a new payment)
-
-                                                            res.render('payment-confirmation.ejs',
-                                                                {
-                                                                    applicationId: appId,
-                                                                    applicationType: application.serviceType,
-                                                                    next_url: next_url,
-                                                                    startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
-                                                                    loggedIn: loggedIn,
-                                                                    isSessionValid: isSessionValid,
-                                                                    usersEmail: usersEmail,
-                                                                    user_data: {
-                                                                        loggedIn: req.session && req.session.passport && req.session.passport.user,
-                                                                        user: req.session.user,
-                                                                        account: req.session.account,
-                                                                        url: '/api/user/'
-                                                                    }
-                                                                });
-
-                                                        }).catch(function (error) {
-                                                            console.log(appId + ' - ' + error);
                                                         });
 
-                                                    }
+                                                }).catch(function (error) {
+                                                    console.log(appId + ' - ' + error);
+                                                });
 
-                                                })
+                                            }
 
-                                            }).catch(function (error) {
-                                                console.log(appId + ' - ' + error);
-                                            });
-                                        }).catch(function (error) {
-                                            console.log(appId + ' - ' + error);
-                                        });
+                                        })
+
                                     }).catch(function (error) {
                                         console.log(appId + ' - ' + error);
                                     });
                                 }).catch(function (error) {
                                     console.log(appId + ' - ' + error);
                                 });
+                            }).catch(function (error) {
+                                console.log(appId + ' - ' + error);
+                            });
+                        }).catch(function (error) {
+                            console.log(appId + ' - ' + error);
+                        });
 
                     }
                 });
