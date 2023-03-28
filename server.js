@@ -23,6 +23,10 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+
+// =====================================
+// SESSION
+// =====================================
 const session = require("express-session")
 let RedisStore = require("connect-redis")(session)
 
@@ -36,23 +40,51 @@ const redisClient = createClient({
     socket: { connectTimeout, port, host, tls: process.env.NODE_ENV !== "development" },
 });
 
+redisClient.connect((err) => {
+    if (err) {
+        console.error("Redis client error:", err);
+        next(err);
+    } else {
+        redisClientConnected = true;
+        next();
+    }
+});
+
 redisClient.on("connect", () => {
     console.log("Redis client connected successfully");
 });
 
-(async () => {
-    try {
-        await redisClient.connect();
-    } catch (err) {
-        console.log(`Redis client failed to connect with ${err}`);
+redisClient.on("error", (error) => {
+    console.error("Redis client error:", error);
+});
+
+const redisStore = new RedisStore({ client: redisClient });
+
+let redisClientConnected = false;
+
+redisClient.on("ready", () => {
+    redisClientConnected = true;
+});
+
+app.use((req, res, next) => {
+    if (redisClientConnected) {
+        next();
+    } else {
+        redisClient.connect((err) => {
+            if (err) {
+                console.error("Redis client error:", err);
+                next(err);
+            } else {
+                redisClientConnected = true;
+                next();
+            }
+        });
     }
-})();
-
-
+});
 
 app.use(
     session({
-        store: new RedisStore({ client: redisClient }),
+        store: redisStore,
         prefix: configGovPay.sessionSettings.prefix,
         saveUninitialized: false,
         secret: configGovPay.sessionSettings.secret,
@@ -67,6 +99,9 @@ app.use(
     })
 )
 
+// =====================================
+// VIEW AND LOCALS
+// =====================================
 app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
@@ -91,10 +126,13 @@ app.use(function(req, res, next) {
     return next();
 });
 
+
 // =====================================
 // MODELS (Sequelize ORM)
 // =====================================
 app.set('models', require('./models'));
+
+
 
 // =====================================
 // ASSETS
@@ -104,6 +142,8 @@ const path = require('path');
 app.use("/api/payment/",express.static(__dirname + "/public"));
 app.use("/api/payment/styles",express.static(__dirname + "/styles")); //static directory for stylesheets
 app.use("/api/payment/images",express.static(__dirname + "/images")); //static directory for images
+
+
 
 // =====================================
 // ROUTES
@@ -130,6 +170,8 @@ fs.readdir('images/govuk_frontend_toolkit', function(err, items) {
     }
 });
 
+
+
 // =====================================
 // JOB SCHEDULER
 // =====================================
@@ -144,8 +186,10 @@ const hourlyInterval = configGovPay.configs.jobScheduleHourlyInterval
 const jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + hourlyInterval + " * * *";
 schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
 
+
+
 // =====================================
-// LAUNCH
+// START APP
 // =====================================
 app.listen(serverPort);
 console.log('is-payment-service running on port: ' + serverPort);

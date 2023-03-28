@@ -10,6 +10,11 @@ const opts = {
     define: {
         //prevent sequelize from pluralizing table names
         freezeTableName: true
+    },
+    retry: {
+        base: 1000,
+        multiplier: 2,
+        max: 5000,
     }
 };
 
