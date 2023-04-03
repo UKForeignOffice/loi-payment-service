@@ -191,8 +191,6 @@ module.exports = function(router, configGovPay, app) {
             returnData.state.status &&
             returnData.state.finished &&
             returnData.reference &&
-            returnData.card_details &&
-            returnData.card_details.card_brand &&
             returnData.created_date
         );
     }
@@ -247,10 +245,10 @@ module.exports = function(router, configGovPay, app) {
                     });
                 }
                 let cost = returnData.amount / 100
-                let status = returnData.state.status
-                let finished = returnData.state.finished
+                let status = returnData.state?.status
+                let finished = returnData.state?.finished
                 let appReference = returnData.reference
-                let paymentMethod = returnData.card_details.card_brand
+                let paymentMethod = returnData.card_details?.card_brand
                 let createdDate = moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A')
 
                 if (status && status === 'success' && finished && finished === true){
