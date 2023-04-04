@@ -60,28 +60,6 @@ redisClient.on("error", (error) => {
 
 const redisStore = new RedisStore({ client: redisClient });
 
-let redisClientConnected = false;
-
-redisClient.on("ready", () => {
-    redisClientConnected = true;
-});
-
-app.use((req, res, next) => {
-    if (redisClientConnected) {
-        next();
-    } else {
-        redisClient.connect((err) => {
-            if (err) {
-                console.error("Redis client error:", err);
-                next(err);
-            } else {
-                redisClientConnected = true;
-                next();
-            }
-        });
-    }
-});
-
 app.use(
     session({
         store: redisStore,
