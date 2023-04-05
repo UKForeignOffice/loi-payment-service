@@ -29,11 +29,10 @@ app.use(cookieParser());
 // =====================================
 const session = require("express-session")
 let RedisStore = require("connect-redis")(session)
-
 const { createClient } = require("redis");
-
 const { password, port, host } = configGovPay.sessionSettings;
 const connectTimeout = 15000;
+
 const redisClient = createClient({
     legacyMode: true,
     password,
@@ -45,7 +44,6 @@ redisClient.connect((err) => {
         console.error("Redis client error:", err);
         next(err);
     } else {
-        redisClientConnected = true;
         next();
     }
 });
