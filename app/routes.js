@@ -457,23 +457,7 @@ module.exports = function(router, configGovPay, app) {
                                     }
                                 }).then( function() {
                                     //redirect to next form page with parameters
-                                    if (req.query.skipConfirmation) {
-                                        return res.redirect(next_url);
-                                    }
-                                    res.render('submit-payment.ejs', {
-                                        applicationId: appid,
-                                        applicationType: application.serviceType,
-                                        loggedIn: loggedIn,
-                                        usersEmail: usersEmail,
-                                        next_url: next_url,
-                                        startNewApplicationUrl:startNewApplicationUrl,
-                                        user_data: {
-                                            loggedIn: loggedIn,
-                                            user: req.session.user,
-                                            account: req.session.account,
-                                            url: '/api/user/'
-                                        }
-                                    });
+                                    return res.redirect(next_url);
 
                                 }).catch(function (error) {
                                     console.log(appid + ' - ' + error);
