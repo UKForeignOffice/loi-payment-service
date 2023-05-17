@@ -91,6 +91,7 @@ module.exports = function(router, configGovPay, app) {
             let applicationAmount = sess.additionalPayments.applicationAmount
             let applicationEmail = sess.additionalPayments.applicationEmail
 
+
             // build required data
             let formFields = {};
             formFields = GovPay.additionalPaymentsAddBaseData(
@@ -139,6 +140,7 @@ module.exports = function(router, configGovPay, app) {
                         sess.additionalPayments.paymentReference = returnData.payment_id;
 
                         if (applicationRef) {
+
                             let AdditionalPaymentDetails = require("../models/index")
                                 .AdditionalPaymentDetails;
                             AdditionalPaymentDetails.findOne({
@@ -146,6 +148,7 @@ module.exports = function(router, configGovPay, app) {
                                     application_id: returnData.reference
                                 }
                             }).then( function(additionalPayment) {
+
                                 if (!additionalPayment) {
                                     AdditionalPaymentDetails.create({
                                         application_id: returnData.reference,
@@ -194,8 +197,6 @@ module.exports = function(router, configGovPay, app) {
             returnData.state.status &&
             returnData.state.finished &&
             returnData.reference &&
-            returnData.card_details &&
-            returnData.card_details.card_brand &&
             returnData.created_date
         );
     }
@@ -250,10 +251,10 @@ module.exports = function(router, configGovPay, app) {
                     });
                 }
                 let cost = returnData.amount / 100
-                let status = returnData.state.status
-                let finished = returnData.state.finished
+                let status = returnData.state?.status
+                let finished = returnData.state?.finished
                 let appReference = returnData.reference
-                let paymentMethod = returnData.card_details.card_brand
+                let paymentMethod = returnData.card_details?.card_brand
                 let createdDate = moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A')
 
                 if (status && status === 'success' && finished && finished === true){
@@ -462,23 +463,7 @@ module.exports = function(router, configGovPay, app) {
                                     }
                                 }).then( function() {
                                     //redirect to next form page with parameters
-                                    if (req.query.skipConfirmation) {
-                                        return res.redirect(next_url);
-                                    }
-                                    res.render('submit-payment.ejs', {
-                                        applicationId: appid,
-                                        applicationType: application.serviceType,
-                                        loggedIn: loggedIn,
-                                        usersEmail: usersEmail,
-                                        next_url: next_url,
-                                        startNewApplicationUrl:startNewApplicationUrl,
-                                        user_data: {
-                                            loggedIn: loggedIn,
-                                            user: req.session.user,
-                                            account: req.session.account,
-                                            url: '/api/user/'
-                                        }
-                                    });
+                                    return res.redirect(next_url);
 
                                 }).catch(function (error) {
                                     console.log(appid + ' - ' + error);
@@ -667,6 +652,7 @@ module.exports = function(router, configGovPay, app) {
                                                 }).then( function() {
                                                     console.log(appId + ' - rendering failed payment page');
                                                     // display failed payment page (with link to start a new payment)
+
 
                                                     res.render('payment-confirmation.ejs',
                                                         {
