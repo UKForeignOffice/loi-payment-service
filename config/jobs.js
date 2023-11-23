@@ -1,7 +1,7 @@
 const common = require('./common.js'),
     moment = require('moment'),
     configGovPay = common.config(),
-    request = require('request-promise');
+    axios = require('axios');
 
 const jobs ={
     //====================================
@@ -13,8 +13,7 @@ const jobs ={
 
     paymentCleanup: async function() {
 
-        const formattedDate = moment().toISOString(),
-            { Op } = require("sequelize"),
+        const { Op } = require("sequelize"),
             sequelize = require('../models/index').sequelize,
             PaymentsCleanupJob = require('../models/index').PaymentsCleanupJob,
             ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails,
@@ -69,15 +68,15 @@ const jobs ={
 
 
         async function start() {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] STARTED`);
+            console.log(`[PAYMENT CLEANUP JOB] STARTED`);
         }
 
         async function stop() {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] FINISHED`);
+            console.log(`[PAYMENT CLEANUP JOB] FINISHED`);
         }
 
         async function abort(reason) {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] ABORTED ${reason}`);
+            console.log(`[PAYMENT CLEANUP JOB] ABORTED ${reason}`);
         }
 
         async function checkIfDbIsUnLocked() {
@@ -95,7 +94,7 @@ const jobs ={
 
         async function lockDb() {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] LOCKING DB`);
+                console.log(`[PAYMENT CLEANUP JOB] LOCKING DB`);
                 return await PaymentsCleanupJob.update({
                     lock:true
                 }, {
@@ -110,7 +109,7 @@ const jobs ={
 
         async function unLockDb() {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UNLOCKING DB`);
+                console.log(`[PAYMENT CLEANUP JOB] UNLOCKING DB`);
                 return await PaymentsCleanupJob.update({
                     lock:false
                 }, {
@@ -167,7 +166,7 @@ const jobs ={
         }
 
         async function updatePaymentStatus(problemCase, status) {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
+            console.log(`[PAYMENT CLEANUP JOB] UPDATING STATUS FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
                 return await ApplicationPaymentDetails.update({
                     payment_complete: true,
@@ -183,7 +182,7 @@ const jobs ={
         }
 
         async function updateAdditionalPaymentStatus(problemCase, status) {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
+            console.log(`[PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
                 return await AdditionalPaymentDetails.update({
                     payment_complete: true,
@@ -200,7 +199,7 @@ const jobs ={
 
         async function exportAppData(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                console.log(`[PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await sequelize.query('SELECT * FROM populate_exportedapplicationdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
@@ -209,7 +208,7 @@ const jobs ={
 
         async function exportEAppData(problemCase) {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                console.log('[PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR %s - %s', problemCase.application_id, problemCase.payment_reference);
                 return await sequelize.query('SELECT * FROM populate_exportedeApostilleAppdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
@@ -242,7 +241,7 @@ const jobs ={
 
         async function queueApplication(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                console.log(`[PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await Application.update({
                     submitted: 'queued'
                 }, {
@@ -257,7 +256,7 @@ const jobs ={
 
         async function queueAdditionalPayment(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                console.log(`[PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await AdditionalPaymentDetails.update({
                     submitted: 'queued',
                     updated_at: moment().format('DD MMMM YYYY, h:mm:ss A')
@@ -273,23 +272,21 @@ const jobs ={
 
         async function callGovPaymentsApi(problemCase) {
             try {
-                let options = {
-                    method: 'GET',
-                    uri: configGovPay.configs.ukPayUrl + problemCase.payment_reference,
+                const response = await axios.get(configGovPay.configs.ukPayUrl + problemCase.payment_reference, {
                     headers: {
                         "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                     }
-                }
-                return await request(options)
+                });
+                return response.data;
             } catch (error) {
-                console.log(error)
+                console.log(error);
             }
         }
 
         async function processPayments(problemPayments) {
             try {
                 for (let problemCase of problemPayments) {
-                    let returnData = JSON.parse(await callGovPaymentsApi(problemCase))
+                    let returnData = await callGovPaymentsApi(problemCase)
                     let status = returnData.state.status
                     let paymentIsFinished = returnData.state.finished
                     let createdDate = returnData.created_date
@@ -300,7 +297,7 @@ const jobs ={
                     // If so, do stuff
                     if (paymentIsOldEnough) {
                         if (paymentIsFinished && paymentIsFinished === true) {
-                            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                            console.log(`[PAYMENT CLEANUP JOB] PROCESSING ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updatePaymentStatus(problemCase, status)
 
                             if (status === 'success') {
@@ -345,7 +342,7 @@ const jobs ={
                     // If so, do stuff
                     if (paymentIsOldEnough) {
                         if (paymentIsFinished && paymentIsFinished === true) {
-                            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                            console.log(`[PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updateAdditionalPaymentStatus(problemCase, status)
 
                             if (status === 'success') {
