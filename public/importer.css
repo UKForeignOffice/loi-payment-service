@@ -1,26 +1,4 @@
 @charset "UTF-8";
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
-@font-face {
-  font-family: GDS-Logo;
-  src: local("HelveticaNeue"), local("Helvetica Neue"), local("Arial"), local("Helvetica");
-}
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
 .breadcrumbs ol:after, .form-group-error:after, .form-section:after,
 .form-group:after, fieldset:after, .panel:after, .notice:after, #content:after, .grid-row:after {
   content: "";
@@ -47,12 +25,6 @@
   margin: 0 -15px;
 }
 
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
 .breadcrumbs ol:after, .form-group-error:after, .form-section:after,
 .form-group:after, fieldset:after, .panel:after, .notice:after, #content:after, .grid-row:after {
   content: "";
@@ -60,32 +32,6 @@
   clear: both;
 }
 
-@font-face {
-  font-family: GDS-Logo;
-  src: local("HelveticaNeue"), local("Helvetica Neue"), local("Arial"), local("Helvetica");
-}
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
-@font-face {
-  font-family: GDS-Logo;
-  src: local("HelveticaNeue"), local("Helvetica Neue"), local("Arial"), local("Helvetica");
-}
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
 .breadcrumbs ol:after, .form-group-error:after, .form-section:after,
 .form-group:after, fieldset:after, .panel:after, .notice:after, #content:after, .grid-row:after {
   content: "";
@@ -93,12 +39,6 @@
   clear: both;
 }
 
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
 .breadcrumbs ol:after, .form-group-error:after, .form-section:after,
 .form-group:after, fieldset:after, .panel:after, .notice:after, #content:after, .grid-row:after {
   content: "";
@@ -106,12 +46,6 @@
   clear: both;
 }
 
-@-ms-viewport {
-  width: device-width;
-}
-@-o-viewport {
-  width: device-width;
-}
 .visually-hidden,
 .visuallyhidden {
   position: absolute;
@@ -447,10 +381,10 @@ button:focus {
 
 main {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 400;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
   -webkit-font-smoothing: antialiased;
 }
 @media (min-width: 641px) {
@@ -462,10 +396,10 @@ main {
 
 .font-xxlarge {
   font-family: "nta", Arial, sans-serif;
-  font-size: 53px;
-  line-height: 1.0377358491;
   font-weight: 400;
   text-transform: none;
+  font-size: 53px;
+  line-height: 1.0377358491;
 }
 @media (min-width: 641px) {
   .font-xxlarge {
@@ -476,10 +410,10 @@ main {
 
 .font-xlarge {
   font-family: "nta", Arial, sans-serif;
-  font-size: 32px;
-  line-height: 1.09375;
   font-weight: 400;
   text-transform: none;
+  font-size: 32px;
+  line-height: 1.09375;
 }
 @media (min-width: 641px) {
   .font-xlarge {
@@ -490,10 +424,10 @@ main {
 
 .font-large {
   font-family: "nta", Arial, sans-serif;
-  font-size: 24px;
-  line-height: 1.0416666667;
   font-weight: 400;
   text-transform: none;
+  font-size: 24px;
+  line-height: 1.0416666667;
 }
 @media (min-width: 641px) {
   .font-large {
@@ -504,10 +438,10 @@ main {
 
 .font-medium {
   font-family: "nta", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
   font-weight: 400;
   text-transform: none;
+  font-size: 18px;
+  line-height: 1.2;
 }
 @media (min-width: 641px) {
   .font-medium {
@@ -518,10 +452,10 @@ main {
 
 .font-small {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 400;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
 }
 @media (min-width: 641px) {
   .font-small {
@@ -532,10 +466,10 @@ main {
 
 .font-xsmall {
   font-family: "nta", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.1428571429;
   font-weight: 400;
   text-transform: none;
+  font-size: 14px;
+  line-height: 1.1428571429;
 }
 @media (min-width: 641px) {
   .font-xsmall {
@@ -546,10 +480,10 @@ main {
 
 .bold-xxlarge {
   font-family: "nta", Arial, sans-serif;
-  font-size: 53px;
-  line-height: 1.0377358491;
   font-weight: 700;
   text-transform: none;
+  font-size: 53px;
+  line-height: 1.0377358491;
 }
 @media (min-width: 641px) {
   .bold-xxlarge {
@@ -560,10 +494,10 @@ main {
 
 .bold-xlarge {
   font-family: "nta", Arial, sans-serif;
-  font-size: 32px;
-  line-height: 1.09375;
   font-weight: 700;
   text-transform: none;
+  font-size: 32px;
+  line-height: 1.09375;
 }
 @media (min-width: 641px) {
   .bold-xlarge {
@@ -574,10 +508,10 @@ main {
 
 .bold-large {
   font-family: "nta", Arial, sans-serif;
-  font-size: 24px;
-  line-height: 1.0416666667;
   font-weight: 700;
   text-transform: none;
+  font-size: 24px;
+  line-height: 1.0416666667;
 }
 @media (min-width: 641px) {
   .bold-large {
@@ -588,10 +522,10 @@ main {
 
 .bold-medium {
   font-family: "nta", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
   font-weight: 700;
   text-transform: none;
+  font-size: 18px;
+  line-height: 1.2;
 }
 @media (min-width: 641px) {
   .bold-medium {
@@ -602,10 +536,10 @@ main {
 
 .bold-small {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 700;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
 }
 @media (min-width: 641px) {
   .bold-small {
@@ -616,10 +550,10 @@ main {
 
 .bold-xsmall {
   font-family: "nta", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.1428571429;
   font-weight: 700;
   text-transform: none;
+  font-size: 14px;
+  line-height: 1.1428571429;
 }
 @media (min-width: 641px) {
   .bold-xsmall {
@@ -634,10 +568,10 @@ main {
 
 .heading-xlarge {
   font-family: "nta", Arial, sans-serif;
-  font-size: 32px;
-  line-height: 1.09375;
   font-weight: 700;
   text-transform: none;
+  font-size: 32px;
+  line-height: 1.09375;
   display: block;
   margin-top: 0.46875em;
   margin-bottom: 0.9375em;
@@ -656,10 +590,11 @@ main {
 }
 .heading-xlarge .heading-secondary {
   font-family: "nta", Arial, sans-serif;
-  font-size: 20px;
-  line-height: 1.1111111111;
   font-weight: 400;
   text-transform: none;
+  font-size: 20px;
+  line-height: 1.1111111111;
+  display: block;
   padding-top: 8px;
   padding-bottom: 7px;
   display: block;
@@ -680,10 +615,10 @@ main {
 
 .heading-large {
   font-family: "nta", Arial, sans-serif;
-  font-size: 24px;
-  line-height: 1.0416666667;
   font-weight: 700;
   text-transform: none;
+  font-size: 24px;
+  line-height: 1.0416666667;
   display: block;
   margin-top: 1.0416666667em;
   margin-bottom: 0.4166666667em;
@@ -702,10 +637,11 @@ main {
 }
 .heading-large .heading-secondary {
   font-family: "nta", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
   font-weight: 400;
   text-transform: none;
+  font-size: 18px;
+  line-height: 1.2;
+  display: block;
   padding-top: 9px;
   padding-bottom: 6px;
   display: block;
@@ -726,10 +662,10 @@ main {
 
 .heading-medium {
   font-family: "nta", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
   font-weight: 700;
   text-transform: none;
+  font-size: 18px;
+  line-height: 1.2;
   display: block;
   margin-top: 1.25em;
   margin-bottom: 0.5em;
@@ -749,10 +685,10 @@ main {
 
 .heading-small {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 700;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
   display: block;
   margin-top: 0.625em;
   margin-bottom: 0.3125em;
@@ -788,10 +724,10 @@ p,
 
 .lede {
   font-family: "nta", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
   font-weight: 400;
   text-transform: none;
+  font-size: 18px;
+  line-height: 1.2;
 }
 @media (min-width: 641px) {
   .lede {
@@ -830,10 +766,10 @@ p,
   display: inline-block;
   position: relative;
   font-family: "nta", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.1428571429;
   font-weight: 400;
   text-transform: none;
+  font-size: 14px;
+  line-height: 1.1428571429;
   margin-top: 15px;
   margin-bottom: 15px;
   padding-left: 14px;
@@ -934,11 +870,13 @@ hr {
   position: relative;
   display: -moz-inline-stack;
   display: inline-block;
-  padding: 0.3em 0.6em 0.2em;
+  padding: 0.526315em 0.789473em 0.263157em;
   border: none;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
   border-radius: 0;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
   -webkit-appearance: none;
   -webkit-box-shadow: 0 2px 0 #003618;
   -moz-box-shadow: 0 2px 0 #003618;
@@ -981,7 +919,7 @@ hr {
   -moz-box-shadow: 0 2px 0 #003618;
   box-shadow: 0 2px 0 #003618;
 }
-.button:link, .button:hover, .button:focus, .button:visited {
+.button:link, .button:link:focus, .button:hover, .button:focus, .button:visited {
   color: #fff;
 }
 .button:before {
@@ -997,12 +935,6 @@ hr {
 .button:active:before {
   top: -10%;
   height: 120%;
-}
-.button[rel=external]:after {
-  display: none;
-  content: none;
-  margin-left: 0;
-  margin-right: 0;
 }
 @media (max-width: 640px) {
   .button {
@@ -1031,10 +963,10 @@ hr {
 .button-start,
 .button-get-started {
   font-family: "nta", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
   font-weight: 700;
   text-transform: none;
+  font-size: 18px;
+  line-height: 1.2;
   background-image: url("../images/govuk_frontend_toolkit/icon-pointer.png");
   background-repeat: no-repeat;
   background-position: 100% 50%;
@@ -1384,10 +1316,10 @@ table {
 table th,
 table td {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 400;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
   padding: 0.6315789474em 1.0526315789em 0.4736842105em 0;
   text-align: left;
   border-bottom: 1px solid #bfc1c3;
@@ -1418,10 +1350,10 @@ table caption {
 
 .table-font-xsmall th {
   font-family: "nta", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.1428571429;
   font-weight: 700;
   text-transform: none;
+  font-size: 14px;
+  line-height: 1.1428571429;
 }
 @media (min-width: 641px) {
   .table-font-xsmall th {
@@ -1431,10 +1363,10 @@ table caption {
 }
 .table-font-xsmall td {
   font-family: "nta", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.1428571429;
   font-weight: 400;
   text-transform: none;
+  font-size: 14px;
+  line-height: 1.1428571429;
 }
 @media (min-width: 641px) {
   .table-font-xsmall td {
@@ -1617,10 +1549,10 @@ textarea {
 
 .form-label {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 400;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
 }
 @media (min-width: 641px) {
   .form-label {
@@ -1631,10 +1563,10 @@ textarea {
 
 .form-label-bold {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 700;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
 }
 @media (min-width: 641px) {
   .form-label-bold {
@@ -1658,10 +1590,10 @@ textarea {
 
 .form-hint {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 400;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
   display: block;
   color: #6f777b;
   font-weight: normal;
@@ -1686,10 +1618,10 @@ textarea {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 400;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
   width: 100%;
   padding: 5px 4px 4px;
   border: 2px solid #0b0c0c;
@@ -1960,10 +1892,10 @@ input[type=number] {
 
 .error-message {
   font-family: "nta", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.25;
   font-weight: 700;
   text-transform: none;
+  font-size: 16px;
+  line-height: 1.25;
   color: #b10e1e;
   display: block;
   clear: both;
@@ -2026,10 +1958,10 @@ input[type=number] {
 }
 .breadcrumbs li {
   font-family: "nta", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.1428571429;
   font-weight: 400;
   text-transform: none;
+  font-size: 14px;
+  line-height: 1.1428571429;
   float: left;
   background-image: url("../images/govuk_frontend_toolkit/separator.png");
   background-position: 0% 50%;
@@ -2064,8 +1996,12 @@ input[type=number] {
   margin: 1em 0;
   padding: 2em 1em;
   color: #fff;
-  background: #28a197;
+  background: #00703c;
   text-align: center;
+}
+
+:root {
+  --govuk-frontend-version: "4.7.0";
 }
 
 .govuk-link {
@@ -3063,6 +2999,14 @@ input[type=number] {
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
+@supports (position: -webkit-sticky) or (position: sticky) {
+  .govuk-template {
+    scroll-padding-top: 60px;
+  }
+  .govuk-template:not(:has(.govuk-exit-this-page)) {
+    scroll-padding-top: 0;
+  }
+}
 @media screen {
   .govuk-template {
     overflow-y: scroll;
@@ -3552,6 +3496,19 @@ input[type=number] {
   left: 0;
 }
 
+.govuk-back-link--inverse:link, .govuk-back-link--inverse:visited {
+  color: #ffffff;
+}
+.govuk-back-link--inverse:hover, .govuk-back-link--inverse:active {
+  color: rgba(255, 255, 255, 0.99);
+}
+.govuk-back-link--inverse:focus {
+  color: #0b0c0c;
+}
+.govuk-back-link--inverse:before {
+  border-color: currentcolor;
+}
+
 .govuk-breadcrumbs {
   font-family: "GDS Transport", arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -3696,6 +3653,22 @@ input[type=number] {
   }
 }
 
+.govuk-breadcrumbs--inverse {
+  color: #ffffff;
+}
+.govuk-breadcrumbs--inverse .govuk-breadcrumbs__link:link, .govuk-breadcrumbs--inverse .govuk-breadcrumbs__link:visited {
+  color: #ffffff;
+}
+.govuk-breadcrumbs--inverse .govuk-breadcrumbs__link:hover, .govuk-breadcrumbs--inverse .govuk-breadcrumbs__link:active {
+  color: rgba(255, 255, 255, 0.99);
+}
+.govuk-breadcrumbs--inverse .govuk-breadcrumbs__link:focus {
+  color: #0b0c0c;
+}
+.govuk-breadcrumbs--inverse .govuk-breadcrumbs__list-item:before {
+  border-color: currentcolor;
+}
+
 .govuk-button {
   font-family: "GDS Transport", arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -3799,7 +3772,7 @@ input[type=number] {
 .govuk-button[disabled=disabled]:hover,
 .govuk-button[disabled]:hover {
   background-color: #00703c;
-  cursor: default;
+  cursor: not-allowed;
 }
 .govuk-button--disabled:active,
 .govuk-button[disabled=disabled]:active,
@@ -3834,6 +3807,20 @@ input[type=number] {
 }
 .govuk-button--warning:hover[disabled] {
   background-color: #d4351c;
+}
+
+.govuk-button--inverse {
+  background-color: #ffffff;
+  box-shadow: 0 2px 0 #144e81;
+}
+.govuk-button--inverse, .govuk-button--inverse:link, .govuk-button--inverse:visited, .govuk-button--inverse:active, .govuk-button--inverse:hover {
+  color: #1d70b8;
+}
+.govuk-button--inverse:hover {
+  background-color: #e8f1f8;
+}
+.govuk-button--inverse:hover[disabled] {
+  background-color: #ffffff;
 }
 
 .govuk-button--start {
@@ -4399,7 +4386,7 @@ input[type=number] {
 
 .govuk-checkboxes__input:disabled,
 .govuk-checkboxes__input:disabled + .govuk-checkboxes__label {
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .govuk-checkboxes__input:disabled + .govuk-checkboxes__label,
@@ -4569,6 +4556,12 @@ input[type=number] {
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px;
 }
+.govuk-textarea:disabled {
+  opacity: 0.5;
+  color: inherit;
+  background-color: transparent;
+  cursor: not-allowed;
+}
 
 .govuk-textarea--error {
   border-color: #d4351c;
@@ -4682,6 +4675,12 @@ input[type=number] {
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px;
 }
+.govuk-input:disabled {
+  opacity: 0.5;
+  color: inherit;
+  background-color: transparent;
+  cursor: not-allowed;
+}
 
 .govuk-input::-webkit-outer-spin-button,
 .govuk-input::-webkit-inner-spin-button {
@@ -4698,6 +4697,28 @@ input[type=number] {
 }
 .govuk-input--error:focus {
   border-color: #0b0c0c;
+}
+
+.govuk-input--extra-letter-spacing {
+  font-family: "GDS Transport", arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-feature-settings: "tnum" 1;
+  font-feature-settings: "tnum" 1;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+@media print {
+  .govuk-input--extra-letter-spacing {
+    font-family: sans-serif;
+  }
+}
+@supports (font-variant-numeric: tabular-nums) {
+  .govuk-input--extra-letter-spacing {
+    -webkit-font-feature-settings: normal;
+    font-feature-settings: normal;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .govuk-input--width-30 {
@@ -5108,6 +5129,86 @@ input[type=number] {
   color: #0b0c0c;
 }
 
+.govuk-exit-this-page {
+  margin-bottom: 30px;
+  position: -webkit-sticky;
+  position: sticky;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+@media (min-width: 40.0625em) {
+  .govuk-exit-this-page {
+    margin-bottom: 50px;
+  }
+}
+@media (min-width: 40.0625em) {
+  .govuk-exit-this-page {
+    display: inline-block;
+    right: 0;
+    left: auto;
+    width: auto;
+    float: right;
+  }
+}
+
+.govuk-exit-this-page__button {
+  margin-bottom: 0;
+}
+
+.govuk-exit-this-page__indicator {
+  padding: 10px;
+  display: none;
+  padding-bottom: 0;
+  color: inherit;
+  line-height: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.govuk-exit-this-page__indicator--visible {
+  display: block;
+}
+
+.govuk-exit-this-page__indicator-light {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  margin: 0 0.125em;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 50%;
+  border-color: currentcolor;
+}
+
+.govuk-exit-this-page__indicator-light--on {
+  border-width: 0.375em;
+}
+
+@media only print {
+  .govuk-exit-this-page {
+    display: none;
+  }
+}
+.govuk-exit-this-page-overlay {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #ffffff;
+}
+
+.govuk-exit-this-page-hide-content * {
+  display: none !important;
+}
+.govuk-exit-this-page-hide-content .govuk-exit-this-page-overlay {
+  display: block !important;
+}
+
 .govuk-file-upload {
   font-family: "GDS Transport", arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -5156,6 +5257,10 @@ input[type=number] {
 .govuk-file-upload:focus-within {
   outline: 3px solid #ffdd00;
   box-shadow: inset 0 0 0 4px #0b0c0c;
+}
+.govuk-file-upload:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .govuk-footer {
@@ -5366,9 +5471,6 @@ input[type=number] {
   -webkit-column-gap: 30px;
   column-gap: 30px;
 }
-.govuk-footer__list .govuk-footer__link:hover {
-  text-decoration-thickness: auto;
-}
 
 @media (min-width: 48.0625em) {
   .govuk-footer__list--columns-2 {
@@ -5525,7 +5627,7 @@ input[type=number] {
 .govuk-header__link:hover {
   text-decoration: underline;
   text-decoration-thickness: 3px;
-  text-underline-offset: 0.1em;
+  text-underline-offset: 0.1578em;
 }
 .govuk-header__link:focus {
   outline: 3px solid transparent;
@@ -5672,7 +5774,7 @@ input[type=number] {
 .govuk-header__menu-button:hover {
   -webkit-text-decoration: solid underline 3px;
   text-decoration: solid underline 3px;
-  text-underline-offset: 0.1em;
+  text-underline-offset: 0.1578em;
 }
 .govuk-header__menu-button:focus {
   outline: 3px solid transparent;
@@ -6776,8 +6878,6 @@ input[type=number] {
   .js-enabled .govuk-tabs__tab:hover {
     color: rgba(11, 12, 12, 0.99);
   }
-}
-@media (min-width: 40.0625em) {
   .js-enabled .govuk-tabs__tab:active, .js-enabled .govuk-tabs__tab:focus {
     color: #0b0c0c;
   }
@@ -6796,8 +6896,6 @@ input[type=number] {
     bottom: 0;
     left: 0;
   }
-}
-@media (min-width: 40.0625em) {
   .js-enabled .govuk-tabs__panel {
     margin-bottom: 0;
     padding: 30px 20px;
@@ -6807,8 +6905,6 @@ input[type=number] {
   .js-enabled .govuk-tabs__panel > :last-child {
     margin-bottom: 0;
   }
-}
-@media (min-width: 40.0625em) {
   .js-enabled .govuk-tabs__panel--hidden {
     display: none;
   }
@@ -6924,7 +7020,7 @@ input[type=number] {
 
 .govuk-radios__input:disabled,
 .govuk-radios__input:disabled + .govuk-radios__label {
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .govuk-radios__input:disabled + .govuk-radios__label,
@@ -7103,6 +7199,11 @@ input[type=number] {
   outline: 3px solid #ffdd00;
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px;
+}
+.govuk-select:disabled {
+  opacity: 0.5;
+  color: inherit;
+  cursor: not-allowed;
 }
 
 .govuk-select option:active,
@@ -7779,6 +7880,12 @@ input[type=number] {
   border: 0 !important;
   white-space: nowrap !important;
 }
+.govuk-warning-text__assistive:before {
+  content: " ";
+}
+.govuk-warning-text__assistive:after {
+  content: " ";
+}
 
 .govuk-warning-text__icon {
   font-family: "GDS Transport", arial, sans-serif;
@@ -7876,6 +7983,12 @@ input[type=number] {
   clip-path: inset(50%) !important;
   border: 0 !important;
   white-space: nowrap !important;
+}
+.govuk-visually-hidden:before {
+  content: " ";
+}
+.govuk-visually-hidden:after {
+  content: " ";
 }
 
 .govuk-visually-hidden-focusable {
