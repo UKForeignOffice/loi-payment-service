@@ -99,6 +99,7 @@ app.use(function(req, res, next) {
 app.use(function(req, res, next) {
     res.removeHeader("X-Powered-By");
     res.removeHeader("Server");
+    res.setHeader('Cache-Control', 'public, max-age=86400');
     return next();
 });
 
