@@ -57,11 +57,11 @@
             <p>Please try again.</p>
 
             <!-- PAYMENT FORM -->
-            <form action="<%= next_url %>">
+            <form action="<%= next_url %>" onsubmit="disablePaymentButton();">
 
                 <div class="form-group">
 
-                    <button type="submit" class="govuk-button" data-module="govuk-button">Pay</button>
+                    <button id="paymentButton" role="button" draggable="false" class="govuk-button" data-module="govuk-button" type="submit">Continue to payment</button>
 
                 </div>
 
