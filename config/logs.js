@@ -1,44 +1,45 @@
-const { createLogger, transports, format } = require('winston');
-const { combine, timestamp, printf, colorize } = format;
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, printf } = format;
 
-const logger = createLogger({
-    transports: [
-        /* Log info to console */
-        new transports.Console({
-            format: combine(
-                colorize(),
-                timestamp({
-                    format: 'YYYY-MM-DD HH:mm:ss',
-                }),
-                printf((info) => {
-                    const { message, timestamp, meta } = info;
-                    return `${timestamp} ${info.level}: ${message}` + (meta ? `\n${JSON.stringify(meta)}` : '');
-                }),
-            ),
-            level: 'info',
-            handleExceptions: true,
-        }),
-        /* Log errors to console */
-        new transports.Console({
-            format: combine(
-                colorize(),
-                timestamp({
-                    format: 'YYYY-MM-DD HH:mm:ss',
-                }),
-                printf((info) => {
-                    const { message, timestamp, meta } = info;
-                    return `${timestamp} ${info.level}: ${message}` + (meta ? `\n${JSON.stringify(meta)}` : '');
-                }),
-            ),
-            level: 'error',
-            handleExceptions: true,
-        }),
-    ],
+const customFormat = printf(({ level, message, timestamp }) => {
+    return `${level.toUpperCase()}: ${message}`;
 });
 
-// Overwrite some built-in console functions
-console.error = logger.error.bind(logger);
-console.log = logger.info.bind(logger);
-console.info = logger.info.bind(logger);
-console.debug = logger.debug.bind(logger);
-console.warn = logger.warn.bind(logger);
+const logger = createLogger({
+    level: 'info',
+    format: combine(
+        timestamp({
+            format: 'YYYY-MM-DD HH:mm:ss'
+        }),
+        customFormat
+    ),
+    transports: [
+        new transports.Console({
+            handleExceptions: true,
+            level: 'info',
+        })
+    ],
+    exceptionHandlers: [
+        new transports.Console({
+            format: combine(
+                format.colorize(),
+                customFormat
+            )
+        })
+    ]
+});
+
+logger.exceptions.handle(
+    new transports.Console({
+        format: combine(
+            format.colorize(),
+            customFormat
+        )
+    })
+);
+
+console.error = (...args) => logger.error(...args);
+console.log = (...args) => logger.info(...args);
+console.info = (...args) => logger.info(...args);
+console.debug = (...args) => logger.debug(...args);
+console.warn = (...args) => logger.warn(...args);

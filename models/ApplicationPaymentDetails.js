@@ -28,6 +28,10 @@ module.exports = function(sequelize, DataTypes) {
         oneclick_reference: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        payment_url: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     });
 };
