@@ -1,7 +1,7 @@
 const common = require('./common.js'),
     moment = require('moment'),
     configGovPay = common.config(),
-    request = require('request-promise');
+    axios = require('axios');
 
 const jobs ={
     //====================================
@@ -60,11 +60,11 @@ const jobs ={
 
             }
 
-            await unLockDb()
-            await stop()
-
         } catch (error) {
             console.log(error)
+        } finally {
+            await unLockDb()
+            await stop()
         }
 
 
@@ -273,23 +273,24 @@ const jobs ={
 
         async function callGovPaymentsApi(problemCase) {
             try {
-                let options = {
+                const options = {
                     method: 'GET',
-                    uri: configGovPay.configs.ukPayUrl + problemCase.payment_reference,
+                    url: configGovPay.configs.ukPayUrl + problemCase.payment_reference,
                     headers: {
                         "Authorization": "Bearer " + configGovPay.configs.ukPayApiKey
                     }
-                }
-                return await request(options)
+                };
+                const response = await axios(options);
+                return response.data;
             } catch (error) {
-                console.log(error)
+                console.log(error);
             }
         }
 
         async function processPayments(problemPayments) {
             try {
                 for (let problemCase of problemPayments) {
-                    let returnData = JSON.parse(await callGovPaymentsApi(problemCase))
+                    let returnData = await callGovPaymentsApi(problemCase)
                     let status = returnData.state.status
                     let paymentIsFinished = returnData.state.finished
                     let createdDate = returnData.created_date
@@ -334,7 +335,7 @@ const jobs ={
         async function processAdditionalPayments(problemAdditionalPayments) {
             try {
                 for (let problemCase of problemAdditionalPayments) {
-                    let returnData = JSON.parse(await callGovPaymentsApi(problemCase))
+                    let returnData = await callGovPaymentsApi(problemCase)
                     let status = returnData.state.status
                     let paymentIsFinished = returnData.state.finished
                     let createdDate = returnData.created_date

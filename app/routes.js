@@ -367,23 +367,29 @@ module.exports = function(router, configGovPay, app) {
         );
     }
 
+    function showErrorPage(req, res, errorMessage, startNewApplicationUrl) {
+        res.clearCookie('LoggedIn');
+        req.session.appId = false;
+        return res.render('payment-error', {
+            errorMessage: errorMessage,
+            startNewApplicationUrl
+        });
+    }
+
+    function isValidInteger(value) {
+        const number = parseInt(value, 10); // Always specify radix 10 for decimal
+        return !isNaN(number); // Check if the result is a valid number
+    }
+
     router.get('/payment-confirmation', async function(req, res) {
         const appIdFromGovPay = req.query.id;
         const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
         const appId = req.session.appId;
-
-        if (!appId || appId === 0) {
-            console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`);
-            res.clearCookie('LoggedIn');
-            req.session.appId = false;
-            return res.render('payment-error', {
-                errorMessage: 'Missing user session',
-                startNewApplicationUrl: startNewApplicationUrl
-            });
-        }
+        if (!isValidInteger(appIdFromGovPay)) return showErrorPage(req, res, 'Invalid application reference', startNewApplicationUrl);
 
         try {
-            const results = await ApplicationPaymentDetails.findOne({where: { application_id: appId }});
+            const results = await ApplicationPaymentDetails.findOne({where: { application_id: appIdFromGovPay }});
+            if (!results) return showErrorPage(req, res, 'Application not found in database', startNewApplicationUrl);
             const payment_id = results.payment_reference;
 
             const response = await axios.get(`${configGovPay.configs.ukPayUrl}${payment_id}`, {
@@ -393,10 +399,7 @@ module.exports = function(router, configGovPay, app) {
             const returnData = response.data;
 
             if (!isReturnDataValidForPaymentConfirmation(returnData)) {
-                return res.render("payment-error", {
-                    errorMessage: "Invalid Gov Pay return data",
-                    startNewApplicationUrl: startNewApplicationUrl,
-                });
+                return showErrorPage(req, res, 'Invalid Gov Pay return data', startNewApplicationUrl);
             }
 
             if (returnData.state.status === 'success' && returnData.state.finished === true) {
@@ -405,21 +408,31 @@ module.exports = function(router, configGovPay, app) {
                     payment_status: 'AUTHORISED',
                     payment_url: null
                 }, {
-                    where: { application_id: appId }
+                    where: { application_id: appIdFromGovPay }
                 });
 
-                console.log(`${appId} - payment is successful`);
-                res.redirect(`${configGovPay.configs.applicationServiceReturnUrl}?id=${appId}&appReference=${returnData.reference}`);
+                console.log(`${appIdFromGovPay} - payment is successful`);
+
+                if (!appId || appId === 0) {
+                    console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`);
+                    return showErrorPage(req, res, 'Missing user session', startNewApplicationUrl);
+                }
+
+                res.redirect(`${configGovPay.configs.applicationServiceReturnUrl}?id=${appIdFromGovPay}&appReference=${returnData.reference}`);
             } else {
-                console.log(`${appId} - payment is NOT successful`);
-                return retryPayment(appId, req, res);
+                console.log(`${appIdFromGovPay} - payment is NOT successful`);
+
+                // If the user's session is missing, show them an error
+                if (!appId || appId === 0) {
+                    console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`);
+                    return showErrorPage(req, res, 'Missing user session', startNewApplicationUrl);
+                }
+
+                return retryPayment(appIdFromGovPay, req, res);
             }
         } catch (error) {
-            console.error(`${appId} - ${error}`);
-            return res.render('payment-error', {
-                errorMessage: 'Payment system error',
-                startNewApplicationUrl: startNewApplicationUrl
-            });
+            console.error(`${appIdFromGovPay} - ${error}`);
+            showErrorPage(req, res, 'Payment system error', startNewApplicationUrl);
         }
     });
 
