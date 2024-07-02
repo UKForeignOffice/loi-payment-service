@@ -37,25 +37,24 @@ const jobs ={
 
                 let problemPayments = await searchEligiblePayments()
                 let problemAdditionalPayments = await searchEligibleAdditionalPayments()
+                let paidInDraftApps = await searchPaidInDraftApps()
 
                 if (problemPayments.length === 0) {
-
                     await abort('AS NO ELIGIBLE PAYMENTS EXIST')
-
                 } else {
-
                     await processPayments(problemPayments)
-
                 }
 
                 if (problemAdditionalPayments.length === 0) {
-
                     await abort('AS NO ELIGIBLE ADDITIONAL PAYMENTS EXIST')
-
                 } else {
-
                     await processAdditionalPayments(problemAdditionalPayments)
+                }
 
+                if (paidInDraftApps.length === 0) {
+                    await abort('AS NO ELIGIBLE PAID IN DRAFT APPS EXIST')
+                } else {
+                    await processPaidInDraftApps(paidInDraftApps)
                 }
 
             }
@@ -166,6 +165,19 @@ const jobs ={
             }
         }
 
+        async function searchPaidInDraftApps() {
+            try {
+                return await sequelize.query(
+                    `SELECT "a"."application_id", "a"."unique_app_id", "a"."submitted", "a"."serviceType", "epd"."payment_status" FROM "Application" a INNER JOIN "ApplicationPaymentDetails" AS epd ON a.application_id = epd.application_id WHERE "a"."submitted" = 'draft' AND "a"."serviceType" != 4 AND "epd"."payment_status" = 'AUTHORISED' ORDER BY "a"."unique_app_id";`,
+                    {
+                        type: sequelize.QueryTypes.SELECT
+                    }
+                );
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         async function updatePaymentStatus(problemCase, status) {
             console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
@@ -200,7 +212,7 @@ const jobs ={
 
         async function exportAppData(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id}`);
                 return await sequelize.query('SELECT * FROM populate_exportedapplicationdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
@@ -209,7 +221,7 @@ const jobs ={
 
         async function exportEAppData(problemCase) {
             try {
-                console.log('[%s][PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR %s - %s', formattedDate, problemCase.application_id, problemCase.payment_reference);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR ${problemCase.application_id}`);
                 return await sequelize.query('SELECT * FROM populate_exportedeApostilleAppdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
@@ -242,7 +254,7 @@ const jobs ={
 
         async function queueApplication(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id}`);
                 return await Application.update({
                     submitted: 'queued'
                 }, {
@@ -303,7 +315,6 @@ const jobs ={
                         if (paymentIsFinished && paymentIsFinished === true) {
                             console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updatePaymentStatus(problemCase, status)
-
                             if (status === 'success') {
                                 let appStatus = await checkAppStatus(problemCase.application_id)
 
@@ -312,13 +323,15 @@ const jobs ={
                                 if (appStatus && appStatus.submitted === 'draft') {
 
                                     const isEApp = problemCase.serviceType === 4;
-                                    let exportedAppData = isEApp ? await exportEAppData(problemCase) : await exportAppData(problemCase)
-                                    let exportedAppDataResult = isEApp ? exportedAppData[0][0].populate_exportedeApostilleAppdata : exportedAppData[0][0].populate_exportedapplicationdata
+                                    if (!isEApp){
+                                        let exportedAppData = await exportAppData(problemCase)
+                                        let exportedAppDataResult = exportedAppData[0][0].populate_exportedapplicationdata
 
-                                    //If the return value is 1 indicating success
-                                    //then queue the application.
-                                    if (exportedAppDataResult && exportedAppDataResult === 1) {
-                                        await queueApplication(problemCase)
+                                        //If the return value is 1 indicating success
+                                        //then queue the application.
+                                        if (exportedAppDataResult && exportedAppDataResult === 1) {
+                                            await queueApplication(problemCase)
+                                        }
                                     }
                                 }
                             }
@@ -362,6 +375,22 @@ const jobs ={
                     } else {
                         await abort('AS ADDITIONAL PAYMENT ' + problemCase.application_id + ' - ' + problemCase.payment_reference + ' ISN\'T OLD ENOUGH TO PROCESS')
                     }
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        async function processPaidInDraftApps(paidInDraftApps) {
+            try {
+                for (let app of paidInDraftApps) {
+                        let exportedAppData = await exportAppData(app)
+                        let exportedAppDataResult = exportedAppData[0][0].populate_exportedapplicationdata
+                        //If the return value is 1 indicating success
+                        //then queue the application.
+                        if (exportedAppDataResult && exportedAppDataResult === 1) {
+                            await queueApplication(app)
+                        }
                 }
             } catch (error) {
                 console.log(error)

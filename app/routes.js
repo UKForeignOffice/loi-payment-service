@@ -214,7 +214,9 @@ module.exports = function(router, configGovPay, app) {
                         payment_amount: cost,
                         payment_complete: true,
                         updated_at: moment().format('DD MMMM YYYY, h:mm:ss A'),
-                        submitted: 'queued'
+                        submitted: 'queued',
+                        submission_request: null,
+                        submission_response_code: null
                     }, {
                         where: {
                             application_id: returnData.reference
@@ -385,11 +387,18 @@ module.exports = function(router, configGovPay, app) {
         const appIdFromGovPay = req.query.id;
         const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
         const appId = req.session.appId;
-        if (!isValidInteger(appIdFromGovPay)) return showErrorPage(req, res, 'Invalid application reference', startNewApplicationUrl);
+
+        if (!isValidInteger(appIdFromGovPay)) {
+            console.log(`${appIdFromGovPay} - Invalid application reference. Rendering error page.`);
+            return showErrorPage(req, res, 'Invalid application reference', startNewApplicationUrl);
+        }
 
         try {
             const results = await ApplicationPaymentDetails.findOne({where: { application_id: appIdFromGovPay }});
-            if (!results) return showErrorPage(req, res, 'Application not found in database', startNewApplicationUrl);
+            if (!results) {
+                console.log(`${appIdFromGovPay} - Application not found in database. Rendering error page.`);
+                return showErrorPage(req, res, 'Application not found in database', startNewApplicationUrl);
+            }
             const payment_id = results.payment_reference;
 
             const response = await axios.get(`${configGovPay.configs.ukPayUrl}${payment_id}`, {
@@ -399,6 +408,7 @@ module.exports = function(router, configGovPay, app) {
             const returnData = response.data;
 
             if (!isReturnDataValidForPaymentConfirmation(returnData)) {
+                console.log(`${appIdFromGovPay} - Invalid Gov Pay return data. Rendering error page.`);
                 return showErrorPage(req, res, 'Invalid Gov Pay return data', startNewApplicationUrl);
             }
 
