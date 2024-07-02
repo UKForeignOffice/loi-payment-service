@@ -45,6 +45,10 @@ module.exports = function(sequelize, DataTypes) {
         submission_response_code: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        submission_request: {
+            type: DataTypes.JSON,
+            allowNull: true
         }
     }, {
         timestamps: false
