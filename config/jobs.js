@@ -21,7 +21,8 @@ const jobs ={
             ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails,
             Application = require('../models/index').Application,
             AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails,
-            UploadedDocumentUrls = require('../models/index').UploadedDocumentUrls
+            UploadedDocumentUrls = require('../models/index').UploadedDocumentUrls,
+            ExportedApplicationData = require('../models/index').ExportedApplicationData
 
         try {
 
@@ -230,11 +231,12 @@ const jobs ={
             }
         }
 
-        async function checkAppStatus(appId) {
+        async function checkForExportedAppData(app) {
             try {
-                return await Application.findOne({
-                    where:{
-                        application_id:appId
+                console.log(`[PAYMENT CLEANUP JOB] CHECK IF EXPORTED APP DATA EXISTS FOR ${app.application_id}`);
+                return await ExportedApplicationData.findOne({
+                    where: {
+                        application_id:app.application_id
                     }
                 })
             } catch (error) {
@@ -433,7 +435,6 @@ const jobs ={
         async function processPaidInDraftApps(paidInDraftApps) {
             try {
                 for (let app of paidInDraftApps) {
-                    console.log(configGovPay.configs.nodeEnv)
                     if (app.serviceType === 4 && configGovPay.configs.nodeEnv.toLowerCase() !== "development") {
                         await handleEAppProcessing(app);
                     } else {
@@ -448,10 +449,8 @@ const jobs ={
         async function handleEAppProcessing(app) {
             try {
                 const exportedEAppData = await exportEAppData(app);
-                console.log(`exportedEAppData = ${exportedEAppData}`);
 
                 const exportedEAppDataResult = exportedEAppData[0][0].populate_exportedeapostilleappdata;
-                console.log(`exportedEAppDataResult = ${exportedEAppDataResult}`);
 
                 if (!exportedEAppDataResult || exportedEAppDataResult !== 1) {
                     console.error(`[PAYMENT CLEANUP JOB] PROBLEM EXPORTING EAPP DATA FOR ${app.application_id}`);
@@ -459,7 +458,6 @@ const jobs ={
                 }
 
                 const pdfs = await findPDFs(app);
-                console.log(`pdfs found: ${pdfs}`);
 
                 if (pdfs.length > 0) {
                     try {
@@ -478,20 +476,27 @@ const jobs ={
 
         async function handleStandardAppProcessing(app) {
             try {
-                const exportedAppData = await exportAppData(app);
-                const exportedAppDataResult = exportedAppData[0][0].populate_exportedapplicationdata;
+                const hasExportedAppData = await checkForExportedAppData(app);
 
-                if (exportedAppDataResult && exportedAppDataResult === 1) {
-                    await queueApplication(app);
+                if (!hasExportedAppData) {
+                    const exportedAppData = await exportAppData(app);
+
+                    const [firstEntry] = exportedAppData;
+                    const { populate_exportedapplicationdata } = firstEntry[0];
+
+                    if (populate_exportedapplicationdata === 1) {
+                        await queueApplication(app);
+                    } else {
+                        console.error(`[PAYMENT CLEANUP JOB] Failed to export app data for ${app.application_id}`);
+                        await updateAppAsFailed(app);
+                    }
                 } else {
-                    console.error(`[PAYMENT CLEANUP JOB] PROBLEM EXPORTING APP DATA FOR ${app.application_id}`);
-                    await updateAppAsFailed(app);
+                    await queueApplication(app);
                 }
             } catch (error) {
-                console.error(`[PAYMENT CLEANUP JOB] ERROR WITH PROCESSING APP ${app.application_id}: ${error.message}`);
+                console.error(`[PAYMENT CLEANUP JOB] Error processing app ${app.application_id}: ${error.message}`);
             }
         }
-
     }
 };
 module.exports = jobs;

@@ -159,8 +159,7 @@ const jobs = require('./config/jobs.js');
 const randomSecond = Math.floor(Math.random() * 60);
 const randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
 const hourlyInterval = configGovPay.configs.jobScheduleHourlyInterval
-//const jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + hourlyInterval + " * * *";
-const jobScheduleRandom = randomSecond + " */10 " + "* * * *";
+const jobScheduleRandom = randomSecond + " " + randomMin + " " + "*/" + hourlyInterval + " * * *";
 schedule.scheduleJob(jobScheduleRandom, function(){jobs.paymentCleanup()});
 
 

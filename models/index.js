@@ -29,4 +29,5 @@ module.exports.UserDocumentCount = require('./UserDocumentCount')(sequelize, Dat
 module.exports.PaymentsCleanupJob = require('./PaymentsCleanupJob')(sequelize, DataTypes)
 module.exports.AdditionalPaymentDetails = require('./AdditionalPaymentDetails')(sequelize, DataTypes)
 module.exports.ExportedEAppData = require('./ExportedEAppData')(sequelize, DataTypes)
+module.exports.ExportedApplicationData = require('./ExportedApplicationData')(sequelize, DataTypes)
 module.exports.UploadedDocumentUrls = require('./UploadedDocumentUrls')(sequelize, DataTypes)
