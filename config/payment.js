@@ -14,6 +14,8 @@ var sessionSettings = JSON.parse(process.env.THESESSION);
 var ukPayUrl = JSON.parse(process.env.UKPAYURL);
 var ukPayApiKey = JSON.parse(process.env.UKPAYAPIKEY);
 var jobScheduleHourlyInterval = JSON.parse(process.env.JOBSCHEDULEHOURLYINTERVAL);
+var nodeEnv = process.env.NODE_ENV || "production";
+var s3Bucket = process.env.S3_BUCKET;
 
 var configs = {
     "resultURL":resultURL.resultURL,
@@ -24,7 +26,9 @@ var configs = {
     "cookieDomain": cookieDomain.cookieDomain,
     "ukPayApiKey": ukPayApiKey.ukPayApiKey,
     "ukPayUrl": ukPayUrl.ukPayUrl,
-    "jobScheduleHourlyInterval": jobScheduleHourlyInterval.jobScheduleHourlyInterval
+    "jobScheduleHourlyInterval": jobScheduleHourlyInterval.jobScheduleHourlyInterval,
+    nodeEnv,
+    s3Bucket
 };
 
 var database = db.database;

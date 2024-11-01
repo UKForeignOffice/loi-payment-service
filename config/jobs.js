@@ -1,7 +1,9 @@
 const common = require('./common.js'),
     moment = require('moment'),
     configGovPay = common.config(),
-    axios = require('axios');
+    axios = require('axios'),
+    { S3, ListObjectsV2Command } = require("@aws-sdk/client-s3"),
+    s3 = new S3();
 
 const jobs ={
     //====================================
@@ -13,13 +15,14 @@ const jobs ={
 
     paymentCleanup: async function() {
 
-        const formattedDate = moment().toISOString(),
-            { Op } = require("sequelize"),
+        const { Op } = require("sequelize"),
             sequelize = require('../models/index').sequelize,
             PaymentsCleanupJob = require('../models/index').PaymentsCleanupJob,
             ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails,
             Application = require('../models/index').Application,
-            AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails
+            AdditionalPaymentDetails = require('../models/index').AdditionalPaymentDetails,
+            UploadedDocumentUrls = require('../models/index').UploadedDocumentUrls,
+            ExportedApplicationData = require('../models/index').ExportedApplicationData
 
         try {
 
@@ -68,15 +71,15 @@ const jobs ={
 
 
         async function start() {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] STARTED`);
+            console.log(`[PAYMENT CLEANUP JOB] STARTED`);
         }
 
         async function stop() {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] FINISHED`);
+            console.log(`[PAYMENT CLEANUP JOB] FINISHED`);
         }
 
         async function abort(reason) {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] ABORTED ${reason}`);
+            console.log(`[PAYMENT CLEANUP JOB] ABORTED ${reason}`);
         }
 
         async function checkIfDbIsUnLocked() {
@@ -94,7 +97,7 @@ const jobs ={
 
         async function lockDb() {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] LOCKING DB`);
+                console.log(`[PAYMENT CLEANUP JOB] LOCKING DB`);
                 return await PaymentsCleanupJob.update({
                     lock:true
                 }, {
@@ -109,7 +112,7 @@ const jobs ={
 
         async function unLockDb() {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UNLOCKING DB`);
+                console.log(`[PAYMENT CLEANUP JOB] UNLOCKING DB`);
                 return await PaymentsCleanupJob.update({
                     lock:false
                 }, {
@@ -168,7 +171,7 @@ const jobs ={
         async function searchPaidInDraftApps() {
             try {
                 return await sequelize.query(
-                    `SELECT "a"."application_id", "a"."unique_app_id", "a"."submitted", "a"."serviceType", "epd"."payment_status" FROM "Application" a INNER JOIN "ApplicationPaymentDetails" AS epd ON a.application_id = epd.application_id WHERE "a"."submitted" = 'draft' AND "a"."serviceType" != 4 AND "epd"."payment_status" = 'AUTHORISED' ORDER BY "a"."unique_app_id";`,
+                    `SELECT "a"."application_id", "a"."unique_app_id", "a"."submitted", "a"."serviceType", "epd"."payment_status" FROM "Application" a INNER JOIN "ApplicationPaymentDetails" AS epd ON a.application_id = epd.application_id WHERE "a"."submitted" = 'draft' AND "epd"."payment_status" = 'AUTHORISED' ORDER BY "a"."unique_app_id";`,
                     {
                         type: sequelize.QueryTypes.SELECT
                     }
@@ -179,7 +182,7 @@ const jobs ={
         }
 
         async function updatePaymentStatus(problemCase, status) {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
+            console.log(`[PAYMENT CLEANUP JOB] UPDATING STATUS FOR ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
                 return await ApplicationPaymentDetails.update({
                     payment_complete: true,
@@ -195,7 +198,7 @@ const jobs ={
         }
 
         async function updateAdditionalPaymentStatus(problemCase, status) {
-            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
+            console.log(`[PAYMENT CLEANUP JOB] UPDATING STATUS FOR ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
             try {
                 return await AdditionalPaymentDetails.update({
                     payment_complete: true,
@@ -212,7 +215,7 @@ const jobs ={
 
         async function exportAppData(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id}`);
+                console.log(`[PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id}`);
                 return await sequelize.query('SELECT * FROM populate_exportedapplicationdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
@@ -221,18 +224,19 @@ const jobs ={
 
         async function exportEAppData(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR ${problemCase.application_id}`);
+                console.log(`[PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR ${problemCase.application_id}`);
                 return await sequelize.query('SELECT * FROM populate_exportedeApostilleAppdata(' + problemCase.application_id + ')');
             } catch (error) {
                 console.log(error)
             }
         }
 
-        async function checkAppStatus(appId) {
+        async function checkForExportedAppData(app) {
             try {
-                return await Application.findOne({
-                    where:{
-                        application_id:appId
+                console.log(`[PAYMENT CLEANUP JOB] CHECK IF EXPORTED APP DATA EXISTS FOR ${app.application_id}`);
+                return await ExportedApplicationData.findOne({
+                    where: {
+                        application_id:app.application_id
                     }
                 })
             } catch (error) {
@@ -254,7 +258,7 @@ const jobs ={
 
         async function queueApplication(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id}`);
+                console.log(`[PAYMENT CLEANUP JOB] QUEUING APPLICATION ${problemCase.application_id}`);
                 return await Application.update({
                     submitted: 'queued'
                 }, {
@@ -267,9 +271,24 @@ const jobs ={
             }
         }
 
+        async function updateAppAsFailed(app) {
+            try {
+                console.log(`[PAYMENT CLEANUP JOB] MARKING ${app.application_id} AS FAILED`);
+                return await Application.update({
+                    submitted: 'failed'
+                }, {
+                    where:{
+                        application_id: app.application_id
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
         async function queueAdditionalPayment(problemCase) {
             try {
-                console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                console.log(`[PAYMENT CLEANUP JOB] QUEUING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
                 return await AdditionalPaymentDetails.update({
                     submitted: 'queued',
                     updated_at: moment().format('DD MMMM YYYY, h:mm:ss A')
@@ -299,6 +318,58 @@ const jobs ={
             }
         }
 
+        async function findPDFs(app) {
+            try {
+                console.log("[PAYMENT CLEANUP JOB] SEARCHING FOR PDFs");
+                const S3_BUCKET = configGovPay.configs.s3Bucket;
+                const prefix = `${app.application_id}_`;
+
+                const params = {
+                    Bucket: S3_BUCKET,
+                    Prefix: prefix
+                };
+
+                const command = new ListObjectsV2Command(params);
+                const data = await s3.send(command);
+
+                if (data.Contents) {
+                    const pdfFiles = data.Contents.filter(item => item.Key.endsWith('.pdf')).map(item => item.Key);
+                    console.log(`[PAYMENT CLEANUP JOB] FOUND ONE OR MORE PDFs FOR ${app.application_id}`);
+                    return pdfFiles;
+                } else {
+                    console.log(`[PAYMENT CLEANUP JOB] NO PDFs FOUND FOR ${app.application_id}`);
+                    return [];
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        async function addDocumentUrlToDB(app, pdf) {
+            try {
+                console.log(`[PAYMENT CLEANUP JOB] ADDING DOCUMENT FOR ${app.application_id}`);
+                return await UploadedDocumentUrls.create({
+                    application_id: app.application_id,
+                    uploaded_url: pdf,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    filename: extractFilename(pdf),
+                    presigned_url: null
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        function extractFilename(pdf) {
+            const secondUnderscoreIndex = pdf.indexOf('_', pdf.indexOf('_') + 1);
+            if (secondUnderscoreIndex !== -1) {
+                return pdf.substring(secondUnderscoreIndex + 1);
+            }
+            return pdf;
+        }
+
         async function processPayments(problemPayments) {
             try {
                 for (let problemCase of problemPayments) {
@@ -310,31 +381,11 @@ const jobs ={
 
                     // Give the payment time to complete. We check if
                     // it was created more than 3 hours ago
-                    // If so, do stuff
+                    // If so, update the app's payment status
                     if (paymentIsOldEnough) {
                         if (paymentIsFinished && paymentIsFinished === true) {
-                            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                            console.log(`[PAYMENT CLEANUP JOB] PROCESSING ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updatePaymentStatus(problemCase, status)
-                            if (status === 'success') {
-                                let appStatus = await checkAppStatus(problemCase.application_id)
-
-                                // If the payment is still draft in the Application table
-                                // Export the app data and update the status to queued
-                                if (appStatus && appStatus.submitted === 'draft') {
-
-                                    const isEApp = problemCase.serviceType === 4;
-                                    if (!isEApp){
-                                        let exportedAppData = await exportAppData(problemCase)
-                                        let exportedAppDataResult = exportedAppData[0][0].populate_exportedapplicationdata
-
-                                        //If the return value is 1 indicating success
-                                        //then queue the application.
-                                        if (exportedAppDataResult && exportedAppDataResult === 1) {
-                                            await queueApplication(problemCase)
-                                        }
-                                    }
-                                }
-                            }
                         }
                     } else {
                         await abort('AS APPLICATION ' + problemCase.application_id + ' - ' + problemCase.payment_reference + ' ISN\'T OLD ENOUGH TO PROCESS')
@@ -359,7 +410,7 @@ const jobs ={
                     // If so, do stuff
                     if (paymentIsOldEnough) {
                         if (paymentIsFinished && paymentIsFinished === true) {
-                            console.log(`[${formattedDate}][PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
+                            console.log(`[PAYMENT CLEANUP JOB] PROCESSING ADDITIONAL PAYMENT ${problemCase.application_id} - ${problemCase.payment_reference}`);
                             await updateAdditionalPaymentStatus(problemCase, status)
 
                             if (status === 'success') {
@@ -384,16 +435,66 @@ const jobs ={
         async function processPaidInDraftApps(paidInDraftApps) {
             try {
                 for (let app of paidInDraftApps) {
-                        let exportedAppData = await exportAppData(app)
-                        let exportedAppDataResult = exportedAppData[0][0].populate_exportedapplicationdata
-                        //If the return value is 1 indicating success
-                        //then queue the application.
-                        if (exportedAppDataResult && exportedAppDataResult === 1) {
-                            await queueApplication(app)
-                        }
+                    if (app.serviceType === 4 && configGovPay.configs.nodeEnv.toLowerCase() !== "development") {
+                        await handleEAppProcessing(app);
+                    } else {
+                        await handleStandardAppProcessing(app);
+                    }
                 }
             } catch (error) {
-                console.log(error)
+                console.error(`[PAYMENT CLEANUP JOB] ERROR PROCESSING APPS: ${error.message}`);
+            }
+        }
+
+        async function handleEAppProcessing(app) {
+            try {
+                const exportedEAppData = await exportEAppData(app);
+
+                const exportedEAppDataResult = exportedEAppData[0][0].populate_exportedeapostilleappdata;
+
+                if (!exportedEAppDataResult || exportedEAppDataResult !== 1) {
+                    console.error(`[PAYMENT CLEANUP JOB] PROBLEM EXPORTING EAPP DATA FOR ${app.application_id}`);
+                    return;
+                }
+
+                const pdfs = await findPDFs(app);
+
+                if (pdfs.length > 0) {
+                    try {
+                        await Promise.all(pdfs.map(pdf => addDocumentUrlToDB(app, pdf)));
+                        await queueApplication(app);
+                    } catch (error) {
+                        console.error(`[PAYMENT CLEANUP JOB] ERROR INSERTING DOCUMENTS FOR ${app.application_id}: ${error.message}`);
+                        throw new Error(error);
+                    }
+                }
+
+            } catch (error) {
+                console.error(`[PAYMENT CLEANUP JOB] ERROR WITH PROCESSING APP ${app.application_id}: ${error.message}`);
+            }
+        }
+
+        async function handleStandardAppProcessing(app) {
+            try {
+                const hasExportedAppData = await checkForExportedAppData(app);
+
+                if (!hasExportedAppData) {
+                    const exportedAppData = await exportAppData(app);
+
+                    const [firstEntry] = exportedAppData;
+                    const { populate_exportedapplicationdata } = firstEntry[0];
+
+                    if (populate_exportedapplicationdata === 1) {
+                        await queueApplication(app);
+                    } else {
+                        console.error(`[PAYMENT CLEANUP JOB] Failed to export app data for ${app.application_id}`);
+                        await updateAppAsFailed(app);
+                    }
+                } else {
+                    await queueApplication(app);
+                }
+            } catch (error) {
+                console.error(`[PAYMENT CLEANUP JOB] Error processing app ${app.application_id}: ${error.message}`);
             }
         }
     }

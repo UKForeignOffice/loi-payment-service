@@ -4,6 +4,7 @@
   "description": "Legalisation payment microservice",
   "author": "Mike Skaife <mike.skaife@informed.com>",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.658.1",
     "axios": "^1.6.8",
     "body-parser": "1.20.3",
     "connect-redis": "^6.1.3",
