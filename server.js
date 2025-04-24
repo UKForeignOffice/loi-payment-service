@@ -70,7 +70,8 @@ app.use(
         cookie: {
             domain: configGovPay.sessionSettings.domain,
             maxAge: configGovPay.sessionSettings.maxAge,
-            secure: 'auto'
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'Lax'
         }
     })
 )
