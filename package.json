@@ -12,7 +12,7 @@
     "dotenv": "^16.4.7",
     "ejs": "^3.1.9",
     "express": "^4.20.0",
-    "express-session": "^1.18.0",
+    "express-session": "^1.18.2",
     "fs-extra": "^11.2.0",
     "govuk_frontend_toolkit": "9.0.1",
     "govuk-elements-sass": "3.1.3",
