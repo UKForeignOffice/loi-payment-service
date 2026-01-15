@@ -37,5 +37,11 @@
     "start": "NODE_ENV=development node server.js 3003",
     "test": "node_modules/mocha/bin/_mocha --timeout 10000 --recursive test/ --exit"
   },
+  "overrides": {
+      "diff": "^8.0.3",
+      "body-parser": {
+        "qs": "^6.14.1"
+      }
+    },
   "license": "MIT"
 }
