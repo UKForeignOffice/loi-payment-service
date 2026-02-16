@@ -126,6 +126,10 @@ const oneDay = 24 * 60 * 60 * 1000; // 1 day in milliseconds
 app.use("/api/payment/",express.static(__dirname + "/public", { maxAge: oneDay }));
 app.use("/api/payment/styles",express.static(__dirname + "/styles", { maxAge: oneDay })); //static directory for stylesheets
 app.use("/api/payment/images",express.static(__dirname + "/images", { maxAge: oneDay })); //static directory for images
+app.use(
+    "/api/payment/govuk-frontend",
+    express.static(path.join(__dirname, "node_modules/govuk-frontend/dist/govuk"), { maxAge: oneDay })
+);
 
 
 

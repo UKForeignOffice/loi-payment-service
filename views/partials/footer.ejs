@@ -1,7 +1,7 @@
 
 </main>
 
-<footer class="govuk-footer" style="font-size:1.5rem;">
+<footer class="govuk-footer">
   <div class="govuk-width-container">
 
 
@@ -93,6 +93,11 @@
   </div>
 </footer>
 <!--end footer-->
+<script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js"></script>
+<script type="module">
+    import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js';
+    initAll();
+</script>
 <!-- Piwik -->
 <script type="text/javascript">
     var _paq = _paq || [];
