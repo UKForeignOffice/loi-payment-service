@@ -53,7 +53,7 @@ $govuk-assets-path : '/api/payment/';
 @import "../node_modules/govuk-elements-sass/public/sass/elements/_components";                    // GOV.UK prefixed styles - blue highlighted box
 
 
-@import '../node_modules/govuk-frontend/govuk/all';
+@import '../node_modules/govuk-frontend/dist/govuk/index';
 
 
 //INFORMED CSS
