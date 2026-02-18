@@ -532,7 +532,6 @@ module.exports = function(router, configGovPay, app) {
                         }
                     });
             });
-
         } catch (error) {
             console.error(`${appId} - ${error}`);
             return res.render("payment-error", {

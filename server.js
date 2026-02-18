@@ -87,8 +87,13 @@ app.use(
 // VIEW AND LOCALS
 // =====================================
 app.set('view engine', 'ejs');
+
+const crypto = require('crypto');
+const cacheBust = crypto.randomBytes(4).toString('hex');
+
 app.use(function (req, res, next) {
     res.locals = {
+        cacheBust,
         piwikID: configGovPay.live_variables.piwikId,
         feedbackURL:configGovPay.live_variables.feedbackURL,
         service_public: configGovPay.live_variables.Public,

@@ -90,6 +90,7 @@ ul {
 .inner_header{
   width: 100%;
   display: block;
+  margin-top: -15px;
   margin-bottom: 30px;
   height: 1em;
 
@@ -100,7 +101,6 @@ ul {
 
   .inner-header-content {
     float: right;
-    padding-top: 8px;
   }
 
   @media (max-width:640px) {

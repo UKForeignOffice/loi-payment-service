@@ -93,9 +93,9 @@
   </div>
 </footer>
 <!--end footer-->
-<script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js"></script>
+<script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js?v=<%= locals.cacheBust || '' %>"></script>
 <script type="module">
-    import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js';
+    import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js?v=<%= locals.cacheBust || '' %>';
     initAll();
 </script>
 <!-- Piwik -->
