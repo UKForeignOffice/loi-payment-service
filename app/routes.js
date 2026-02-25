@@ -120,10 +120,13 @@ module.exports = function(router, configGovPay, app) {
                 }
             }
 
-            res.render("additionalPayments/submit-additional-payment", {
-                cost: applicationAmount,
-                next_url: next_url,
-                startNewApplicationUrl: startNewApplicationUrl,
+            // Extend session to 90 minutes before redirecting to Gov Pay.
+            return updateSessionMaxAge(req, 90 * 60 * 1000, () => {
+                res.render("additionalPayments/submit-additional-payment", {
+                    cost: applicationAmount,
+                    next_url: next_url,
+                    startNewApplicationUrl: startNewApplicationUrl,
+                });
             });
 
         } catch (error) {
@@ -225,21 +228,24 @@ module.exports = function(router, configGovPay, app) {
                     );
                 }
 
-                res.render('additionalPayments/additional-payment-confirmation', {
-                    req:req,
-                    isSessionValid: isSessionValid,
-                    paymentSuccessful: true,
-                    appReference: appReference,
-                    createdDate: createdDate,
-                    paymentMethod: paymentMethod,
-                    cost: sess.additionalPayments.applicationAmount,
-                    email: sess.additionalPayments.applicationEmail,
-                    startNewApplicationUrl: startNewApplicationUrl
+                // Reset session to default TTL after successful payment.
+                return updateSessionMaxAge(req, configGovPay.sessionSettings.maxAge, () => {
+                    res.render('additionalPayments/additional-payment-confirmation', {
+                        req:req,
+                        isSessionValid: isSessionValid,
+                        paymentSuccessful: true,
+                        appReference: appReference,
+                        createdDate: createdDate,
+                        paymentMethod: paymentMethod,
+                        cost: sess.additionalPayments.applicationAmount,
+                        email: sess.additionalPayments.applicationEmail,
+                        startNewApplicationUrl: startNewApplicationUrl
+                    });
                 });
 
             } else {
                 console.log(`${payment_id} - payment is NOT successful`);
-                await retryAdditionalPayment(sess, res, startNewApplicationUrl);
+                await retryAdditionalPayment(req, sess, res, startNewApplicationUrl);
             }
 
         } catch (error) {
@@ -292,7 +298,7 @@ module.exports = function(router, configGovPay, app) {
             const applicationDetail = await ApplicationPaymentDetails.findOne({ where: { application_id: appid } });
 
             if (applicationDetail && applicationDetail.payment_url) {
-                return res.redirect(applicationDetail.payment_url);
+                return updateSessionMaxAge(req, 90 * 60 * 1000, () => res.redirect(applicationDetail.payment_url));
             }
 
             var formFields = {};
@@ -324,7 +330,8 @@ module.exports = function(router, configGovPay, app) {
             const updatedApplicationDetail = await ApplicationPaymentDetails.findOne({ where: { application_id: appid } });
             const paymentUrl = updatedApplicationDetail.payment_url
 
-            return res.redirect(paymentUrl);
+            // Extend session to 90 minutes before redirecting to Gov Pay
+            return updateSessionMaxAge(req, 90 * 60 * 1000, () => res.redirect(paymentUrl));
 
         } catch (error) {
             console.error(appid + ' - ' + error);
@@ -373,6 +380,24 @@ module.exports = function(router, configGovPay, app) {
         return !isNaN(number); // Check if the result is a valid number
     }
 
+    function updateSessionMaxAge(req, maxAgeMs, done) {
+        if (!req.session) {
+            return done();
+        }
+
+        const expiresAt = new Date(Date.now() + maxAgeMs);
+        req.session.cookie.maxAge = maxAgeMs;
+        req.session.cookie.expires = expiresAt;
+        req.session.cookie.originalMaxAge = maxAgeMs;
+        req.session.touch();
+        req.session.save((err) => {
+            if (err) {
+                console.error(`Failed to update session maxAge: ${err}`);
+            }
+            return done();
+        });
+    }
+
     router.get('/payment-confirmation', async function(req, res) {
         const appIdFromGovPay = req.query.id;
         const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl;
@@ -413,15 +438,19 @@ module.exports = function(router, configGovPay, app) {
 
                 console.log(`${appIdFromGovPay} - payment is successful`);
 
-                if (!appId || appId === 0) {
-                    console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`);
-                    return showErrorPage(req, res, 'Missing user session', startNewApplicationUrl);
-                }
+                // Reset session to default TTL after successful payment
+                return updateSessionMaxAge(req, configGovPay.sessionSettings.maxAge, () => {
+                    if (!appId || appId === 0) {
+                        console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`);
+                        return showErrorPage(req, res, 'Missing user session', startNewApplicationUrl);
+                    }
 
-                res.redirect(`${configGovPay.configs.applicationServiceReturnUrl}?id=${appIdFromGovPay}&appReference=${returnData.reference}`);
+                    return res.redirect(`${configGovPay.configs.applicationServiceReturnUrl}?id=${appIdFromGovPay}&appReference=${returnData.reference}`);
+                });
             } else {
                 console.log(`${appIdFromGovPay} - payment is NOT successful`);
 
+                // Keep current session TTL; only reset on successful payment.
                 // If the user's session is missing, show them an error
                 if (!appId || appId === 0) {
                     console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`);
@@ -476,22 +505,25 @@ module.exports = function(router, configGovPay, app) {
 
             console.log(`${appId} - rendering failed payment page`);
 
-            res.render('payment-confirmation.ejs',
-                {
-                    applicationId: appId,
-                    applicationType: application.serviceType,
-                    next_url: next_url,
-                    startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
-                    loggedIn: loggedIn,
-                    isSessionValid: isSessionValid,
-                    usersEmail: usersEmail,
-                    user_data: {
+            // Extend session to 90 minutes before redirecting to Gov Pay
+            return updateSessionMaxAge(req, 90 * 60 * 1000, () => {
+                res.render('payment-confirmation.ejs',
+                    {
+                        applicationId: appId,
+                        applicationType: application.serviceType,
+                        next_url: next_url,
+                        startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
                         loggedIn: loggedIn,
-                        user: req.session.user,
-                        account: req.session.account,
-                        url: '/api/user/'
-                    }
-                });
+                        isSessionValid: isSessionValid,
+                        usersEmail: usersEmail,
+                        user_data: {
+                            loggedIn: loggedIn,
+                            user: req.session.user,
+                            account: req.session.account,
+                            url: '/api/user/'
+                        }
+                    });
+            });
 
         } catch (error) {
             console.error(`${appId} - ${error}`);
@@ -502,7 +534,7 @@ module.exports = function(router, configGovPay, app) {
         }
     }
 
-    async function retryAdditionalPayment(sess, res, startNewApplicationUrl) {
+    async function retryAdditionalPayment(req, sess, res, startNewApplicationUrl) {
         try {
             let formFields = GovPay.additionalPaymentsAddBaseData({}, sess.additionalPayments.applicationRef, sess.additionalPayments.applicationAmount, sess.additionalPayments.applicationEmail);
             const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
@@ -524,13 +556,16 @@ module.exports = function(router, configGovPay, app) {
             let next_url = returnData._links.next_url?.href;
             sess.additionalPayments.paymentReference = returnData.payment_id;
 
-            res.render('additionalPayments/additional-payment-confirmation', {
-                isSessionValid: true,
-                paymentSuccessful: false,
-                cost: sess.additionalPayments.applicationAmount,
-                next_url: next_url,
-                startNewApplicationUrl: startNewApplicationUrl
-            });
+            // Extend session to 90 minutes before redirecting to Gov Pay.
+            return updateSessionMaxAge(req, 90 * 60 * 1000, () => {
+                 res.render('additionalPayments/additional-payment-confirmation', {
+                     isSessionValid: true,
+                     paymentSuccessful: false,
+                     cost: sess.additionalPayments.applicationAmount,
+                     next_url: next_url,
+                     startNewApplicationUrl: startNewApplicationUrl
+                 });
+             });
 
         } catch (error) {
             console.error(error);
