@@ -76,7 +76,7 @@ app.use(
         rolling: true,
         cookie: {
             domain: configGovPay.sessionSettings.domain,
-            maxAge: configGovPay.sessionSettings.maxAge,
+            maxAge: configGovPay.sessionSettings.cookieMaxAge,
             secure: process.env.NODE_ENV !== 'development',
             sameSite: 'Lax'
         }
