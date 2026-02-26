@@ -19,16 +19,6 @@ module.exports = function(router, configGovPay, app) {
         });
 
     // =====================================
-    // HEALTHCHECK
-    // =====================================
-    router
-
-        // healthcheck
-        .get('/healthcheck', function(req, res) {
-            res.json({message: 'Payment Service is running'});
-        });
-
-    // =====================================
     // ERROR - PAYMENTS
     // =====================================
     router

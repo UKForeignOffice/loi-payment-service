@@ -23,6 +23,13 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+// Healthcheck - responds before session to avoid creating Redis sessions
+app.use(function(req, res, next) {
+    if (req.path === '/api/payment/healthcheck') {
+        return res.json({ message: 'Payment Service is running' });
+    }
+    next();
+});
 
 // =====================================
 // SESSION
