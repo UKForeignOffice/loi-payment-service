@@ -1,16 +1,16 @@
 #yourDetailsForm label, #is-uk label, #documentsCertifiedConf label, #is-same label, #send-options-form label, #return_address label, #additional_info label {
-  @include media(mobile){
+  @include govuk-media-query($until: tablet){
     margin-right: 0;
   }
 }
 
 #is-uk .error, #is-same .error, #send-options-form .error, #return_address .error, #additional_info .error {
-  @include media(mobile){
+  @include govuk-media-query($until: tablet){
     margin-right: 0;
   }
 }
 
-@include media(mobile){
+@include govuk-media-query($until: tablet){
   fieldset.inline.error {
     width: 98%
   }
@@ -33,7 +33,7 @@
     margin-right: 0!important;
   }
 }
-@include media(mobile) {
+@include govuk-media-query($until: tablet) {
   a.back-to-previous {
     font-size: 14px;
   }
@@ -58,7 +58,7 @@
 /*
 type ahead search field mobile fix
 */
-@include media(mobile) {
+@include govuk-media-query($until: tablet) {
   input#doc_search_button {
     position: absolute;
     right: 0;

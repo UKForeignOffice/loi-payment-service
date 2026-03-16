@@ -15,9 +15,10 @@
                         <% } %>
                     </span>
                     <span class="email-logout-text">
-                        <a href="/dashboard" class="govuk-link">Applications</a>
-                        <a href="<%= user_data.url%>/account" class="govuk-link">Account</a>
-                        <a href="<%= user_data.url%>/addresses" class="govuk-link">Addresses</a>
+                        <% if (user_data?.user?.isAdmin) { %><a id="Account-Link" href="<%= user_data.url%>/admin" class="govuk-link">Admin</a><% } %>
+                        <a id="Applications-Link" href="/dashboard" class="govuk-link">Applications</a>
+                        <a id="Account-Link" href="<%= user_data.url%>/account" class="govuk-link">Account</a>
+                        <a id="Addresses-Link" href="<%= user_data.url%>/addresses" class="govuk-link">Addresses</a>
                         <a href="/sign-out" id="sign-out-link" class="govuk-link">Sign out</a>
                     </span>
                 </div>
