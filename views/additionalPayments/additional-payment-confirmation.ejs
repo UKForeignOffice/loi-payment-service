@@ -31,23 +31,23 @@
                 <div class="govuk-grid-column-two-thirds">
                     <p class="govuk-body">Thank you for your order from the Foreign, Commonwealth & Development Office. We've taken payment for the following:</p>
 
-                    <table id="review-personal-details" class="printable-summary">
+                    <table id="review-personal-details" class="govuk-table govuk-!-margin-bottom-4">
                         <tbody>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Amount</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span>£<%= cost %></span></td>
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Amount</th>
+                            <td class="govuk-table__cell"><span>£<%= cost %></span></td>
                         </tr>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Card type</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span><%= paymentMethod %></span></td>
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Card type</th>
+                            <td class="govuk-table__cell"><span><%= paymentMethod %></span></td>
                         </tr>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Date</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span><%= createdDate %></span></td>
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Date</th>
+                            <td class="govuk-table__cell"><span><%= createdDate %></span></td>
                         </tr>
-                        <tr>
-                            <td class="summary-table-cell-label summary-label">Payment Reference</td>
-                            <td id="summary-name" class="summary-table-cell-content"><span><%= appReference %></span></td>
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Payment reference</th>
+                            <td class="govuk-table__cell"><span><%= appReference %></span></td>
                         </tr>
                         </tbody>
                     </table>
