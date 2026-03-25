@@ -107,6 +107,8 @@ ul {
     gap: 8px 12px;
     flex-wrap: wrap;
     max-width: 100%;
+    height: 30px;
+    border-bottom: none;
   }
 
   .inner-header-back-link {
@@ -123,6 +125,19 @@ ul {
       float: none;
       padding: 0;
       justify-content: flex-start;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      height: auto;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #bfc1c3;
+      margin-left: auto;
+    }
+
+    span.email-logout-text {
+      float: none;
+      white-space: nowrap;
     }
 
     a.back-to-previous {
