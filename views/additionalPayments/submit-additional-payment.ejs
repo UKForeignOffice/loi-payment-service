@@ -1,24 +1,22 @@
 
 <%- include ('../partials/header') %>
 
-<div class="container">
+<div class="govuk-width-container govuk-!-margin-top-6">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">Check your payment amount</h1>
 
-    <h1 class="heading-xlarge">Check your payment amount</h1>
+            <p class="govuk-body">You will be charged <strong>£<%=cost%></strong> as an additional payment for your legalisation application.</p>
+            <p class="govuk-body">You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
 
-    <div class="intro column-two-thirds">
-
-        <p>You will be charged <b>£<%=cost%></b> as an additional payment for your legalisation application.</p>
-        <p>You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
-
-        <!-- PAYMENT FORM -->
-        <form action="<%= next_url %>" onSubmit="disablePaymentButton();">
-            <div class="form-group">
-                <button id="paymentButton" role="button" draggable="false" class="govuk-button" data-module="govuk-button" type="submit">Continue to payment</button>
+            <!-- PAYMENT FORM -->
+            <form action="<%= next_url %>" onSubmit="disablePaymentButton();">
+                <div class="govuk-form-group">
+                    <button id="paymentButton" role="button" draggable="false" class="govuk-button" data-module="govuk-button" type="submit">Continue to payment</button>
+                </div>
+            </form>
             </div>
-        </form>
-
     </div>
-
 </div>
 
 <%- include ('../partials/footer') %>

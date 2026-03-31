@@ -1,21 +1,22 @@
 
 <%- include ('partials/header') %>
 
-<div class="container">
-
-    <div class="intro">
-        <h1 class="heading-xlarge">Sorry, there is a problem with the service</h1>
-        <p>Error: <%= errorMessage %></p>
-        <br />
-        <p>If you have attempted to pay and have received a payment confirmation via email, please contact the Legalisation Office to discuss your application<br /><br />
-            legalisation@fcdo.gov.uk<br />
-            Telephone: 020 4623 3100<br /></p>
-        <br />
-        <p>Otherwise, please try again later</p>
-        <br />
-        <a href="<%= startNewApplicationUrl %>" id="start" role="button" class="govuk-button" data-module="govuk-button">Start again</a>
+<div class="govuk-width-container govuk-!-margin-top-6">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">Sorry, there is a problem with the service</h1>
+            <p class="govuk-body">Error: <%= errorMessage %></p>
+            <p class="govuk-body">
+                If you have attempted to pay and have received a payment confirmation via email, please contact the Legalisation Office to discuss your application
+                <br><br>
+                legalisation@fcdo.gov.uk
+                <br>
+                Telephone: 020 4623 3100
+            </p>
+            <p class="govuk-body">Otherwise, please try again later</p>
+            <a href="<%= startNewApplicationUrl %>" id="start" role="button" class="govuk-button" data-module="govuk-button">Start again</a>
+        </div>
     </div>
-
 </div>
 
 <%- include ('partials/footer') %>

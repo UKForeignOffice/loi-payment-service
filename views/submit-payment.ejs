@@ -1,7 +1,7 @@
 
 <%- include ('partials/header') %>
 
-<div class="container">
+<div class="govuk-width-container govuk-!-margin-top-6">
 
     <div class="inner_header">
         <a href="<%if(applicationType>1){%>/business-additional-information<%}else{%>/declaration-agreement<%}%>" class="govuk-back-link">Back</a>
@@ -9,38 +9,36 @@
         <%if (loggedIn == true) { %>
             <%if(user_data.loggedIn){%>
                 <div class="inner-header-content">
-                    <span class="email-logout-text">
+                    <span class="email-logout-text inner-header-user">
                          <%if(typeof(user_data.account)!='undefined' && user_data.account!=null && user_data.account.first_name != null){%>
                         <%= (user_data.account.first_name+' '+user_data.account.last_name).substr(0,50)%><%}else{%><%= user_data.user.email%><%}%>
                     </span>
-                    <span class="email-logout-text">
-                        <a  href="/dashboard" class="govuk-link">Applications</a>
-                        <a  href="<%= user_data.url%>/account" class="govuk-link">Account</a>
-                        <a  href="<%=  user_data.url%>/addresses" class="govuk-link">Addresses</a>
-                        <a  href="/sign-out" id="sign-out-link" class="govuk-link">Sign out</a>
+                    <span class="email-logout-text inner-header-links">
+                        <% if (user_data?.user?.isAdmin) { %><a id="Admin-Link" href="<%= user_data.url%>/admin" class="govuk-link">Admin</a><% } %>
+                        <a id="Applications-Link" href="/dashboard" class="govuk-link">Applications</a>
+                        <a id="Account-Link" href="<%= user_data.url%>/account" class="govuk-link">Account</a>
+                        <a id="Addresses-Link" href="<%= user_data.url%>/addresses" class="govuk-link">Addresses</a>
+                        <a href="/sign-out" id="sign-out-link" class="govuk-link">Sign out</a>
                     </span>
                 </div>
             <%}%>
         <% } %>
     </div>
 
-    <h1 class="heading-xlarge">Pay for your application</h1>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">Pay for your application</h1>
+            <p class="govuk-body">You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
+            <p class="govuk-body">Once you’ve provided your payment information your application will be submitted.</p>
 
-    <div class="intro column-two-thirds">
-
-        <p>You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
-        <p>Once you’ve provided your payment information your application will be submitted.</p>
-
-        <!-- PAYMENT FORM -->
-        <form action="<%= next_url %>">
-
-            <div class="form-group">
-                <button type="submit" class="govuk-button" data-module="govuk-button" data-testid="app-id" data-value="<%= applicationId %>" >Pay</button>
+            <!-- PAYMENT FORM -->
+            <form action="<%= next_url %>">
+                <div class="govuk-form-group">
+                    <button type="submit" class="govuk-button" data-module="govuk-button" data-testid="app-id" data-value="<%= applicationId %>" >Pay</button>
+                </div>
+            </form>
+        </div>
             </div>
-
-        </form>
-
-    </div>
 
 </div>
 
