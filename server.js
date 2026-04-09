@@ -22,6 +22,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.set('trust proxy', 1);
 
 // Healthcheck - responds before session to avoid creating Redis sessions
 app.use(function(req, res, next) {
@@ -99,14 +100,27 @@ app.use(function (req, res, next) {
     next();
 });
 app.use(function(req, res, next) {
-    if (req.cookies['LoggedIn']){
+    const configuredSessionTtl = parseInt(configGovPay.sessionSettings.cookieMaxAge, 10);
+
+    if (req.session && req.session.cookie && !isNaN(configuredSessionTtl) && configuredSessionTtl > 0) {
+        const sessionTtl = parseInt(req.session.cookie.originalMaxAge, 10);
+
+        if (isNaN(sessionTtl) || sessionTtl < configuredSessionTtl) {
+            req.session.cookie.maxAge = configuredSessionTtl;
+            req.session.cookie.originalMaxAge = configuredSessionTtl;
+            req.session.cookie.expires = new Date(Date.now() + configuredSessionTtl);
+        }
+    }
+
+    if (req.cookies['LoggedIn'] && !isNaN(configuredSessionTtl) && configuredSessionTtl > 0) {
         const sessionTtl = req.session && req.session.cookie && parseInt(req.session.cookie.originalMaxAge, 10);
         const loggedInCookieMaxAge = !isNaN(sessionTtl) && sessionTtl > 0
             ? sessionTtl
-            : configGovPay.sessionSettings.cookieMaxAge;
+            : configuredSessionTtl;
 
         res.cookie('LoggedIn', true, { maxAge: loggedInCookieMaxAge, httpOnly: true });
     }
+
     return next();
 });
 
