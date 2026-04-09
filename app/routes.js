@@ -398,6 +398,13 @@ module.exports = function(router, configGovPay, app) {
 
         req.session.cookie.maxAge = ttl;
         req.session.cookie.originalMaxAge = ttl;
+        req.session.cookie.expires = new Date(Date.now() + ttl);
+
+        // Keep LoggedIn cookie expiry aligned with the session when it exists.
+        if (req.cookies && req.cookies.LoggedIn && req.res && req.res.cookie) {
+            req.res.cookie('LoggedIn', true, { maxAge: ttl, httpOnly: true });
+        }
+
         req.session.save((err) => {
             if (err) {
                 console.error(`Failed to update session maxAge: ${err}`);

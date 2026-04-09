@@ -46,14 +46,10 @@ const redisClient = createClient({
     socket: { connectTimeout, port, host, tls: process.env.NODE_ENV !== "development" },
 });
 
-redisClient.connect((err) => {
-    if (err) {
-        console.error("Redis client error:", err);
-        next(err);
-    } else {
-        next();
-    }
-});
+redisClient.connect()
+    .catch((err) => {
+        console.error("Redis client connection error:", err);
+    });
 
 redisClient.on("connect", () => {
     console.log("Redis client connected successfully");
@@ -104,7 +100,12 @@ app.use(function (req, res, next) {
 });
 app.use(function(req, res, next) {
     if (req.cookies['LoggedIn']){
-        res.cookie('LoggedIn',true,{ maxAge: 1800000, httpOnly: true });
+        const sessionTtl = req.session && req.session.cookie && parseInt(req.session.cookie.originalMaxAge, 10);
+        const loggedInCookieMaxAge = !isNaN(sessionTtl) && sessionTtl > 0
+            ? sessionTtl
+            : configGovPay.sessionSettings.cookieMaxAge;
+
+        res.cookie('LoggedIn', true, { maxAge: loggedInCookieMaxAge, httpOnly: true });
     }
     return next();
 });

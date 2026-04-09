@@ -1,9 +1,9 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /opt/app
 COPY package*.json ./
 RUN npm ci --only=production
 
-FROM node:22-alpine AS run
+FROM node:24-alpine AS run
 WORKDIR /opt/app
 COPY --from=build /opt/app ./
 COPY . ./
