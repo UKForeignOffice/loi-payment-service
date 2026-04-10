@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const common = require('./config/common.js');
 const configGovPay = common.config();
+const sessionTtlMiddleware = require('./lib/sessionTTL');
 
 // =====================================
 // CONFIGURATION
@@ -99,30 +100,7 @@ app.use(function (req, res, next) {
     };
     next();
 });
-app.use(function(req, res, next) {
-    const configuredSessionTtl = parseInt(configGovPay.sessionSettings.cookieMaxAge, 10);
-
-    if (req.session && req.session.cookie && !isNaN(configuredSessionTtl) && configuredSessionTtl > 0) {
-        const sessionTtl = parseInt(req.session.cookie.originalMaxAge, 10);
-
-        if (isNaN(sessionTtl) || sessionTtl < configuredSessionTtl) {
-            req.session.cookie.maxAge = configuredSessionTtl;
-            req.session.cookie.originalMaxAge = configuredSessionTtl;
-            req.session.cookie.expires = new Date(Date.now() + configuredSessionTtl);
-        }
-    }
-
-    if (req.cookies['LoggedIn'] && !isNaN(configuredSessionTtl) && configuredSessionTtl > 0) {
-        const sessionTtl = req.session && req.session.cookie && parseInt(req.session.cookie.originalMaxAge, 10);
-        const loggedInCookieMaxAge = !isNaN(sessionTtl) && sessionTtl > 0
-            ? sessionTtl
-            : configuredSessionTtl;
-
-        res.cookie('LoggedIn', true, { maxAge: loggedInCookieMaxAge, httpOnly: true });
-    }
-
-    return next();
-});
+app.use(sessionTtlMiddleware(configGovPay));
 
 app.use(function(req, res, next) {
     res.removeHeader("X-Powered-By");
