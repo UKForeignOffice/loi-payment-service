@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const common = require('./config/common.js');
 const configGovPay = common.config();
+const sessionTtlMiddleware = require('./lib/sessionTTL');
 
 // =====================================
 // CONFIGURATION
@@ -22,6 +23,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.set('trust proxy', 1);
 
 // Healthcheck - responds before session to avoid creating Redis sessions
 app.use(function(req, res, next) {
@@ -46,14 +48,10 @@ const redisClient = createClient({
     socket: { connectTimeout, port, host, tls: process.env.NODE_ENV !== "development" },
 });
 
-redisClient.connect((err) => {
-    if (err) {
-        console.error("Redis client error:", err);
-        next(err);
-    } else {
-        next();
-    }
-});
+redisClient.connect()
+    .catch((err) => {
+        console.error("Redis client connection error:", err);
+    });
 
 redisClient.on("connect", () => {
     console.log("Redis client connected successfully");
@@ -102,12 +100,7 @@ app.use(function (req, res, next) {
     };
     next();
 });
-app.use(function(req, res, next) {
-    if (req.cookies['LoggedIn']){
-        res.cookie('LoggedIn',true,{ maxAge: 1800000, httpOnly: true });
-    }
-    return next();
-});
+app.use(sessionTtlMiddleware(configGovPay));
 
 app.use(function(req, res, next) {
     res.removeHeader("X-Powered-By");
