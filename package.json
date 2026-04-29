@@ -26,6 +26,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.13",
     "chai": "^4.3.8",
     "mocha": "^11.7.5",
     "nock": "^13.5.6",
