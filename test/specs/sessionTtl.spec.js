@@ -1,7 +1,7 @@
 const expect = require('chai').expect
 const sessionTtlMiddleware = require('../../lib/sessionTTL')
 
-describe('Session TTL Middleware', function () {
+describe('Session TTL Middleware', () => {
   let middleware
   let mockConfig
   let req
@@ -34,14 +34,14 @@ describe('Session TTL Middleware', function () {
 
     // Track if next() was called
     nextCalled = false
-    const next = function () {
+    const next = () => {
       nextCalled = true
     }
 
     this.next = next
   })
 
-  describe('Session TTL Update', function () {
+  describe('Session TTL Update', () => {
     it('should update session TTL when session exists and current TTL is less than configured TTL', function () {
       const configuredTTL = 3600000 // 1 hour
       const currentTTL = 1800000 // 30 minutes
@@ -92,7 +92,7 @@ describe('Session TTL Middleware', function () {
 
     it('should update session TTL when current TTL is NaN', function () {
       const configuredTTL = 3600000
-      const now = Date.now()
+      const _now = Date.now()
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
@@ -199,14 +199,14 @@ describe('Session TTL Middleware', function () {
     })
   })
 
-  describe('LoggedIn Cookie Handling', function () {
+  describe('LoggedIn Cookie Handling', () => {
     it('should set LoggedIn cookie when LoggedIn cookie exists and configured TTL is valid', function () {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: configuredTTL,
@@ -232,7 +232,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: sessionTTL,
@@ -255,7 +255,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: NaN,
@@ -276,7 +276,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: 0,
@@ -297,7 +297,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: -1000,
@@ -335,7 +335,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = 'invalid'
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: 3600000,
@@ -354,7 +354,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = '0'
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: 3600000,
@@ -375,7 +375,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = null
 
       middleware(req, res, this.next)
@@ -388,7 +388,7 @@ describe('Session TTL Middleware', function () {
     })
   })
 
-  describe('Integration Scenarios', function () {
+  describe('Integration Scenarios', () => {
     it('should handle both session TTL update and LoggedIn cookie set in one request', function () {
       const configuredTTL = 3600000
       const currentSessionTTL = 1800000
@@ -397,7 +397,7 @@ describe('Session TTL Middleware', function () {
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
 
-      req.cookies['LoggedIn'] = true
+      req.cookies.LoggedIn = true
       req.session = {
         cookie: {
           maxAge: currentSessionTTL,
@@ -427,7 +427,7 @@ describe('Session TTL Middleware', function () {
     })
   })
 
-  describe('Edge Cases', function () {
+  describe('Edge Cases', () => {
     it('should handle very large TTL values', function () {
       const largeTTL = '999999999999'
 
@@ -487,17 +487,17 @@ describe('Session TTL Middleware', function () {
       expect(req.session.cookie.maxAge).to.equal(configuredTTL)
     })
 
-    it('should throw error if next is not called', function () {
+    it('should throw error if next is not called', () => {
       mockConfig.sessionSettings.cookieMaxAge = '3600000'
       middleware = sessionTtlMiddleware(mockConfig)
 
-      let errorThrown = false
+      let _errorThrown = false
       try {
         // Call without proper next callback won't actually throw in Express middleware
         // But we verify next was called in other tests
         middleware(req, res, undefined)
-      } catch (e) {
-        errorThrown = true
+      } catch (_e) {
+        _errorThrown = true
       }
       // This test verifies behavior - middleware should handle missing next gracefully
     })

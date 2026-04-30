@@ -1,7 +1,7 @@
 // =====================================
 // SETUP
 // =====================================
-const serverPort = process.argv[2] && !isNaN(process.argv[2]) ? process.argv[2] : process.env.PORT || 3003
+const serverPort = process.argv[2] && !Number.isNaN(process.argv[2]) ? process.argv[2] : process.env.PORT || 3003
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
@@ -27,7 +27,7 @@ app.use(cookieParser())
 app.set('trust proxy', 1)
 
 // Healthcheck - responds before session to avoid creating Redis sessions
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   if (req.path === '/api/payment/healthcheck') {
     return res.json({ message: 'Payment Service is running' })
   }
@@ -38,7 +38,7 @@ app.use(function (req, res, next) {
 // SESSION
 // =====================================
 const session = require('express-session')
-let RedisStore = require('connect-redis')(session)
+const RedisStore = require('connect-redis')(session)
 const { createClient } = require('redis')
 const { password, port, host } = configGovPay.sessionSettings
 const connectTimeout = 15000
@@ -86,10 +86,10 @@ app.use(
 // =====================================
 app.set('view engine', 'ejs')
 
-const crypto = require('crypto')
+const crypto = require('node:crypto')
 const cacheBust = crypto.randomBytes(4).toString('hex')
 
-app.use(function (req, res, next) {
+app.use((_req, res, next) => {
   res.locals = {
     cacheBust,
     piwikID: configGovPay.live_variables.piwikId,
@@ -102,7 +102,7 @@ app.use(function (req, res, next) {
 })
 app.use(sessionTtlMiddleware(configGovPay))
 
-app.use(function (req, res, next) {
+app.use((_req, res, next) => {
   res.removeHeader('X-Powered-By')
   res.removeHeader('Server')
   return next()
@@ -116,11 +116,11 @@ app.set('models', require('./models'))
 // =====================================
 // ASSETS
 // =====================================
-const path = require('path')
+const path = require('node:path')
 const oneDay = 24 * 60 * 60 * 1000 // 1 day in milliseconds
-app.use('/api/payment/', express.static(__dirname + '/public', { maxAge: oneDay }))
-app.use('/api/payment/styles', express.static(__dirname + '/styles', { maxAge: oneDay })) //static directory for stylesheets
-app.use('/api/payment/images', express.static(__dirname + '/images', { maxAge: oneDay })) //static directory for images
+app.use('/api/payment/', express.static(`${__dirname}/public`, { maxAge: oneDay }))
+app.use('/api/payment/styles', express.static(`${__dirname}/styles`, { maxAge: oneDay })) //static directory for stylesheets
+app.use('/api/payment/images', express.static(`${__dirname}/images`, { maxAge: oneDay })) //static directory for images
 app.use(
   '/api/payment/govuk-frontend',
   express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
@@ -135,23 +135,23 @@ app.use('/api/payment', router) //prefix all requests with 'api/payment'
 
 //Pull in images from GOVUK packages
 const fs = require('fs-extra')
-fs.copy('node_modules/govuk_frontend_toolkit/images', 'images/govuk_frontend_toolkit', function (err) {
+fs.copy('node_modules/govuk_frontend_toolkit/images', 'images/govuk_frontend_toolkit', (err) => {
   if (err) return null
 })
-fs.mkdirs('images/govuk_frontend_toolkit/icons', function (err) {
+fs.mkdirs('images/govuk_frontend_toolkit/icons', (err) => {
   if (err) return null
 })
-fs.readdir('images/govuk_frontend_toolkit', function (err, items) {
-  for (var i = 0; i < items.length; i++) {
+fs.readdir('images/govuk_frontend_toolkit', (_err, items) => {
+  for (let i = 0; i < items.length; i++) {
     if (
-      'images/govuk_frontend_toolkit/' + items[i].substr(0, 5) == 'images/govuk_frontend_toolkit/icon-' &&
-      items[i].substr(items[i].length - 3, 3) == 'png'
+      `images/govuk_frontend_toolkit/${items[i]}`.substr(0, 5) === 'images/govuk_frontend_toolkit/icon-' &&
+      items[i].substr(items[i].length - 3, 3) === 'png'
     ) {
       fs.move(
-        'images/govuk_frontend_toolkit/' + items[i],
-        'images/govuk_frontend_toolkit/icons/' + items[i],
+        `images/govuk_frontend_toolkit/${items[i]}`,
+        `images/govuk_frontend_toolkit/icons/${items[i]}`,
         { clobber: true },
-        function (err) {
+        (err) => {
           if (err) return null
         },
       )
@@ -170,8 +170,8 @@ const jobs = require('./config/jobs.js')
 const randomSecond = Math.floor(Math.random() * 60)
 const randomMin = Math.floor(Math.random() * 60) //Math.random returns a number from 0 to < 1 (never will return 60)
 const hourlyInterval = configGovPay.configs.jobScheduleHourlyInterval
-const jobScheduleRandom = randomSecond + ' ' + randomMin + ' ' + '*/' + hourlyInterval + ' * * *'
-schedule.scheduleJob(jobScheduleRandom, function () {
+const jobScheduleRandom = `${randomSecond} ${randomMin} */${hourlyInterval} * * *`
+schedule.scheduleJob(jobScheduleRandom, () => {
   jobs.paymentCleanup()
 })
 
@@ -193,7 +193,7 @@ process.on('unhandledRejection', (reason, promise) => {
 })
 
 app.listen(serverPort)
-console.log('is-payment-service running on port: ' + serverPort)
+console.log(`is-payment-service running on port: ${serverPort}`)
 console.log(
   `payment cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`,
 )

@@ -1,5 +1,5 @@
-module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('UserDocumentCount', {
+module.exports = (sequelize, DataTypes) =>
+  sequelize.define('UserDocumentCount', {
     application_id: {
       type: DataTypes.INTEGER,
     },
@@ -10,4 +10,3 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
     },
   })
-}
