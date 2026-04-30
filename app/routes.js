@@ -10,14 +10,14 @@ const {
   AdditionalPaymentDetails,
 } = require('../models/index')
 
-module.exports = function (router, configGovPay, app) {
+module.exports = (router, configGovPay, _app) => {
   const DEFAULT_SESSION_TTL = configGovPay.sessionSettings.cookieMaxAge
 
   // =====================================
   // SESSION EXPIRED
   // =====================================
-  router.get('/session-expired', function (req, res) {
-    let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
+  router.get('/session-expired', (_req, res) => {
+    const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
     return res.render('session-expired', {
       startNewApplicationUrl: startNewApplicationUrl,
     })
@@ -29,8 +29,8 @@ module.exports = function (router, configGovPay, app) {
   router
 
     //error handling
-    .get('/payment-error', function (req, res) {
-      let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
+    .get('/payment-error', (_req, res) => {
+      const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
       return res.render('payment-error', {
         errorMessage: '',
         startNewApplicationUrl: startNewApplicationUrl,
@@ -43,8 +43,8 @@ module.exports = function (router, configGovPay, app) {
   router
 
     //error handling
-    .get('/additional-payment-error', function (req, res) {
-      let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments'
+    .get('/additional-payment-error', (_req, res) => {
+      const startNewApplicationUrl = `${configGovPay.configs.startNewApplicationUrl}/additional-payments`
       return res.render('additional-payment-error', {
         errorMessage: '',
         startNewApplicationUrl: startNewApplicationUrl,
@@ -56,45 +56,41 @@ module.exports = function (router, configGovPay, app) {
   // ===============================
   router
     // process additional payments
-    .post('/submit-additional-payment', function (req, res) {
+    .post('/submit-additional-payment', (req, res) => {
       submitAdditionalPayment(req, res)
     })
 
   function isReturnDataValidForSubmitAdditionalPayment(returnData) {
     return (
-      returnData &&
-      returnData._links &&
-      returnData._links.next_url &&
-      returnData._links.next_url.href &&
-      returnData.payment_id &&
-      returnData.reference &&
-      returnData.amount &&
-      returnData.created_date &&
-      returnData.state &&
-      returnData.state.status
+      returnData?._links?.next_url?.href &&
+      returnData?.payment_id &&
+      returnData?.reference &&
+      returnData?.amount &&
+      returnData?.created_date &&
+      returnData?.state?.status
     )
   }
 
   async function submitAdditionalPayment(req, res) {
-    let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments'
+    const startNewApplicationUrl = `${configGovPay.configs.startNewApplicationUrl}/additional-payments`
 
     try {
-      let sess = req.session
-      let applicationRef = sess.additionalPayments.applicationRef
-      let applicationAmount = sess.additionalPayments.applicationAmount
-      let applicationEmail = sess.additionalPayments.applicationEmail
+      const sess = req.session
+      const applicationRef = sess.additionalPayments.applicationRef
+      const applicationAmount = sess.additionalPayments.applicationAmount
+      const applicationEmail = sess.additionalPayments.applicationEmail
 
       // Build required data
-      let formFields = GovPay.additionalPaymentsAddBaseData({}, applicationRef, applicationAmount, applicationEmail)
+      const formFields = GovPay.additionalPaymentsAddBaseData({}, applicationRef, applicationAmount, applicationEmail)
 
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
         headers: {
           'content-type': 'application/json; charset=utf-8',
-          Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey,
+          Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}`,
         },
       })
 
-      let returnData = response.data
+      const returnData = response.data
 
       if (!isReturnDataValidForSubmitAdditionalPayment(returnData)) {
         return res.render('additional-payment-error', {
@@ -103,7 +99,7 @@ module.exports = function (router, configGovPay, app) {
         })
       }
 
-      let next_url = returnData._links.next_url.href
+      const next_url = returnData._links.next_url.href
       sess.additionalPayments.paymentReference = returnData.payment_id
 
       if (applicationRef) {
@@ -140,42 +136,34 @@ module.exports = function (router, configGovPay, app) {
 
   router
     // additional payment confirmation on return from Gov Pay
-    .get('/additional-payment-confirmation', function (req, res) {
+    .get('/additional-payment-confirmation', (req, res) => {
       processAdditionalPayment(req, res)
     })
 
   function isReturnDataValidForProcessAdditionalPayment(returnData) {
     return (
-      returnData &&
-      returnData.amount &&
-      returnData.state &&
-      returnData.state.status &&
-      returnData.state.finished &&
-      returnData.reference &&
-      returnData.created_date
+      returnData?.amount &&
+      returnData?.state?.status &&
+      returnData?.state?.finished &&
+      returnData?.reference &&
+      returnData?.created_date
     )
   }
 
   function isReturnDataValidForUnsuccessfulAdditionalPayment(returnData) {
-    return (
-      returnData &&
-      returnData._links &&
-      returnData._links.next_url &&
-      returnData._links.next_url.href &&
-      returnData.payment_id
-    )
+    return returnData?._links?.next_url?.href && returnData.payment_id
   }
 
   async function processAdditionalPayment(req, res) {
-    let startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl + '/additional-payments'
+    const startNewApplicationUrl = `${configGovPay.configs.startNewApplicationUrl}/additional-payments`
     try {
-      let sess = req.session
-      let payment_id = sess.additionalPayments.paymentReference
-      let isSessionValid = typeof sess.additionalPayments.applicationAmount !== 'undefined'
+      const sess = req.session
+      const payment_id = sess.additionalPayments.paymentReference
+      const isSessionValid = typeof sess.additionalPayments.applicationAmount !== 'undefined'
 
       const response = await axios.get(`${configGovPay.configs.ukPayUrl}${payment_id}`, {
         headers: {
-          Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey,
+          Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}`,
         },
       })
 
@@ -188,12 +176,12 @@ module.exports = function (router, configGovPay, app) {
         })
       }
 
-      let status = returnData.state.status
-      let finished = returnData.state.finished
-      let appReference = returnData.reference
-      let paymentMethod = returnData.card_details?.card_brand
-      let createdDate = moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A')
-      let cost = returnData.amount / 100
+      const status = returnData.state.status
+      const finished = returnData.state.finished
+      const appReference = returnData.reference
+      const paymentMethod = returnData.card_details?.card_brand
+      const createdDate = moment(returnData.created_date).format('DD MMMM YYYY, h:mm:ss A')
+      const cost = returnData.amount / 100
 
       if (status === 'success' && finished) {
         console.log(`${payment_id} - payment is successful`)
@@ -260,21 +248,15 @@ module.exports = function (router, configGovPay, app) {
   // =====================================
   router
     // redirect to Gov Pay to process payment
-    .get('/submit-payment', function (req, res) {
+    .get('/submit-payment', (req, res) => {
       submitPayment(req, res)
     })
-    .post('/submit-payment', function (req, res) {
+    .post('/submit-payment', (req, res) => {
       submitPayment(req, res)
     })
 
   function isReturnDataValidForSubmitPayment(returnData) {
-    return (
-      returnData &&
-      returnData._links &&
-      returnData._links.next_url &&
-      returnData._links.next_url.href &&
-      returnData.payment_id
-    )
+    return returnData?._links?.next_url?.href && returnData?.payment_id
   }
 
   async function submitPayment(req, res) {
@@ -297,17 +279,16 @@ module.exports = function (router, configGovPay, app) {
       const application = await Application.findOne({ where: { application_id: appid } })
       const applicationDetail = await ApplicationPaymentDetails.findOne({ where: { application_id: appid } })
 
-      if (applicationDetail && applicationDetail.payment_url) {
+      if (applicationDetail?.payment_url) {
         return res.redirect(applicationDetail.payment_url)
       }
 
-      var formFields = {}
-      formFields = GovPay.buildUkPayData(formFields, applicationDetail, application, usersEmail)
+      const formFields = GovPay.buildUkPayData({}, applicationDetail, application, usersEmail)
 
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
         headers: {
           'content-type': 'application/json; charset=utf-8',
-          Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey,
+          Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}`,
         },
       })
 
@@ -335,7 +316,7 @@ module.exports = function (router, configGovPay, app) {
 
       return res.redirect(paymentUrl)
     } catch (error) {
-      console.error(appid + ' - ' + error)
+      console.error(`${appid} - ${error}`)
       return res.render('payment-error', {
         errorMessage: 'Problem processing payment',
         startNewApplicationUrl: startNewApplicationUrl,
@@ -348,19 +329,11 @@ module.exports = function (router, configGovPay, app) {
   // =====================================
 
   function isReturnDataValidForPaymentConfirmation(returnData) {
-    return (
-      returnData && returnData.state && returnData.state.status && returnData.state.finished && returnData.reference
-    )
+    return returnData?.state?.status && returnData?.state?.finished && returnData?.reference
   }
 
   function isReturnDataValidForUnsuccessfulPaymentConfirmation(returnData) {
-    return (
-      returnData &&
-      returnData._links &&
-      returnData._links.next_url &&
-      returnData._links.next_url.href &&
-      returnData.payment_id
-    )
+    return returnData?._links?.next_url?.href && returnData?.payment_id
   }
 
   function showErrorPage(req, res, errorMessage, startNewApplicationUrl) {
@@ -374,7 +347,7 @@ module.exports = function (router, configGovPay, app) {
 
   function isValidInteger(value) {
     const number = parseInt(value, 10) // Always specify radix 10 for decimal
-    return !isNaN(number) // Check if the result is a valid number
+    return !Number.isNaN(number) // Check if the result is a valid number
   }
 
   function updateSessionMaxAge(req, maxAgeMs, done) {
@@ -383,7 +356,7 @@ module.exports = function (router, configGovPay, app) {
     }
 
     const ttl = parseInt(maxAgeMs, 10)
-    if (isNaN(ttl) || ttl <= 0) {
+    if (Number.isNaN(ttl) || ttl <= 0) {
       console.error(`Invalid maxAge value: ${maxAgeMs}`)
       return done()
     }
@@ -400,7 +373,7 @@ module.exports = function (router, configGovPay, app) {
     })
   }
 
-  router.get('/payment-confirmation', async function (req, res) {
+  router.get('/payment-confirmation', async (req, res) => {
     const appIdFromGovPay = req.query.id
     const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
     const appId = req.session.appId
@@ -419,7 +392,7 @@ module.exports = function (router, configGovPay, app) {
       const payment_id = results.payment_reference
 
       const response = await axios.get(`${configGovPay.configs.ukPayUrl}${payment_id}`, {
-        headers: { Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey },
+        headers: { Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}` },
       })
 
       const returnData = response.data
@@ -473,7 +446,7 @@ module.exports = function (router, configGovPay, app) {
   })
 
   async function retryPayment(appId, req, res) {
-    const [application, applicationDetail, userDetails, userDocumentCount] = await Promise.all([
+    const [application, applicationDetail, _userDetails, _userDocumentCount] = await Promise.all([
       Application.findOne({ where: { application_id: appId } }),
       ApplicationPaymentDetails.findOne({ where: { application_id: appId } }),
       UserDetails.findOne({ where: { application_id: appId } }),
@@ -489,7 +462,7 @@ module.exports = function (router, configGovPay, app) {
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
         headers: {
           'content-type': 'application/json; charset=utf-8',
-          Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey,
+          Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}`,
         },
       })
 
@@ -539,9 +512,9 @@ module.exports = function (router, configGovPay, app) {
     }
   }
 
-  async function retryAdditionalPayment(req, sess, res, startNewApplicationUrl) {
+  async function retryAdditionalPayment(_req, sess, res, startNewApplicationUrl) {
     try {
-      let formFields = GovPay.additionalPaymentsAddBaseData(
+      const formFields = GovPay.additionalPaymentsAddBaseData(
         {},
         sess.additionalPayments.applicationRef,
         sess.additionalPayments.applicationAmount,
@@ -550,7 +523,7 @@ module.exports = function (router, configGovPay, app) {
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
         headers: {
           'content-type': 'application/json; charset=utf-8',
-          Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey,
+          Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}`,
         },
       })
 
@@ -563,7 +536,7 @@ module.exports = function (router, configGovPay, app) {
         })
       }
 
-      let next_url = returnData._links.next_url?.href
+      const next_url = returnData._links.next_url?.href
       sess.additionalPayments.paymentReference = returnData.payment_id
 
       return res.render('additionalPayments/additional-payment-confirmation', {

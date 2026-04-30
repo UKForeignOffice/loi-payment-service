@@ -13,7 +13,7 @@ const jobs = {
   //ALSO WORKS FOR ADDITIONAL PAYMENTS
   //====================================
 
-  paymentCleanup: async function () {
+  paymentCleanup: async () => {
     const { Op } = require('sequelize'),
       sequelize = require('../models/index').sequelize,
       PaymentsCleanupJob = require('../models/index').PaymentsCleanupJob,
@@ -26,16 +26,16 @@ const jobs = {
     try {
       await start()
 
-      let dbIsUnlocked = await checkIfDbIsUnLocked()
+      const dbIsUnlocked = await checkIfDbIsUnLocked()
       if (!dbIsUnlocked) {
         await abort('DUE TO DB LOCK')
         throw new Error('EXITING')
       } else {
         await lockDb()
 
-        let problemPayments = await searchEligiblePayments()
-        let problemAdditionalPayments = await searchEligibleAdditionalPayments()
-        let paidInDraftApps = await searchPaidInDraftApps()
+        const problemPayments = await searchEligiblePayments()
+        const problemAdditionalPayments = await searchEligibleAdditionalPayments()
+        const paidInDraftApps = await searchPaidInDraftApps()
 
         if (problemPayments.length === 0) {
           await abort('AS NO ELIGIBLE PAYMENTS EXIST')
@@ -62,15 +62,15 @@ const jobs = {
       await stop()
     }
 
-    async function start() {
+    function start() {
       console.log(`[PAYMENT CLEANUP JOB] STARTED`)
     }
 
-    async function stop() {
+    function stop() {
       console.log(`[PAYMENT CLEANUP JOB] FINISHED`)
     }
 
-    async function abort(reason) {
+    function abort(reason) {
       console.log(`[PAYMENT CLEANUP JOB] ABORTED ${reason}`)
     }
 
@@ -224,9 +224,7 @@ const jobs = {
     async function exportAppData(problemCase) {
       try {
         console.log(`[PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id}`)
-        return await sequelize.query(
-          'SELECT * FROM populate_exportedapplicationdata(' + problemCase.application_id + ')',
-        )
+        return await sequelize.query(`SELECT * FROM populate_exportedapplicationdata(${problemCase.application_id})`)
       } catch (error) {
         console.log(error)
       }
@@ -235,9 +233,7 @@ const jobs = {
     async function exportEAppData(problemCase) {
       try {
         console.log(`[PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR ${problemCase.application_id}`)
-        return await sequelize.query(
-          'SELECT * FROM populate_exportedeApostilleAppdata(' + problemCase.application_id + ')',
-        )
+        return await sequelize.query(`SELECT * FROM populate_exportedeApostilleAppdata(${problemCase.application_id})`)
       } catch (error) {
         console.log(error)
       }
@@ -329,9 +325,9 @@ const jobs = {
       try {
         const options = {
           method: 'GET',
-          url: configGovPay.configs.ukPayUrl + problemCase.payment_reference,
+          url: `${configGovPay.configs.ukPayUrl}${problemCase.payment_reference}`,
           headers: {
-            Authorization: 'Bearer ' + configGovPay.configs.ukPayApiKey,
+            Authorization: `Bearer ${configGovPay.configs.ukPayApiKey}`,
           },
         }
         const response = await axios(options)
@@ -394,12 +390,12 @@ const jobs = {
 
     async function processPayments(problemPayments) {
       try {
-        for (let problemCase of problemPayments) {
-          let returnData = await callGovPaymentsApi(problemCase)
-          let status = returnData.state.status
-          let paymentIsFinished = returnData.state.finished
-          let createdDate = returnData.created_date
-          let paymentIsOldEnough = moment(createdDate).isBefore(moment().subtract(3, 'hours').toDate())
+        for (const problemCase of problemPayments) {
+          const returnData = await callGovPaymentsApi(problemCase)
+          const status = returnData.state.status
+          const paymentIsFinished = returnData.state.finished
+          const createdDate = returnData.created_date
+          const paymentIsOldEnough = moment(createdDate).isBefore(moment().subtract(3, 'hours').toDate())
 
           // Give the payment time to complete. We check if
           // it was created more than 3 hours ago
@@ -428,12 +424,12 @@ const jobs = {
 
     async function processAdditionalPayments(problemAdditionalPayments) {
       try {
-        for (let problemCase of problemAdditionalPayments) {
-          let returnData = await callGovPaymentsApi(problemCase)
-          let status = returnData.state.status
-          let paymentIsFinished = returnData.state.finished
-          let createdDate = returnData.created_date
-          let paymentIsOldEnough = moment(createdDate).isBefore(moment().subtract(3, 'hours').toDate())
+        for (const problemCase of problemAdditionalPayments) {
+          const returnData = await callGovPaymentsApi(problemCase)
+          const status = returnData.state.status
+          const paymentIsFinished = returnData.state.finished
+          const createdDate = returnData.created_date
+          const paymentIsOldEnough = moment(createdDate).isBefore(moment().subtract(3, 'hours').toDate())
 
           // Give the payment time to complete. We check if
           // it was created more than 3 hours ago
@@ -446,7 +442,7 @@ const jobs = {
               await updateAdditionalPaymentStatus(problemCase, status)
 
               if (status === 'success') {
-                let appStatus = await checkAdditionalPaymentAppStatus(problemCase.application_id)
+                const appStatus = await checkAdditionalPaymentAppStatus(problemCase.application_id)
 
                 // If the payment is still draft in the AdditionalPaymentDetails table
                 // Update the status to queued
@@ -472,7 +468,7 @@ const jobs = {
 
     async function processPaidInDraftApps(paidInDraftApps) {
       try {
-        for (let app of paidInDraftApps) {
+        for (const app of paidInDraftApps) {
           if (app.serviceType === 4 && configGovPay.configs.nodeEnv.toLowerCase() !== 'development') {
             await handleEAppProcessing(app)
           } else {

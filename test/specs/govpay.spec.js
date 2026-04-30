@@ -3,9 +3,9 @@ const nock = require('nock')
 const expect = require('chai').expect
 const testData = require('../data/test-data')
 
-describe('GOV PAY', function () {
-  describe('POST success (create payment)', function () {
-    it('returns 200 and with correct data', function (done) {
+describe('GOV PAY', () => {
+  describe('POST success (create payment)', () => {
+    it('returns 200 and with correct data', (done) => {
       nock('https://publicapi.payments.service.gov.uk').post('/v1/payments/').reply(200, testData.mockPostResponse)
 
       request('https://publicapi.payments.service.gov.uk')
@@ -30,8 +30,8 @@ describe('GOV PAY', function () {
     })
   })
 
-  describe('GET success (check payment status)', function () {
-    it('returns 200 and with correct data', function (done) {
+  describe('GET success (check payment status)', () => {
+    it('returns 200 and with correct data', (done) => {
       nock('https://publicapi.payments.service.gov.uk')
         .get('/v1/payments/hu20sqlact5260q2nanm0q8u93')
         .reply(200, testData.mockGetResponse)
