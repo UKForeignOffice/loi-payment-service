@@ -1,73 +1,73 @@
 import { config as dotenvConfig } from 'dotenv'
 import {
   defaultApplicationServiceReturnURL,
+  defaultCookieDomain,
   defaultDBConfig,
+  defaultJobScheduleHourlyInterval,
+  defaultLiveVariables,
   defaultNotificationServiceURL,
   defaultResultURL,
   defaultStartNewApplicationURL,
-  defaultCookieDomain,
-  defaultLiveVariables,
   defaultTheSession,
   defaultUKPayApiKey,
   defaultUKPayUrl,
-  defaultJobScheduleHourlyInterval,
 } from './defaultConfig.js'
 
 dotenvConfig()
 
-var resultURL = { ...defaultResultURL, ...(process.env.RESULTURL ? JSON.parse(process.env.RESULTURL) : {}) }
+const resultURL = { ...defaultResultURL, ...(process.env.RESULTURL ? JSON.parse(process.env.RESULTURL) : {}) }
 
-var notificationServiceURL = {
+const notificationServiceURL = {
   ...defaultNotificationServiceURL,
   ...(process.env.NOTIFICATIONSERVICEURL ? JSON.parse(process.env.NOTIFICATIONSERVICEURL) : {}),
 }
 
-var applicationServiceReturnUrl = {
+const applicationServiceReturnUrl = {
   ...defaultApplicationServiceReturnURL,
   ...(process.env.APPLICATIONSERVICERETURNURL ? JSON.parse(process.env.APPLICATIONSERVICERETURNURL) : {}),
 }
 
-var startNewApplicationUrl = {
+const startNewApplicationUrl = {
   ...defaultStartNewApplicationURL,
   ...(process.env.STARTNEWAPPLICATIONURL ? JSON.parse(process.env.STARTNEWAPPLICATIONURL) : {}),
 }
 
-var cookieDomain = {
+const cookieDomain = {
   ...defaultCookieDomain,
   ...(process.env.COOKIEDOMAIN ? JSON.parse(process.env.COOKIEDOMAIN) : {}),
 }
 
-var db = {
+const db = {
   ...defaultDBConfig,
   ...(process.env.EDMS_BEARER_TOKEN ? JSON.parse(process.env.EDMS_BEARER_TOKEN) : {}),
 }
 
-var live_variables = {
+const live_variables = {
   ...defaultLiveVariables,
   ...(process.env.LIVEVARIABLES ? JSON.parse(process.env.LIVEVARIABLES) : {}),
 }
 
-var sessionSettings = {
+const sessionSettings = {
   ...defaultTheSession,
   ...(process.env.THESESSION ? JSON.parse(process.env.THESESSION) : {}),
 }
 
-var ukPayUrl = {
+const ukPayUrl = {
   ...defaultUKPayUrl,
   ...(process.env.UKPAYURL ? JSON.parse(process.env.UKPAYURL) : {}),
 }
-var ukPayApiKey = {
+const ukPayApiKey = {
   ...defaultUKPayApiKey,
   ...(process.env.UKPAYAPIKEY ? JSON.parse(process.env.UKPAYAPIKEY) : {}),
 }
-var jobScheduleHourlyInterval = {
+const jobScheduleHourlyInterval = {
   ...defaultJobScheduleHourlyInterval,
   ...(process.env.JOBSCHEDULEHOURLYINTERVAL ? JSON.parse(process.env.JOBSCHEDULEHOURLYINTERVAL) : {}),
 }
-var nodeEnv = process.env.NODE_ENV || 'production'
-var s3Bucket = process.env.S3_BUCKET
+const nodeEnv = process.env.NODE_ENV || 'production'
+const s3Bucket = process.env.S3_BUCKET
 
-var configs = {
+const configs = {
   resultURL: resultURL.resultURL,
   additionalPaymentsReturnURL: resultURL.additionalPaymentsReturnURL,
   notificationServiceURL: notificationServiceURL.notificationServiceURL,
@@ -81,6 +81,6 @@ var configs = {
   s3Bucket,
 }
 
-var database = db.database
+const database = db.database
 
 export const paymentConfig = { configs, database, live_variables, sessionSettings }

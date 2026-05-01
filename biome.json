@@ -8,7 +8,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!fonts", "!js", "!styles", "!public"]
+    "includes": ["**", "!fonts", "!styles", "!public"]
   },
   "formatter": {
     "enabled": true,
@@ -25,7 +25,7 @@
       },
       "suspicious": {
         "useAwait": "error",
-        "noVar": "off"
+        "noVar": "error"
       }
     }
   },
