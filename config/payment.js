@@ -1,18 +1,69 @@
 import { config as dotenvConfig } from 'dotenv'
+import {
+  defaultApplicationServiceReturnURL,
+  defaultDBConfig,
+  defaultNotificationServiceURL,
+  defaultResultURL,
+  defaultStartNewApplicationURL,
+  defaultCookieDomain,
+  defaultLiveVariables,
+  defaultTheSession,
+  defaultUKPayApiKey,
+  defaultUKPayUrl,
+  defaultJobScheduleHourlyInterval,
+} from './defaultConfig.js'
 
 dotenvConfig()
 
-var resultURL = JSON.parse(process.env.RESULTURL)
-var notificationServiceURL = JSON.parse(process.env.NOTIFICATIONSERVICEURL)
-var applicationServiceReturnUrl = JSON.parse(process.env.APPLICATIONSERVICERETURNURL)
-var startNewApplicationUrl = JSON.parse(process.env.STARTNEWAPPLICATIONURL)
-var cookieDomain = JSON.parse(process.env.COOKIEDOMAIN)
-var db = JSON.parse(process.env.DATABASE)
-var live_variables = JSON.parse(process.env.LIVEVARIABLES)
-var sessionSettings = JSON.parse(process.env.THESESSION)
-var ukPayUrl = JSON.parse(process.env.UKPAYURL)
-var ukPayApiKey = JSON.parse(process.env.UKPAYAPIKEY)
-var jobScheduleHourlyInterval = JSON.parse(process.env.JOBSCHEDULEHOURLYINTERVAL)
+var resultURL = { ...defaultResultURL, ...(process.env.RESULTURL ? JSON.parse(process.env.RESULTURL) : {}) }
+
+var notificationServiceURL = {
+  ...defaultNotificationServiceURL,
+  ...(process.env.NOTIFICATIONSERVICEURL ? JSON.parse(process.env.NOTIFICATIONSERVICEURL) : {}),
+}
+
+var applicationServiceReturnUrl = {
+  ...defaultApplicationServiceReturnURL,
+  ...(process.env.APPLICATIONSERVICERETURNURL ? JSON.parse(process.env.APPLICATIONSERVICERETURNURL) : {}),
+}
+
+var startNewApplicationUrl = {
+  ...defaultStartNewApplicationURL,
+  ...(process.env.STARTNEWAPPLICATIONURL ? JSON.parse(process.env.STARTNEWAPPLICATIONURL) : {}),
+}
+
+var cookieDomain = {
+  ...defaultCookieDomain,
+  ...(process.env.COOKIEDOMAIN ? JSON.parse(process.env.COOKIEDOMAIN) : {}),
+}
+
+var db = {
+  ...defaultDBConfig,
+  ...(process.env.EDMS_BEARER_TOKEN ? JSON.parse(process.env.EDMS_BEARER_TOKEN) : {}),
+}
+
+var live_variables = {
+  ...defaultLiveVariables,
+  ...(process.env.LIVEVARIABLES ? JSON.parse(process.env.LIVEVARIABLES) : {}),
+}
+
+var sessionSettings = {
+  ...defaultTheSession,
+  ...(process.env.THESESSION ? JSON.parse(process.env.THESESSION) : {}),
+}
+
+var ukPayUrl = {
+  ...defaultUKPayUrl,
+  ...(process.env.UKPAYURL ? JSON.parse(process.env.UKPAYURL) : {}),
+}
+var ukPayApiKey = {
+  ...defaultUKPayApiKey,
+  ...(process.env.UKPAYAPIKEY ? JSON.parse(process.env.UKPAYAPIKEY) : {}),
+}
+var jobScheduleHourlyInterval = {
+  ...defaultJobScheduleHourlyInterval,
+  ...(process.env.JOBSCHEDULEHOURLYINTERVAL ? JSON.parse(process.env.JOBSCHEDULEHOURLYINTERVAL) : {}),
+}
 var nodeEnv = process.env.NODE_ENV || 'production'
 var s3Bucket = process.env.S3_BUCKET
 
