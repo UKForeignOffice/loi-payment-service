@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { sessionTtlMiddleware } from '../../lib/sessionTTL.js'
 
 describe('Session TTL Middleware', () => {
@@ -7,8 +7,9 @@ describe('Session TTL Middleware', () => {
   let req
   let res
   let nextCalled
+  let next
 
-  beforeEach(function () {
+  beforeEach(() => {
     // Default config
     mockConfig = {
       sessionSettings: {
@@ -34,15 +35,13 @@ describe('Session TTL Middleware', () => {
 
     // Track if next() was called
     nextCalled = false
-    const next = () => {
+    next = () => {
       nextCalled = true
     }
-
-    this.next = next
   })
 
   describe('Session TTL Update', () => {
-    it('should update session TTL when session exists and current TTL is less than configured TTL', function () {
+    it('should update session TTL when session exists and current TTL is less than configured TTL', () => {
       const configuredTTL = 3600000 // 1 hour
       const currentTTL = 1800000 // 30 minutes
       const now = Date.now()
@@ -58,15 +57,15 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(configuredTTL)
-      expect(req.session.cookie.originalMaxAge).to.equal(configuredTTL)
-      expect(req.session.cookie.expires.getTime()).to.be.greaterThan(now + configuredTTL - 1000)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(configuredTTL)
+      expect(req.session.cookie.originalMaxAge).toBe(configuredTTL)
+      expect(req.session.cookie.expires.getTime()).toBeGreaterThan(now + configuredTTL - 1000)
     })
 
-    it('should not update session TTL when current TTL is greater than configured TTL', function () {
+    it('should not update session TTL when current TTL is greater than configured TTL', () => {
       const configuredTTL = 3600000 // 1 hour
       const currentTTL = 7200000 // 2 hours
       const originalExpires = new Date(Date.now() + currentTTL)
@@ -82,17 +81,16 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(currentTTL)
-      expect(req.session.cookie.originalMaxAge).to.equal(currentTTL)
-      expect(req.session.cookie.expires).to.equal(originalExpires)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(currentTTL)
+      expect(req.session.cookie.originalMaxAge).toBe(currentTTL)
+      expect(req.session.cookie.expires).toBe(originalExpires)
     })
 
-    it('should update session TTL when current TTL is NaN', function () {
+    it('should update session TTL when current TTL is NaN', () => {
       const configuredTTL = 3600000
-      const _now = Date.now()
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
       middleware = sessionTtlMiddleware(mockConfig)
@@ -105,26 +103,26 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(configuredTTL)
-      expect(req.session.cookie.originalMaxAge).to.equal(configuredTTL)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(configuredTTL)
+      expect(req.session.cookie.originalMaxAge).toBe(configuredTTL)
     })
 
-    it('should not update session TTL when session is null', function () {
+    it('should not update session TTL when session is null', () => {
       mockConfig.sessionSettings.cookieMaxAge = '3600000'
       middleware = sessionTtlMiddleware(mockConfig)
 
       req.session = null
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
+      expect(nextCalled).toBe(true)
       // No error should occur
     })
 
-    it('should not update session TTL when session cookie is missing', function () {
+    it('should not update session TTL when session cookie is missing', () => {
       mockConfig.sessionSettings.cookieMaxAge = '3600000'
       middleware = sessionTtlMiddleware(mockConfig)
 
@@ -132,13 +130,13 @@ describe('Session TTL Middleware', () => {
         cookie: null,
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie).to.equal(null)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie).toBeNull()
     })
 
-    it('should not update session TTL when configured TTL is NaN', function () {
+    it('should not update session TTL when configured TTL is NaN', () => {
       const currentTTL = 1800000
 
       mockConfig.sessionSettings.cookieMaxAge = 'invalid'
@@ -152,13 +150,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(currentTTL)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(currentTTL)
     })
 
-    it('should not update session TTL when configured TTL is zero', function () {
+    it('should not update session TTL when configured TTL is zero', () => {
       const currentTTL = 1800000
 
       mockConfig.sessionSettings.cookieMaxAge = '0'
@@ -172,13 +170,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(currentTTL)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(currentTTL)
     })
 
-    it('should not update session TTL when configured TTL is negative', function () {
+    it('should not update session TTL when configured TTL is negative', () => {
       const currentTTL = 1800000
 
       mockConfig.sessionSettings.cookieMaxAge = '-1000'
@@ -192,15 +190,15 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(currentTTL)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(currentTTL)
     })
   })
 
   describe('LoggedIn Cookie Handling', () => {
-    it('should set LoggedIn cookie when LoggedIn cookie exists and configured TTL is valid', function () {
+    it('should set LoggedIn cookie when LoggedIn cookie exists and configured TTL is valid', () => {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
@@ -215,17 +213,17 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie).to.not.be.null
-      expect(res._setCookie.name).to.equal('LoggedIn')
-      expect(res._setCookie.value).to.equal(true)
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
-      expect(res._setCookie.options.httpOnly).to.equal(true)
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie).not.toBeNull()
+      expect(res._setCookie.name).toBe('LoggedIn')
+      expect(res._setCookie.value).toBe(true)
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
+      expect(res._setCookie.options.httpOnly).toBe(true)
     })
 
-    it('should use session TTL for LoggedIn cookie when session TTL is valid', function () {
+    it('should use session TTL for LoggedIn cookie when session TTL is valid', () => {
       const configuredTTL = 3600000
       const sessionTTL = 1800000
 
@@ -241,15 +239,15 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
+      expect(nextCalled).toBe(true)
       // After middleware runs, session TTL is updated to configuredTTL when it was less
       // So LoggedIn cookie should use the updated session TTL value
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
     })
 
-    it('should use configured TTL for LoggedIn cookie when session TTL is NaN', function () {
+    it('should use configured TTL for LoggedIn cookie when session TTL is NaN', () => {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
@@ -264,13 +262,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
     })
 
-    it('should use configured TTL for LoggedIn cookie when session TTL is zero', function () {
+    it('should use configured TTL for LoggedIn cookie when session TTL is zero', () => {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
@@ -285,13 +283,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
     })
 
-    it('should use configured TTL for LoggedIn cookie when session TTL is negative', function () {
+    it('should use configured TTL for LoggedIn cookie when session TTL is negative', () => {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
@@ -306,13 +304,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
     })
 
-    it('should not set LoggedIn cookie when LoggedIn cookie is absent', function () {
+    it('should not set LoggedIn cookie when LoggedIn cookie is absent', () => {
       mockConfig.sessionSettings.cookieMaxAge = '3600000'
       middleware = sessionTtlMiddleware(mockConfig)
 
@@ -325,13 +323,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie).to.be.null
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie).toBeNull()
     })
 
-    it('should not set LoggedIn cookie when configured TTL is invalid', function () {
+    it('should not set LoggedIn cookie when configured TTL is invalid', () => {
       mockConfig.sessionSettings.cookieMaxAge = 'invalid'
       middleware = sessionTtlMiddleware(mockConfig)
 
@@ -344,13 +342,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie).to.be.null
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie).toBeNull()
     })
 
-    it('should not set LoggedIn cookie when configured TTL is zero', function () {
+    it('should not set LoggedIn cookie when configured TTL is zero', () => {
       mockConfig.sessionSettings.cookieMaxAge = '0'
       middleware = sessionTtlMiddleware(mockConfig)
 
@@ -363,13 +361,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(res._setCookie).to.be.null
+      expect(nextCalled).toBe(true)
+      expect(res._setCookie).toBeNull()
     })
 
-    it('should set LoggedIn cookie when session is missing but LoggedIn cookie exists', function () {
+    it('should set LoggedIn cookie when session is missing but LoggedIn cookie exists', () => {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = configuredTTL.toString()
@@ -378,18 +376,18 @@ describe('Session TTL Middleware', () => {
       req.cookies.LoggedIn = true
       req.session = null
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
+      expect(nextCalled).toBe(true)
       // Even if session is null, we should still refresh the LoggedIn cookie with configured TTL
-      expect(res._setCookie).to.not.be.null
-      expect(res._setCookie.name).to.equal('LoggedIn')
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
+      expect(res._setCookie).not.toBeNull()
+      expect(res._setCookie.name).toBe('LoggedIn')
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
     })
   })
 
   describe('Integration Scenarios', () => {
-    it('should handle both session TTL update and LoggedIn cookie set in one request', function () {
+    it('should handle both session TTL update and LoggedIn cookie set in one request', () => {
       const configuredTTL = 3600000
       const currentSessionTTL = 1800000
       const now = Date.now()
@@ -406,29 +404,29 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
+      expect(nextCalled).toBe(true)
       // Session TTL updated
-      expect(req.session.cookie.maxAge).to.equal(configuredTTL)
+      expect(req.session.cookie.maxAge).toBe(configuredTTL)
       // LoggedIn cookie set
-      expect(res._setCookie.name).to.equal('LoggedIn')
+      expect(res._setCookie.name).toBe('LoggedIn')
       // LoggedIn cookie should use updated session TTL
-      expect(res._setCookie.options.maxAge).to.equal(configuredTTL)
+      expect(res._setCookie.options.maxAge).toBe(configuredTTL)
     })
 
-    it('should always call next() to continue request processing', function () {
+    it('should always call next() to continue request processing', () => {
       mockConfig.sessionSettings.cookieMaxAge = '3600000'
       middleware = sessionTtlMiddleware(mockConfig)
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
+      expect(nextCalled).toBe(true)
     })
   })
 
   describe('Edge Cases', () => {
-    it('should handle very large TTL values', function () {
+    it('should handle very large TTL values', () => {
       const largeTTL = '999999999999'
 
       mockConfig.sessionSettings.cookieMaxAge = largeTTL
@@ -442,13 +440,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(parseInt(largeTTL, 10))
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(parseInt(largeTTL, 10))
     })
 
-    it('should handle string TTL values that are empty', function () {
+    it('should handle string TTL values that are empty', () => {
       mockConfig.sessionSettings.cookieMaxAge = ''
       middleware = sessionTtlMiddleware(mockConfig)
 
@@ -460,13 +458,13 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
-      expect(req.session.cookie.maxAge).to.equal(3600000)
+      expect(nextCalled).toBe(true)
+      expect(req.session.cookie.maxAge).toBe(3600000)
     })
 
-    it('should handle string TTL values with whitespace', function () {
+    it('should handle string TTL values with whitespace', () => {
       const configuredTTL = 3600000
 
       mockConfig.sessionSettings.cookieMaxAge = '  3600000  '
@@ -480,11 +478,11 @@ describe('Session TTL Middleware', () => {
         },
       }
 
-      middleware(req, res, this.next)
+      middleware(req, res, next)
 
-      expect(nextCalled).to.equal(true)
+      expect(nextCalled).toBe(true)
       // parseInt handles leading/trailing whitespace
-      expect(req.session.cookie.maxAge).to.equal(configuredTTL)
+      expect(req.session.cookie.maxAge).toBe(configuredTTL)
     })
 
     it('should throw error if next is not called', () => {
