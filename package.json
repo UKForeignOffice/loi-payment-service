@@ -36,7 +36,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=development node server.js 3003",
-    "test": "PORT=6009 mocha --timeout 10000 --recursive test/ --exit",
+    "test": "PORT=6009 mocha --timeout 10000 --recursive test/ --ignore 'test/**/*.vitest.spec.js' --exit",
     "test:vitest": "vitest run --coverage",
     "format": "biome check --write .",
     "quality": "biome check --changed --since=develop"

@@ -21,3 +21,5 @@ jobs:
           PORT: 1234
           NODE_ENV: test
         run: npm run test
+      - name: Run Vitest tests
+        run: npm run test:vitest  
