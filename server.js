@@ -33,8 +33,9 @@ const directoryPath = path.dirname(__filename)
 const app = express()
 
 const configGovPay = config.configGovukPay
-const serverPort = process.argv[2] && !Number.isNaN(process.argv[2]) ? process.argv[2] : process.env.PORT || 3003
-
+const argvPort = Number.parseInt(process.argv[2], 10)
+const envPort = Number.parseInt(process.env.PORT, 10)
+const serverPort = Number.isFinite(argvPort) ? argvPort : Number.isFinite(envPort) ? envPort : 3003
 // =====================================
 // CONFIGURATION
 // =====================================
@@ -224,7 +225,9 @@ process.on('unhandledRejection', (reason, promise) => {
 })
 
 app.listen(serverPort)
-logger.info(`is-payment-service running on port: ${serverPort}`)
+
+logger.info(`Port ${process.argv[2] || process.env.PORT || 3003} is now open for connections`)
+logger.info(`is-payment-service running on port: ${process.argv[2] || process.env.PORT || 3003}`)
 logger.info(
   `payment cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`,
 )

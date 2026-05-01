@@ -35,7 +35,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=development node server.js 3003",
-    "test": "node_modules/mocha/bin/_mocha --timeout 10000 --recursive test/ --exit",
+    "test": "PORT=6009 mocha --timeout 10000 --recursive test/ --exit",
     "format": "biome check --write .",
     "quality": "biome check --changed --since=develop"
   },
