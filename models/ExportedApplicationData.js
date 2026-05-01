@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) =>
+export const ExportedApplicationData = (sequelize, DataTypes) =>
   sequelize.define('ExportedApplicationData', {
     application_id: {
       type: DataTypes.INTEGER,

@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) =>
+export const PaymentsCleanupJob = (sequelize, DataTypes) =>
   sequelize.define(
     'PaymentsCleanupJob',
     {

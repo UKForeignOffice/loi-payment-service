@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) =>
+export const UploadedDocumentUrls = (sequelize, DataTypes) =>
   sequelize.define('UploadedDocumentUrls', {
     id: {
       type: DataTypes.INTEGER,

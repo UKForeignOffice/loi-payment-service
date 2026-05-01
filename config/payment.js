@@ -1,8 +1,7 @@
-/**
- * Created by skaifem on 10/12/2015.
- */
+import { config as dotenvConfig } from 'dotenv'
 
-require('dotenv').config()
+dotenvConfig()
+
 var resultURL = JSON.parse(process.env.RESULTURL)
 var notificationServiceURL = JSON.parse(process.env.NOTIFICATIONSERVICEURL)
 var applicationServiceReturnUrl = JSON.parse(process.env.APPLICATIONSERVICERETURNURL)
@@ -33,6 +32,4 @@ var configs = {
 
 var database = db.database
 
-var config = { configs: configs, database: database, live_variables: live_variables, sessionSettings: sessionSettings }
-
-module.exports = config
+export const paymentConfig = { configs, database, live_variables, sessionSettings }

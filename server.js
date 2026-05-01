@@ -1,20 +1,43 @@
-// =====================================
-// SETUP
-// =====================================
-const serverPort = process.argv[2] && !Number.isNaN(process.argv[2]) ? process.argv[2] : process.env.PORT || 3003
-const express = require('express')
+import crypto from 'node:crypto'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import bodyParser from 'body-parser'
+import connectRedis from 'connect-redis'
+import cookieParser from 'cookie-parser'
+import express from 'express'
+import session from 'express-session'
+import fs from 'fs-extra'
+import { scheduleJob } from 'node-schedule'
+import { createClient } from 'redis'
+import { ApplicationRoutes } from './app/routes.js'
+import { config } from './config/common.js'
+import { jobs } from './config/jobs.js'
+import { logger } from './config/logs.js'
+import { sessionTtlMiddleware } from './lib/sessionTTL.js'
+import {
+  AdditionalPaymentDetails,
+  Application,
+  ApplicationPaymentDetails,
+  ExportedApplicationData,
+  ExportedEAppData,
+  PaymentsCleanupJob,
+  sequelize,
+  UploadedDocumentUrls,
+  UserDetails,
+  UserDocumentCount,
+} from './models/index.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const directoryPath = path.dirname(__filename)
+
 const app = express()
-const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')
-const common = require('./config/common.js')
-const configGovPay = common.config()
-const sessionTtlMiddleware = require('./lib/sessionTTL')
+
+const configGovPay = config.configGovukPay
+const serverPort = process.argv[2] && !Number.isNaN(process.argv[2]) ? process.argv[2] : process.env.PORT || 3003
 
 // =====================================
 // CONFIGURATION
 // =====================================
-
-require('./config/logs')
 
 app.use(
   bodyParser.urlencoded({
@@ -37,9 +60,8 @@ app.use((req, res, next) => {
 // =====================================
 // SESSION
 // =====================================
-const session = require('express-session')
-const RedisStore = require('connect-redis')(session)
-const { createClient } = require('redis')
+
+const RedisStore = connectRedis(session)
 const { password, port, host } = configGovPay.sessionSettings
 const connectTimeout = 15000
 
@@ -50,15 +72,15 @@ const redisClient = createClient({
 })
 
 redisClient.connect().catch((err) => {
-  console.error('Redis client connection error:', err)
+  logger.error('Redis client connection error:', err)
 })
 
 redisClient.on('connect', () => {
-  console.log('Redis client connected successfully')
+  logger.info('Redis client connected successfully')
 })
 
 redisClient.on('error', (error) => {
-  console.error('Redis client error:', error)
+  logger.error('Redis client error:', error)
 })
 
 const redisStore = new RedisStore({ client: redisClient })
@@ -86,7 +108,6 @@ app.use(
 // =====================================
 app.set('view engine', 'ejs')
 
-const crypto = require('node:crypto')
 const cacheBust = crypto.randomBytes(4).toString('hex')
 
 app.use((_req, res, next) => {
@@ -111,30 +132,40 @@ app.use((_req, res, next) => {
 // =====================================
 // MODELS (Sequelize ORM)
 // =====================================
-app.set('models', require('./models'))
+app.set('models', {
+  sequelize,
+  Application,
+  ApplicationPaymentDetails,
+  UserDetails,
+  UserDocumentCount,
+  PaymentsCleanupJob,
+  AdditionalPaymentDetails,
+  ExportedEAppData,
+  ExportedApplicationData,
+  UploadedDocumentUrls,
+})
 
 // =====================================
 // ASSETS
 // =====================================
-const path = require('node:path')
 const oneDay = 24 * 60 * 60 * 1000 // 1 day in milliseconds
-app.use('/api/payment/', express.static(`${__dirname}/public`, { maxAge: oneDay }))
-app.use('/api/payment/styles', express.static(`${__dirname}/styles`, { maxAge: oneDay })) //static directory for stylesheets
-app.use('/api/payment/images', express.static(`${__dirname}/images`, { maxAge: oneDay })) //static directory for images
+app.use('/api/payment/', express.static(`${directoryPath}/public`, { maxAge: oneDay }))
+app.use('/api/payment/styles', express.static(`${directoryPath}/styles`, { maxAge: oneDay })) //static directory for stylesheets
+app.use('/api/payment/images', express.static(`${directoryPath}/images`, { maxAge: oneDay })) //static directory for images
 app.use(
   '/api/payment/govuk-frontend',
-  express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
+  express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
 )
 
 // =====================================
 // ROUTES
 // =====================================
 const router = express.Router() //get instance of Express router
-require('./app/routes.js')(router, configGovPay, app) //load routes passing in app and configuration
+
+ApplicationRoutes(router, configGovPay, app) //load routes passing in app and configuration
 app.use('/api/payment', router) //prefix all requests with 'api/payment'
 
 //Pull in images from GOVUK packages
-const fs = require('fs-extra')
 fs.copy('node_modules/govuk_frontend_toolkit/images', 'images/govuk_frontend_toolkit', (err) => {
   if (err) return null
 })
@@ -163,39 +194,39 @@ fs.readdir('images/govuk_frontend_toolkit', (_err, items) => {
 // JOB SCHEDULER
 // =====================================
 //Schedule and run account expiry job every day
-const schedule = require('node-schedule')
-const jobs = require('./config/jobs.js')
 
 // As there are 2 instances running, we need a random time, or the job will be executed on both instances
 const randomSecond = Math.floor(Math.random() * 60)
 const randomMin = Math.floor(Math.random() * 60) //Math.random returns a number from 0 to < 1 (never will return 60)
 const hourlyInterval = configGovPay.configs.jobScheduleHourlyInterval
 const jobScheduleRandom = `${randomSecond} ${randomMin} */${hourlyInterval} * * *`
-schedule.scheduleJob(jobScheduleRandom, () => {
+scheduleJob(jobScheduleRandom, () => {
   jobs.paymentCleanup()
 })
 
 // =====================================
 // START APP
 // =====================================
+// START APP
+// =====================================
 
 process.on('uncaughtException', (error, origin) => {
-  console.error('----- Uncaught Exception -----')
-  console.error(error)
-  console.error('----- Exception Origin -----')
-  console.error(origin)
+  logger.error('----- Uncaught Exception -----')
+  logger.error(error)
+  logger.error('----- Exception Origin -----')
+  logger.error(origin)
 })
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('----- Unhandled Rejection -----')
-  console.error(`Promise: ${promise}`)
-  console.error(`Reason: ${reason}`)
+  logger.error('----- Unhandled Rejection -----')
+  logger.error(`Promise: ${promise}`)
+  logger.error(`Reason: ${reason}`)
 })
 
 app.listen(serverPort)
-console.log(`is-payment-service running on port: ${serverPort}`)
-console.log(
+logger.info(`is-payment-service running on port: ${serverPort}`)
+logger.info(
   `payment cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`,
 )
 
-module.exports.getApp = app
+export const getApp = app

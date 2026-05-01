@@ -1,7 +1,7 @@
-const request = require('supertest')
-const nock = require('nock')
-const expect = require('chai').expect
-const testData = require('../data/test-data')
+import { expect } from 'chai'
+import nock from 'nock'
+import request from 'supertest'
+import { testData } from '../data/test-data.js'
 
 describe('GOV PAY', () => {
   describe('POST success (create payment)', () => {

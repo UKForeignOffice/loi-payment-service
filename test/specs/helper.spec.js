@@ -1,6 +1,6 @@
-const expect = require('chai').expect
-const helper = require('../../lib/helper')
-const testData = require('../data/test-data')
+import { expect } from 'chai'
+import { govukPay as helper } from '../../lib/helper.js'
+import { testData } from '../data/test-data.js'
 
 describe('Helper', () => {
   describe('generates correct payload to send to GOV UK PAY', () => {

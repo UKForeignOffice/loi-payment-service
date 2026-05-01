@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) =>
+export const AdditionalPaymentDetails = (sequelize, DataTypes) =>
   sequelize.define(
     'AdditionalPaymentDetails',
     {

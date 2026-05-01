@@ -1,11 +1,12 @@
-const { createLogger, format, transports } = require('winston')
+import { createLogger, format, transports } from 'winston'
+
 const { combine, timestamp, printf } = format
 
 const customFormat = printf(({ level, message, _timestamp }) => {
   return `${level.toUpperCase()}: ${message}`
 })
 
-const logger = createLogger({
+export const logger = createLogger({
   level: 'info',
   format: combine(
     timestamp({
@@ -31,9 +32,3 @@ logger.exceptions.handle(
     format: combine(format.colorize(), customFormat),
   }),
 )
-
-console.error = (...args) => logger.error(...args)
-console.log = (...args) => logger.info(...args)
-console.info = (...args) => logger.info(...args)
-console.debug = (...args) => logger.debug(...args)
-console.warn = (...args) => logger.warn(...args)

@@ -1,5 +1,5 @@
-const expect = require('chai').expect
-const sessionTtlMiddleware = require('../../lib/sessionTTL')
+import { expect } from 'chai'
+import { sessionTtlMiddleware } from '../../lib/sessionTTL.js'
 
 describe('Session TTL Middleware', () => {
   let middleware

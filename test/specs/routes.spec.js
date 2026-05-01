@@ -1,5 +1,5 @@
-const request = require('supertest')
-const app = require('../../server').getApp
+import request from 'supertest'
+import { getApp as app } from '../../server.js'
 
 describe('GET /healthcheck', () => {
   it('returns 200', (done) => {
