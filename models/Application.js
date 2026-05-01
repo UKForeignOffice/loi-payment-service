@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) =>
+export const Application = (sequelize, DataTypes) =>
   sequelize.define('Application', {
     application_id: {
       type: DataTypes.INTEGER,
@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) =>
       allowNull: true,
     },
     submitted: {
-      type: DataTypes.STRING(),
+      type: DataTypes.STRING,
       allowNull: true,
     },
   })

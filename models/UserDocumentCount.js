@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) =>
+export const UserDocumentCount = (sequelize, DataTypes) =>
   sequelize.define('UserDocumentCount', {
     application_id: {
       type: DataTypes.INTEGER,

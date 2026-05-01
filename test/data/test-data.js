@@ -98,13 +98,13 @@ const mockGetResponse = {
   return_url: 'https://your.service.gov.uk/completed',
 }
 
-module.exports = {
-  formFields,
-  applicationDetail,
-  application,
-  usersEmail,
-  casebookRef,
+export const testData = {
   additionalPaymentsCost,
-  mockPostResponse,
+  application,
+  applicationDetail,
+  casebookRef,
+  formFields,
   mockGetResponse,
+  mockPostResponse,
+  usersEmail,
 }

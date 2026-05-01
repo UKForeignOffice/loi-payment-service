@@ -1,16 +1,17 @@
-const GovPay = require('../lib/helper')
-const EmailService = require('./../lib/EmailService')
-const axios = require('axios')
-const moment = require('moment')
-const {
+import axios from 'axios'
+import moment from 'moment'
+import { logger } from '../config/logs.js'
+import { emailService } from '../lib/EmailService.js'
+import { govukPay } from '../lib/helper.js'
+import {
+  AdditionalPaymentDetails,
   Application,
   ApplicationPaymentDetails,
   UserDetails,
   UserDocumentCount,
-  AdditionalPaymentDetails,
-} = require('../models/index')
+} from '../models/index.js'
 
-module.exports = (router, configGovPay, _app) => {
+export const ApplicationRoutes = (router, configGovPay, _app) => {
   const DEFAULT_SESSION_TTL = configGovPay.sessionSettings.cookieMaxAge
 
   // =====================================
@@ -81,7 +82,7 @@ module.exports = (router, configGovPay, _app) => {
       const applicationEmail = sess.additionalPayments.applicationEmail
 
       // Build required data
-      const formFields = GovPay.additionalPaymentsAddBaseData({}, applicationRef, applicationAmount, applicationEmail)
+      const formFields = govukPay.additionalPaymentsAddBaseData({}, applicationRef, applicationAmount, applicationEmail)
 
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
         headers: {
@@ -126,7 +127,7 @@ module.exports = (router, configGovPay, _app) => {
         startNewApplicationUrl: startNewApplicationUrl,
       })
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       return res.render('additional-payment-error', {
         errorMessage: error.message || 'Error processing payment',
         startNewApplicationUrl: startNewApplicationUrl,
@@ -184,7 +185,7 @@ module.exports = (router, configGovPay, _app) => {
       const cost = returnData.amount / 100
 
       if (status === 'success' && finished) {
-        console.log(`${payment_id} - payment is successful`)
+        logger.info(`${payment_id} - payment is successful`)
         if (sess.additionalPayments.applicationRef) {
           await AdditionalPaymentDetails.update(
             {
@@ -206,7 +207,7 @@ module.exports = (router, configGovPay, _app) => {
         }
 
         if (typeof sess.additionalPayments.applicationAmount !== 'undefined') {
-          EmailService.additionalPaymentReceipt(
+          emailService.additionalPaymentReceipt(
             sess.additionalPayments.applicationEmail,
             createdDate,
             appReference,
@@ -231,11 +232,11 @@ module.exports = (router, configGovPay, _app) => {
           })
         })
       } else {
-        console.log(`${payment_id} - payment is NOT successful`)
+        logger.info(`${payment_id} - payment is NOT successful`)
         await retryAdditionalPayment(req, sess, res, startNewApplicationUrl)
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.render('additional-payment-error', {
         errorMessage: error.message || 'Payment system error',
         startNewApplicationUrl: startNewApplicationUrl,
@@ -272,8 +273,8 @@ module.exports = (router, configGovPay, _app) => {
       })
     }
 
-    const loggedIn = GovPay.loggedInStatus(req)
-    const usersEmail = loggedIn ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
+    const loggedIn = govukPay.loggedInStatus(req)
+    const usersEmail = loggedIn ? govukPay.loggedInUserEmail(req) : govukPay.loggedOutUserEmail(req)
 
     try {
       const application = await Application.findOne({ where: { application_id: appid } })
@@ -283,7 +284,7 @@ module.exports = (router, configGovPay, _app) => {
         return res.redirect(applicationDetail.payment_url)
       }
 
-      const formFields = GovPay.buildUkPayData({}, applicationDetail, application, usersEmail)
+      const formFields = govukPay.buildUkPayData({}, applicationDetail, application, usersEmail)
 
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
         headers: {
@@ -316,7 +317,7 @@ module.exports = (router, configGovPay, _app) => {
 
       return res.redirect(paymentUrl)
     } catch (error) {
-      console.error(`${appid} - ${error}`)
+      logger.error(`${appid} - ${error}`)
       return res.render('payment-error', {
         errorMessage: 'Problem processing payment',
         startNewApplicationUrl: startNewApplicationUrl,
@@ -357,7 +358,7 @@ module.exports = (router, configGovPay, _app) => {
 
     const ttl = parseInt(maxAgeMs, 10)
     if (Number.isNaN(ttl) || ttl <= 0) {
-      console.error(`Invalid maxAge value: ${maxAgeMs}`)
+      logger.error(`Invalid maxAge value: ${maxAgeMs}`)
       return done()
     }
 
@@ -367,7 +368,7 @@ module.exports = (router, configGovPay, _app) => {
 
     req.session.save((err) => {
       if (err) {
-        console.error(`Failed to update session maxAge: ${err}`)
+        logger.error(`Failed to update session maxAge: ${err}`)
       }
       return done()
     })
@@ -379,14 +380,14 @@ module.exports = (router, configGovPay, _app) => {
     const appId = req.session.appId
 
     if (!isValidInteger(appIdFromGovPay)) {
-      console.log(`${appIdFromGovPay} - Invalid application reference. Rendering error page.`)
+      logger.error(`${appIdFromGovPay} - Invalid application reference. Rendering error page.`)
       return showErrorPage(req, res, 'Invalid application reference', startNewApplicationUrl)
     }
 
     try {
       const results = await ApplicationPaymentDetails.findOne({ where: { application_id: appIdFromGovPay } })
       if (!results) {
-        console.log(`${appIdFromGovPay} - Application not found in database. Rendering error page.`)
+        logger.error(`${appIdFromGovPay} - Application not found in database. Rendering error page.`)
         return showErrorPage(req, res, 'Application not found in database', startNewApplicationUrl)
       }
       const payment_id = results.payment_reference
@@ -398,7 +399,7 @@ module.exports = (router, configGovPay, _app) => {
       const returnData = response.data
 
       if (!isReturnDataValidForPaymentConfirmation(returnData)) {
-        console.log(`${appIdFromGovPay} - Invalid Gov Pay return data. Rendering error page.`)
+        logger.error(`${appIdFromGovPay} - Invalid Gov Pay return data. Rendering error page.`)
         return showErrorPage(req, res, 'Invalid Gov Pay return data', startNewApplicationUrl)
       }
 
@@ -414,12 +415,12 @@ module.exports = (router, configGovPay, _app) => {
           },
         )
 
-        console.log(`${appIdFromGovPay} - payment is successful`)
+        logger.info(`${appIdFromGovPay} - payment is successful`)
 
         // Reset session to default TTL after successful payment
         return updateSessionMaxAge(req, DEFAULT_SESSION_TTL, () => {
           if (!appId || appId === 0) {
-            console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`)
+            logger.error(`${appIdFromGovPay} - Application has missing session. Rendering error page.`)
             return showErrorPage(req, res, 'Missing user session', startNewApplicationUrl)
           }
 
@@ -428,19 +429,19 @@ module.exports = (router, configGovPay, _app) => {
           )
         })
       } else {
-        console.log(`${appIdFromGovPay} - payment is NOT successful`)
+        logger.info(`${appIdFromGovPay} - payment is NOT successful`)
 
         // Keep current session TTL; only reset on successful payment.
         // If the user's session is missing, show them an error
         if (!appId || appId === 0) {
-          console.log(`${appIdFromGovPay} - Application has missing session. Rendering error page.`)
+          logger.error(`${appIdFromGovPay} - Application has missing session. Rendering error page.`)
           return showErrorPage(req, res, 'Missing user session', startNewApplicationUrl)
         }
 
         return retryPayment(appIdFromGovPay, req, res)
       }
     } catch (error) {
-      console.error(`${appIdFromGovPay} - ${error}`)
+      logger.error(`${appIdFromGovPay} - ${error}`)
       showErrorPage(req, res, 'Payment system error', startNewApplicationUrl)
     }
   })
@@ -453,10 +454,10 @@ module.exports = (router, configGovPay, _app) => {
       UserDocumentCount.findOne({ where: { application_id: appId } }),
     ])
     const startNewApplicationUrl = configGovPay.configs.startNewApplicationUrl
-    const loggedIn = GovPay.loggedInStatus(req)
-    const usersEmail = loggedIn ? GovPay.loggedInUserEmail(req) : GovPay.loggedOutUserEmail(req)
-    const formFields = GovPay.buildUkPayData({}, applicationDetail, application, usersEmail)
-    const isSessionValid = GovPay.isSessionValid(req)
+    const loggedIn = govukPay.loggedInStatus(req)
+    const usersEmail = loggedIn ? govukPay.loggedInUserEmail(req) : govukPay.loggedOutUserEmail(req)
+    const formFields = govukPay.buildUkPayData({}, applicationDetail, application, usersEmail)
+    const isSessionValid = govukPay.isSessionValid(req)
 
     try {
       const response = await axios.post(configGovPay.configs.ukPayUrl, JSON.stringify(formFields), {
@@ -486,7 +487,7 @@ module.exports = (router, configGovPay, _app) => {
         },
       )
 
-      console.log(`${appId} - rendering failed payment page`)
+      logger.info(`${appId} - rendering failed payment page`)
 
       return res.render('payment-confirmation.ejs', {
         applicationId: appId,
@@ -504,7 +505,7 @@ module.exports = (router, configGovPay, _app) => {
         },
       })
     } catch (error) {
-      console.error(`${appId} - ${error}`)
+      logger.error(`${appId} - ${error}`)
       return res.render('payment-error', {
         errorMessage: 'Error processing payment retry',
         startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
@@ -514,7 +515,7 @@ module.exports = (router, configGovPay, _app) => {
 
   async function retryAdditionalPayment(_req, sess, res, startNewApplicationUrl) {
     try {
-      const formFields = GovPay.additionalPaymentsAddBaseData(
+      const formFields = govukPay.additionalPaymentsAddBaseData(
         {},
         sess.additionalPayments.applicationRef,
         sess.additionalPayments.applicationAmount,
@@ -547,7 +548,7 @@ module.exports = (router, configGovPay, _app) => {
         startNewApplicationUrl: startNewApplicationUrl,
       })
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.render('additional-payment-error', {
         errorMessage: error.message || 'Error processing payment retry',
         startNewApplicationUrl: startNewApplicationUrl,

@@ -1,8 +1,15 @@
-const { Sequelize, DataTypes } = require('sequelize')
-
-// get environment specific config
-const commonConfig = require('../config/common.js')
-const environmentConfig = commonConfig.config()
+import { DataTypes, Sequelize } from 'sequelize'
+import { config as environmentConfig } from '../config/common.js'
+import { logger } from '../config/logs.js'
+import { AdditionalPaymentDetails as AdditionalPaymentDetailsModel } from './AdditionalPaymentDetails.js'
+import { Application as ApplicationModel } from './Application.js'
+import { ApplicationPaymentDetails as ApplicationPaymentDetailsModel } from './ApplicationPaymentDetails.js'
+import { ExportedApplicationData as ExportedApplicationDataModel } from './ExportedApplicationData.js'
+import { ExportedEAppData as ExportedEAppDataModel } from './ExportedEAppData.js'
+import { PaymentsCleanupJob as PaymentsCleanupJobModel } from './PaymentsCleanupJob.js'
+import { UploadedDocumentUrls as UploadedDocumentUrlsModel } from './UploadedDocumentUrls.js'
+import { UserDetails as UserDetailsModel } from './UserDetails.js'
+import { UserDocumentCount as UserDocumentCountModel } from './UserDocumentCount.js'
 
 //database options
 const opts = {
@@ -17,16 +24,20 @@ const opts = {
   },
 }
 
+logger.info(
+  `initialising Sequelize with database config: ${environmentConfig.configGovukPay.database}`,
+  'and options: ',
+  opts,
+)
 // initialise Sequelize
-const sequelize = new Sequelize(environmentConfig.database, opts)
+export const sequelize = new Sequelize(environmentConfig.configGovukPay.database, opts)
 
-module.exports.sequelize = sequelize
-module.exports.Application = require('./Application')(sequelize, DataTypes)
-module.exports.ApplicationPaymentDetails = require('./ApplicationPaymentDetails')(sequelize, DataTypes)
-module.exports.UserDetails = require('./UserDetails')(sequelize, DataTypes)
-module.exports.UserDocumentCount = require('./UserDocumentCount')(sequelize, DataTypes)
-module.exports.PaymentsCleanupJob = require('./PaymentsCleanupJob')(sequelize, DataTypes)
-module.exports.AdditionalPaymentDetails = require('./AdditionalPaymentDetails')(sequelize, DataTypes)
-module.exports.ExportedEAppData = require('./ExportedEAppData')(sequelize, DataTypes)
-module.exports.ExportedApplicationData = require('./ExportedApplicationData')(sequelize, DataTypes)
-module.exports.UploadedDocumentUrls = require('./UploadedDocumentUrls')(sequelize, DataTypes)
+export const Application = ApplicationModel(sequelize, DataTypes)
+export const ApplicationPaymentDetails = ApplicationPaymentDetailsModel(sequelize, DataTypes)
+export const UserDetails = UserDetailsModel(sequelize, DataTypes)
+export const UserDocumentCount = UserDocumentCountModel(sequelize, DataTypes)
+export const PaymentsCleanupJob = PaymentsCleanupJobModel(sequelize, DataTypes)
+export const AdditionalPaymentDetails = AdditionalPaymentDetailsModel(sequelize, DataTypes)
+export const ExportedEAppData = ExportedEAppDataModel(sequelize, DataTypes)
+export const ExportedApplicationData = ExportedApplicationDataModel(sequelize, DataTypes)
+export const UploadedDocumentUrls = UploadedDocumentUrlsModel(sequelize, DataTypes)
