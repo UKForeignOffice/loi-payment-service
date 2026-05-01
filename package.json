@@ -28,6 +28,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.13",
     "vitest": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.5",
     "chai": "^4.3.8",
     "mocha": "^11.7.5",
     "nock": "^13.5.6",
@@ -36,6 +37,7 @@
   "scripts": {
     "start": "NODE_ENV=development node server.js 3003",
     "test": "PORT=6009 mocha --timeout 10000 --recursive test/ --exit",
+    "test:vitest": "vitest run --coverage",
     "format": "biome check --write .",
     "quality": "biome check --changed --since=develop"
   },
