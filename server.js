@@ -107,6 +107,8 @@ app.use(
 // =====================================
 // VIEW AND LOCALS
 // =====================================
+
+app.engine('ejs', ejs.renderFile)
 app.set('view engine', 'ejs')
 
 const cacheBust = crypto.randomBytes(4).toString('hex')
