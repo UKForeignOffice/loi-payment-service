@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import bodyParser from 'body-parser'
 import connectRedis from 'connect-redis'
 import cookieParser from 'cookie-parser'
+import ejs from 'ejs'
 import express from 'express'
 import session from 'express-session'
 import fs from 'fs-extra'
@@ -26,6 +27,7 @@ import {
   UserDetails,
   UserDocumentCount,
 } from './models/index.js'
+import nunjucksSetup from './utils/nunjucksSetup.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const directoryPath = path.dirname(__filename)
@@ -124,6 +126,9 @@ app.use((_req, res, next) => {
   }
   next()
 })
+
+nunjucksSetup(app, path, directoryPath)
+
 app.use(sessionTtlMiddleware(configGovPay))
 
 app.use((_req, res, next) => {

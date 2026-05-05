@@ -14,6 +14,10 @@ import {
 export const ApplicationRoutes = (router, configGovPay, _app) => {
   const DEFAULT_SESSION_TTL = configGovPay.sessionSettings.cookieMaxAge
 
+  router.get('/test-nunjucks', (_req, res) => {
+    return res.render('testing.njk')
+  })
+
   // =====================================
   // SESSION EXPIRED
   // =====================================

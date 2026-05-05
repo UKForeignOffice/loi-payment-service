@@ -1,0 +1,26 @@
+{% extends "govuk/template.njk" %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+
+{% set assetPath = '/api/payment' -%}
+
+{% block pageTitle %}Pay for your application - Get a document legalised – GOV.UK {% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="/api/payment/govuk-frontend/govuk-frontend.min.css?v={{ globals.cacheBust or '' }}">
+    <link rel="stylesheet" href="/api/payment/styles/application.css?v={{ globals.cacheBust or '' }}">
+    <link rel="stylesheet" href="importer.css?v={{ globals.cacheBust or '' }}">
+{% endblock %}
+
+{% set serviceName = "Get a document legalised" %}
+{% set serviceUrl = "/" %}
+
+{% block headerEnd %}
+  {{ govukPhaseBanner({
+    tag: {
+      text: "Beta"
+    },
+    html: 'This is a new service – your <a class="govuk-link" target="_blank" href="' + globals.feedbackURL +'">feedback<span class="govuk-visually-hidden"> opens in new window</span></a> will help us to improve it.'
+  }) }}
+{% endblock %}
+ 
