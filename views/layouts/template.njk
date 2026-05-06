@@ -1,6 +1,7 @@
 {% extends "govuk/template.njk" %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set assetPath = '/api/payment' -%}
 
@@ -24,7 +25,76 @@
   }) }}
 {% endblock %}
  
-{% block footerEnd %}
+
+{% block bodyStart %}
+<script>
+    function startTimer(timerDuration) {
+        const timeoutDurationInSeconds = timerDuration / 1000;
+        let display = document.querySelector('#displayTime')
+        let timer = timeoutDurationInSeconds
+        let minutes
+        let seconds
+
+        set_visible('expiry-warning');
+        const interval = setInterval(function(){
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+            display.textContent =
+                minutes + ' minute(s) and ' + seconds + ' seconds';
+            timer = timer - 1;
+            if (timer < 0) {
+                clearInterval(interval);
+                set_invisible('expiry-warning');
+                window.location.href = '/api/payment/session-expired';
+            }
+        }, 1000);
+    }
+
+        const sessionTimeoutWarning = 300000; // Show warning x milliseconds before session expiry
+        const sessionTimeoutDisplay = 1500000; //Show popup after x milliseconds of inactivity
+    setTimeout(function () {
+        const timerDuration = sessionTimeoutWarning;
+        startTimer(timerDuration)
+    }, sessionTimeoutDisplay);
+
+    function set_visible(id) {
+        const e = document.getElementById(id);
+        e.style.display = 'block';
+    }
+
+    function set_invisible(id) {
+        const e = document.getElementById(id);
+        e.style.display = 'none';
+    }
+</script>
+
+<div id="expiry-warning" class="modal-container" role="dialog" aria-live="polite"
+        aria-labelledby="dialog-title" aria-describedby="displayTime">
+    <div class="modal-content-area">
+        <h1 id="dialog-title" class="govuk-heading-l">
+            Your application will time out soon
+        </h1>
+        <p class="govuk-body">We will reset your application if you do not respond in <span id="displayTime"></span></p>
+        <div class="session-expiry-popup__clock" aria-hidden="true" aria-relevant="additions">
+            <img class='countdown-clock' src='/api/payment/images/icon-countdown-clock.png' alt='Countdown clock' />
+        </div>
+        <div class="govuk-body session-expiry-popup__countdown" role="status"></div>
+        <p class="govuk-body">We do this to keep your information secure.</p>
+        
+        {{ govukButton({
+            text: "Continue application",
+            preventDoubleClick: true,
+            classes: "govuk-button--secondary",
+            attributes: {
+                onclick: "window.location.reload();"
+            }
+        }) }}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block bodyEnd %}
     <script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}"></script>
     <script type="module">
         import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}';
