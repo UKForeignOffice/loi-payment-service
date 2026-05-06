@@ -111,7 +111,7 @@ app.use(
 // =====================================
 
 app.engine('ejs', ejs.renderFile)
-app.set('view engine', 'ejs')
+app.set('view engine', 'njk')
 
 const cacheBust = crypto.randomBytes(4).toString('hex')
 
