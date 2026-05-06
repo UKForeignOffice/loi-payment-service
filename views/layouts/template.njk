@@ -24,3 +24,27 @@
   }) }}
 {% endblock %}
  
+{% block footerEnd %}
+    <script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}"></script>
+    <script type="module">
+        import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}';
+        initAll();
+    </script>
+    <!-- Piwik -->
+    <script type="text/javascript">
+        var _paq = _paq || [];
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+
+        (function() {
+            var u="//web-analytics.fco.gov.uk/piwik/";
+            _paq.push(['setTrackerUrl', u+'piwik.php']);
+            _paq.push(['setSiteId', {{ piwikID}} ]);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+        })();
+    </script>
+    <noscript><p class="hide"><img src="//web-analytics.fco.gov.uk/piwik/piwik.php?idsite={{ piwikID }}&rec=1" style="border:0;" alt="" /></p></noscript>
+    <!-- End Piwik Code -->
+{% endblock %}
+
