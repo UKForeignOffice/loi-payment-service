@@ -1,33 +1,35 @@
+{% extends "layouts/template.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
-<%- include ('partials/header') %>
+{% block pageTitle %}Your payment was unsuccessful - Get a document legalised – GOV.UK{% endblock %}
 
-<div class="govuk-width-container govuk-!-margin-top-6">
-
-    <% if (loggedIn == true) { %>
-        <div class="inner_header">
-            <% if (user_data.loggedIn) { %>
+{% block headerEnd %}
+    {% if loggedIn == true %}
+        <div class="inner_header govuk-width-container govuk-!-margin-bottom-0">
+            {% if user_data.loggedIn %}
                 <div class="inner-header-content">
                     <span class="email-logout-text inner-header-user">
-                        <% if (typeof(user_data.account)!='undefined' && user_data.account!=null && user_data.account.first_name != null) { %>
-                            <%= (user_data.account.first_name+' '+user_data.account.last_name).substr(0,50) %>
-                        <% } else { %>
-                            <%= user_data.user.email %>
-                        <% } %>
+                        {% if user_data.account and user_data.account.first_name %}
+                            {{ (user_data.account.first_name + ' ' + user_data.account.last_name) | truncate(50, true, '') }}
+                        {% else %}
+                            {{ user_data.user.email }}
+                        {% endif %}
                     </span>
                     <span class="email-logout-text inner-header-links">
-                        <% if (user_data?.user?.isAdmin) { %><a id="Admin-Link" href="<%= user_data.url%>/admin" class="govuk-link">Admin</a><% } %>
+                        {% if user_data.user.isAdmin %}<a id="Admin-Link" href="{{ user_data.url }}/admin" class="govuk-link">Admin</a>{% endif %}
                         <a id="Applications-Link" href="/dashboard" class="govuk-link">Applications</a>
-                        <a id="Account-Link" href="<%= user_data.url%>/account" class="govuk-link">Account</a>
-                        <a id="Addresses-Link" href="<%= user_data.url%>/addresses" class="govuk-link">Addresses</a>
+                        <a id="Account-Link" href="{{ user_data.url }}account" class="govuk-link">Account</a>
+                        <a id="Addresses-Link" href="{{ user_data.url }}addresses" class="govuk-link">Addresses</a>
                         <a href="/sign-out" id="sign-out-link" class="govuk-link">Sign out</a>
                     </span>
                 </div>
-            <% } %>
+            {% endif %}
         </div>
-    <% } %>
+    {% endif %}
+{% endblock %}            
 
-    <% if (isSessionValid == false) { %>
-        <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+{% block content %}
+    {% if isSessionValid == false %}
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-l">Sorry, you'll have to start again</h1>
@@ -39,8 +41,7 @@
                 </ul>
             </div>
         </div>
-    <% } else { %>
-        <title>Your payment was unsuccessful - Get a document legalised – GOV.UK</title>
+    {% else %}
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-l">Your payment was unsuccessful</h1>
@@ -48,15 +49,13 @@
                 <p class="govuk-body">Please try again.</p>
 
                 <!-- PAYMENT FORM -->
-                <form action="<%= next_url %>" onsubmit="disablePaymentButton();">
-                    <div class="govuk-form-group">
-                        <button id="paymentButton" role="button" draggable="false" class="govuk-button" data-module="govuk-button" type="submit">Continue to payment</button>
-                    </div>
+                <form action="{{ next_url }}">
+                    {{ govukButton({
+                        text: "Continue to payment",
+                        preventDoubleClick: true
+                    }) }}
                 </form>
             </div>
         </div>
-    <% } %>
-
-</div>
-
-<%- include ('partials/footer') %>
+    {% endif %}
+{% endblock %}
