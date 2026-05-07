@@ -4,14 +4,12 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/footer/macro.njk" import govukFooter %}
 
-
 {% set assetPath = '/api/payment' -%}
 
 {% block pageTitle %}Pay for your application - Get a document legalised – GOV.UK {% endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="/api/payment/govuk-frontend/govuk-frontend.min.css?v={{ globals.cacheBust or '' }}">
-    <link rel="stylesheet" href="/api/payment/styles/application.css?v={{ globals.cacheBust or '' }}">
     <link rel="stylesheet" href="importer.css?v={{ globals.cacheBust or '' }}">
 {% endblock %}
 
