@@ -162,7 +162,11 @@ app.use('/api/payment/styles', express.static(`${directoryPath}/styles`, { maxAg
 app.use('/api/payment/images', express.static(`${directoryPath}/images`, { maxAge: oneDay })) //static directory for images
 app.use(
   '/api/payment/govuk-frontend',
-  express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
+  express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
+)
+app.use(
+  '/assets',
+  express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk/assets'), { maxAge: oneDay }),
 )
 
 // =====================================
