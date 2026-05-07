@@ -2,6 +2,8 @@
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
+
 
 {% set assetPath = '/api/payment' -%}
 
@@ -92,6 +94,35 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block footer %}
+    {{ govukFooter({
+        meta: {
+            items: [
+                {
+                    href: feedbackURL,
+                    text: "Feedback"
+                },
+                {
+                    href: "/terms-and-conditions",
+                    text: "Terms and Conditions"
+                },
+                {
+                    href: "https://www.gov.uk/government/publications/fcdo-privacy-notice-document-legalisation",
+                    text: "Privacy policy"
+                },
+                {
+                    href: "/cookies",
+                    text: "Cookies"
+                },
+                {
+                    href: "/accessibility-statement",
+                    text: "Accessibility statement"
+                }
+            ]
+        }
+    }) }}
 {% endblock %}
 
 {% block bodyEnd %}
