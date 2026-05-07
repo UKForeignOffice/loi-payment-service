@@ -1,8 +1,8 @@
-$govuk-fonts-path : 'styles/govuk/stylesheets/fonts/';
+$govuk-fonts-path : '/fonts/';
 $govuk-assets-path : '/api/payment/';
 
 // GOV.UK Frontend v6
-@import '../node_modules/govuk-frontend/dist/govuk/index';
+@import '../../../node_modules/govuk-frontend/dist/govuk/index';
 
 // INFORMED CSS
 @import "informed";
