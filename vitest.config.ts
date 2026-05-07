@@ -10,6 +10,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       all: true,
+      exclude: ['test/data/**/*.js'],
       thresholds: {
         lines: 35,
         functions: 30,

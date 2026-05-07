@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import bodyParser from 'body-parser'
 import connectRedis from 'connect-redis'
 import cookieParser from 'cookie-parser'
+import ejs from 'ejs'
 import express from 'express'
 import session from 'express-session'
 import fs from 'fs-extra'
@@ -26,6 +27,7 @@ import {
   UserDetails,
   UserDocumentCount,
 } from './models/index.js'
+import nunjucksSetup from './utils/nunjucksSetup.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const directoryPath = path.dirname(__filename)
@@ -107,7 +109,9 @@ app.use(
 // =====================================
 // VIEW AND LOCALS
 // =====================================
-app.set('view engine', 'ejs')
+
+app.engine('ejs', ejs.renderFile)
+app.set('view engine', 'njk')
 
 const cacheBust = crypto.randomBytes(4).toString('hex')
 
@@ -122,6 +126,9 @@ app.use((_req, res, next) => {
   }
   next()
 })
+
+nunjucksSetup(app, path, directoryPath)
+
 app.use(sessionTtlMiddleware(configGovPay))
 
 app.use((_req, res, next) => {
@@ -155,7 +162,11 @@ app.use('/api/payment/styles', express.static(`${directoryPath}/styles`, { maxAg
 app.use('/api/payment/images', express.static(`${directoryPath}/images`, { maxAge: oneDay })) //static directory for images
 app.use(
   '/api/payment/govuk-frontend',
-  express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
+  express.static(path.join(`${directoryPath}`, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
+)
+app.use(
+  '/assets',
+  express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk/assets'), { maxAge: oneDay }),
 )
 
 // =====================================

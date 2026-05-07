@@ -1,0 +1,21 @@
+{% extends "layouts/template.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds-from-desktop">
+      <h1 class="govuk-heading-l">Check your payment amount</h1>
+      <p class="govuk-body">You will be charged <strong>£{{ cost }}</strong> as an additional payment for your legalisation application.</p>
+      <p class="govuk-body">You will now be taken to GOV.UK Pay, where you will be asked to provide your payment details.</p>
+
+      <!-- PAYMENT FORM -->
+      <form action="{{ next_url }}">
+        {{ govukButton({
+          text: "Continue to payment",
+          preventDoubleClick: true
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

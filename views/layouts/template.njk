@@ -1,0 +1,149 @@
+{% extends "govuk/template.njk" %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
+
+{% set assetPath = '/api/payment' -%}
+
+{% block pageTitle %}Pay for your application - Get a document legalised – GOV.UK {% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="/api/payment/govuk-frontend/govuk-frontend.min.css?v={{ globals.cacheBust or '' }}">
+    <link rel="stylesheet" href="importer.css?v={{ globals.cacheBust or '' }}">
+{% endblock %}
+
+{% set serviceName = "Get a document legalised" %}
+{% set serviceUrl = "/" %}
+
+{% block headerEnd %}
+  {{ govukPhaseBanner({
+    tag: {
+      text: "Beta"
+    },
+    html: 'This is a new service – your <a class="govuk-link" target="_blank" href="' + globals.feedbackURL +'">feedback<span class="govuk-visually-hidden"> opens in new window</span></a> will help us to improve it.'
+  }) }}
+{% endblock %}
+ 
+
+{% block bodyStart %}
+<script>
+    function startTimer(timerDuration) {
+        const timeoutDurationInSeconds = timerDuration / 1000;
+        let display = document.querySelector('#displayTime')
+        let timer = timeoutDurationInSeconds
+        let minutes
+        let seconds
+
+        set_visible('expiry-warning');
+        const interval = setInterval(function(){
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+            display.textContent =
+                minutes + ' minute(s) and ' + seconds + ' seconds';
+            timer = timer - 1;
+            if (timer < 0) {
+                clearInterval(interval);
+                set_invisible('expiry-warning');
+                window.location.href = '/api/payment/session-expired';
+            }
+        }, 1000);
+    }
+
+        const sessionTimeoutWarning = 300000; // Show warning x milliseconds before session expiry
+        const sessionTimeoutDisplay = 1500000; //Show popup after x milliseconds of inactivity
+    setTimeout(function () {
+        const timerDuration = sessionTimeoutWarning;
+        startTimer(timerDuration)
+    }, sessionTimeoutDisplay);
+
+    function set_visible(id) {
+        const e = document.getElementById(id);
+        e.style.display = 'block';
+    }
+
+    function set_invisible(id) {
+        const e = document.getElementById(id);
+        e.style.display = 'none';
+    }
+</script>
+
+<div id="expiry-warning" class="modal-container" role="dialog" aria-live="polite"
+        aria-labelledby="dialog-title" aria-describedby="displayTime">
+    <div class="modal-content-area">
+        <h1 id="dialog-title" class="govuk-heading-l">
+            Your application will time out soon
+        </h1>
+        <p class="govuk-body">We will reset your application if you do not respond in <span id="displayTime"></span></p>
+        <div class="session-expiry-popup__clock" aria-hidden="true" aria-relevant="additions">
+            <img class='countdown-clock' src='/api/payment/images/icon-countdown-clock.png' alt='Countdown clock' />
+        </div>
+        <div class="govuk-body session-expiry-popup__countdown" role="status"></div>
+        <p class="govuk-body">We do this to keep your information secure.</p>
+        
+        {{ govukButton({
+            text: "Continue application",
+            preventDoubleClick: true,
+            classes: "govuk-button--secondary",
+            attributes: {
+                onclick: "window.location.reload();"
+            }
+        }) }}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+    {{ govukFooter({
+        meta: {
+            items: [
+                {
+                    href: feedbackURL,
+                    text: "Feedback"
+                },
+                {
+                    href: "/terms-and-conditions",
+                    text: "Terms and Conditions"
+                },
+                {
+                    href: "https://www.gov.uk/government/publications/fcdo-privacy-notice-document-legalisation",
+                    text: "Privacy policy"
+                },
+                {
+                    href: "/cookies",
+                    text: "Cookies"
+                },
+                {
+                    href: "/accessibility-statement",
+                    text: "Accessibility statement"
+                }
+            ]
+        }
+    }) }}
+{% endblock %}
+
+{% block bodyEnd %}
+    <script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}"></script>
+    <script type="module">
+        import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}';
+        initAll();
+    </script>
+    <!-- Piwik -->
+    <script type="text/javascript">
+        var _paq = _paq || [];
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+
+        (function() {
+            var u="//web-analytics.fco.gov.uk/piwik/";
+            _paq.push(['setTrackerUrl', u+'piwik.php']);
+            _paq.push(['setSiteId', {{ piwikID}} ]);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+        })();
+    </script>
+    <noscript><p class="govuk-!-display-none"><img src="//web-analytics.fco.gov.uk/piwik/piwik.php?idsite={{ piwikID }}&rec=1" style="border:0;" alt="" /></p></noscript>
+    <!-- End Piwik Code -->
+{% endblock %}
+
