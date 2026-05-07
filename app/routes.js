@@ -15,7 +15,21 @@ export const ApplicationRoutes = (router, configGovPay, _app) => {
   const DEFAULT_SESSION_TTL = configGovPay.sessionSettings.cookieMaxAge
 
   router.get('/test-nunjucks', (_req, res) => {
-    return res.render('testing.njk')
+    return res.render('payment-confirmation.njk', {
+      applicationId: 'testing',
+      applicationType: 'testing',
+      next_url: 'testing',
+      startNewApplicationUrl: configGovPay.configs.startNewApplicationUrl,
+      loggedIn: true,
+      isSessionValid: true,
+      usersEmail: 'testing@example.com',
+      user_data: {
+        loggedIn: true,
+        user: 'Alice Smith',
+        account: 'req.session.account',
+        url: '/api/user/',
+      },
+    })
   })
 
   // =====================================
