@@ -39,7 +39,7 @@ const cookieDomain = {
 
 const db = {
   ...defaultDBConfig,
-  ...(process.env.EDMS_BEARER_TOKEN ? JSON.parse(process.env.EDMS_BEARER_TOKEN) : {}),
+  ...(process.env.DATABASE ? JSON.parse(process.env.DATABASE) : {}),
 }
 
 const live_variables = {
