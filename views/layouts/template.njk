@@ -4,13 +4,12 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/footer/macro.njk" import govukFooter %}
 
-{% set assetPath = '/api/payment' -%}
+{% set assetPath = '/api/payment/assets/govuk-frontend/' -%}
 
 {% block pageTitle %}Pay for your application - Get a document legalised – GOV.UK {% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="/api/payment/govuk-frontend/govuk-frontend.min.css?v={{ globals.cacheBust or '' }}">
-    <link rel="stylesheet" href="importer.css?v={{ globals.cacheBust or '' }}">
+    <link rel="stylesheet" href="/api/payment/{{ hashedAsset('style.css') }}">
 {% endblock %}
 
 {% set serviceName = "Get a document legalised" %}
@@ -124,11 +123,7 @@
 {% endblock %}
 
 {% block bodyEnd %}
-    <script type="module" src="/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}"></script>
-    <script type="module">
-        import { initAll } from '/api/payment/govuk-frontend/govuk-frontend.min.js?v={{ globals.cacheBust or '' }}';
-        initAll();
-    </script>
+    <script type="module" src="/api/payment/{{ hashedAsset('scripts.js') }}"></script>
     <!-- Piwik -->
     <script type="text/javascript">
         var _paq = _paq || [];

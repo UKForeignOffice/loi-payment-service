@@ -1,4 +1,3 @@
-import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import bodyParser from 'body-parser'
@@ -112,11 +111,8 @@ app.use(
 app.engine('ejs', ejs.renderFile)
 app.set('view engine', 'njk')
 
-const cacheBust = crypto.randomBytes(4).toString('hex')
-
 app.use((_req, res, next) => {
   res.locals = {
-    cacheBust,
     piwikID: configGovPay.live_variables.piwikId,
     feedbackURL: configGovPay.live_variables.feedbackURL,
     service_public: configGovPay.live_variables.Public,
@@ -156,15 +152,11 @@ app.set('models', {
 // ASSETS
 // =====================================
 const oneDay = 24 * 60 * 60 * 1000 // 1 day in milliseconds
-app.use('/api/payment/', express.static(`${directoryPath}/dist`, { maxAge: oneDay }))
-app.use('/api/payment/styles', express.static(`${directoryPath}/dist/styles`, { maxAge: oneDay })) //static directory for stylesheets
-app.use('/api/payment/images', express.static(`${directoryPath}/dist/images`, { maxAge: oneDay })) //static directory for images
+const oneYear = 365 * oneDay
+app.use('/api/payment/', express.static(`${directoryPath}/dist`, { maxAge: oneYear }))
+app.use('/api/payment/images', express.static(`${directoryPath}/app/assets/images`, { maxAge: oneDay })) //static directory for images
 app.use(
-  '/api/payment/govuk-frontend',
-  express.static(path.join(`${directoryPath}`, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
-)
-app.use(
-  '/assets',
+  '/api/payment/assets/govuk-frontend/',
   express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk/assets'), { maxAge: oneDay }),
 )
 
