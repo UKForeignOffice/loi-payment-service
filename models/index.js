@@ -1,6 +1,5 @@
 import { DataTypes, Sequelize } from 'sequelize'
 import { config as environmentConfig } from '../config/common.js'
-import { logger } from '../config/logs.js'
 import { AdditionalPaymentDetails as AdditionalPaymentDetailsModel } from './AdditionalPaymentDetails.js'
 import { Application as ApplicationModel } from './Application.js'
 import { ApplicationPaymentDetails as ApplicationPaymentDetailsModel } from './ApplicationPaymentDetails.js'
@@ -24,11 +23,6 @@ const opts = {
   },
 }
 
-logger.info(
-  `initialising Sequelize with database config: ${environmentConfig.configGovukPay.database}`,
-  'and options: ',
-  opts,
-)
 // initialise Sequelize
 export const sequelize = new Sequelize(environmentConfig.configGovukPay.database, opts)
 
