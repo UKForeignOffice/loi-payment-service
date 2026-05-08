@@ -36,7 +36,7 @@
     "vitest": "^4.1.5"
   },
   "scripts": {
-    "start": "NODE_ENV=development node server.js 3003",
+    "start": "NODE_ENV=development vite build && node server.js 3003",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
