@@ -1,11 +1,11 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import bodyParser from 'body-parser'
-import connectRedis from 'connect-redis'
+import { RedisStore } from 'connect-redis'
 import cookieParser from 'cookie-parser'
 import ejs from 'ejs'
 import express from 'express'
-import session from 'express-session'
+import expressSession from 'express-session'
 import { scheduleJob } from 'node-schedule'
 import { createClient } from 'redis'
 import { ApplicationRoutes } from './app/routes.js'
@@ -62,9 +62,9 @@ app.use((req, res, next) => {
 // SESSION
 // =====================================
 
-const RedisStore = connectRedis(session)
 const { password, port, host } = configGovPay.sessionSettings
 const connectTimeout = 15000
+const sessionMiddleware = expressSession.default ?? expressSession
 
 const redisClient = createClient({
   legacyMode: true,
@@ -87,7 +87,7 @@ redisClient.on('error', (error) => {
 const redisStore = new RedisStore({ client: redisClient })
 
 app.use(
-  session({
+  sessionMiddleware({
     store: redisStore,
     prefix: configGovPay.sessionSettings.prefix,
     saveUninitialized: false,
