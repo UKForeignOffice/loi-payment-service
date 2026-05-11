@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import bodyParser from 'body-parser'
 import { RedisStore } from 'connect-redis'
 import cookieParser from 'cookie-parser'
-import ejs from 'ejs'
 import express from 'express'
 import expressSession from 'express-session'
 import { scheduleJob } from 'node-schedule'
@@ -107,9 +106,6 @@ app.use(
 // =====================================
 // VIEW AND LOCALS
 // =====================================
-
-app.engine('ejs', ejs.renderFile)
-app.set('view engine', 'njk')
 
 app.use((_req, res, next) => {
   res.locals = {

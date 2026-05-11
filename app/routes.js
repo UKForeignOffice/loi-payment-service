@@ -507,7 +507,7 @@ export const ApplicationRoutes = (router, configGovPay, _app) => {
 
       logger.info(`${appId} - rendering failed payment page`)
 
-      return res.render('payment-confirmation.ejs', {
+      return res.render('payment-confirmation', {
         applicationId: appId,
         applicationType: application.serviceType,
         next_url: next_url,

@@ -11,7 +11,6 @@
     "connect-redis": "9.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
-    "ejs": "^3.1.9",
     "express": "^4.20.0",
     "express-session": "^1.18.0",
     "fs-extra": "^11.2.0",

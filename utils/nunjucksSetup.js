@@ -7,6 +7,7 @@ const configGovPay = config.configGovukPay
 
 export default function setupNunjucks(app, path, directoryPath) {
   app.engine('njk', nunjucks.render)
+  app.set('view engine', 'njk')
 
   app.locals.globals = {
     ...app.locals,
