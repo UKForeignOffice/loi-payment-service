@@ -1,4 +1,3 @@
-import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import bodyParser from 'body-parser'
@@ -7,7 +6,6 @@ import cookieParser from 'cookie-parser'
 import ejs from 'ejs'
 import express from 'express'
 import session from 'express-session'
-import fs from 'fs-extra'
 import { scheduleJob } from 'node-schedule'
 import { createClient } from 'redis'
 import { ApplicationRoutes } from './app/routes.js'
@@ -113,11 +111,8 @@ app.use(
 app.engine('ejs', ejs.renderFile)
 app.set('view engine', 'njk')
 
-const cacheBust = crypto.randomBytes(4).toString('hex')
-
 app.use((_req, res, next) => {
   res.locals = {
-    cacheBust,
     piwikID: configGovPay.live_variables.piwikId,
     feedbackURL: configGovPay.live_variables.feedbackURL,
     service_public: configGovPay.live_variables.Public,
@@ -157,15 +152,11 @@ app.set('models', {
 // ASSETS
 // =====================================
 const oneDay = 24 * 60 * 60 * 1000 // 1 day in milliseconds
-app.use('/api/payment/', express.static(`${directoryPath}/public`, { maxAge: oneDay }))
-app.use('/api/payment/styles', express.static(`${directoryPath}/styles`, { maxAge: oneDay })) //static directory for stylesheets
-app.use('/api/payment/images', express.static(`${directoryPath}/images`, { maxAge: oneDay })) //static directory for images
+const oneYear = 365 * oneDay
+app.use('/api/payment/', express.static(`${directoryPath}/dist`, { maxAge: oneYear }))
+app.use('/api/payment/images', express.static(`${directoryPath}/app/assets/images`, { maxAge: oneDay })) //static directory for images
 app.use(
-  '/api/payment/govuk-frontend',
-  express.static(path.join(`${directoryPath}`, 'node_modules/govuk-frontend/dist/govuk'), { maxAge: oneDay }),
-)
-app.use(
-  '/assets',
+  '/api/payment/assets/govuk-frontend/',
   express.static(path.join(directoryPath, 'node_modules/govuk-frontend/dist/govuk/assets'), { maxAge: oneDay }),
 )
 
@@ -176,31 +167,6 @@ const router = express.Router() //get instance of Express router
 
 ApplicationRoutes(router, configGovPay, app) //load routes passing in app and configuration
 app.use('/api/payment', router) //prefix all requests with 'api/payment'
-
-//Pull in images from GOVUK packages
-fs.copy('node_modules/govuk_frontend_toolkit/images', 'images/govuk_frontend_toolkit', (err) => {
-  if (err) return null
-})
-fs.mkdirs('images/govuk_frontend_toolkit/icons', (err) => {
-  if (err) return null
-})
-fs.readdir('images/govuk_frontend_toolkit', (_err, items) => {
-  for (let i = 0; i < items.length; i++) {
-    if (
-      `images/govuk_frontend_toolkit/${items[i]}`.substr(0, 5) === 'images/govuk_frontend_toolkit/icon-' &&
-      items[i].substr(items[i].length - 3, 3) === 'png'
-    ) {
-      fs.move(
-        `images/govuk_frontend_toolkit/${items[i]}`,
-        `images/govuk_frontend_toolkit/icons/${items[i]}`,
-        { clobber: true },
-        (err) => {
-          if (err) return null
-        },
-      )
-    }
-  }
-})
 
 // =====================================
 // JOB SCHEDULER
