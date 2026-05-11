@@ -13,7 +13,6 @@
     "dotenv": "^17.4.2",
     "express": "^4.20.0",
     "express-session": "^1.19.0",
-    "fs-extra": "^11.2.0",
     "govuk-frontend": "^6.1.0",
     "moment": "^2.30.1",
     "node-schedule": "^2.1.1",
