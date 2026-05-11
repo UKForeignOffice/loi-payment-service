@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import nunjucks from 'nunjucks'
 import { config } from '../config/common.js'
+import { logger } from '../config/logs.js'
 
 const configGovPay = config.configGovukPay
 
@@ -37,7 +38,8 @@ export default function setupNunjucks(app, path, directoryPath) {
     if (manifestCache) return manifestCache
     try {
       manifestCache = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
-    } catch {
+    } catch (error) {
+      logger.error(`Error reading manifest file: ${error.message}`)
       manifestCache = {}
     }
     return manifestCache
@@ -49,6 +51,11 @@ export default function setupNunjucks(app, path, directoryPath) {
     const candidates = [input, `app/assets/${input}`, path.posix.basename(input)]
 
     const entry = candidates.map((key) => manifest[key]).find(Boolean)
+    if (!entry) {
+      logger.error(
+        `Asset not found in manifest: fileName=${fileName} manifest=${JSON.stringify(manifest)} candidates=${JSON.stringify(candidates)}`,
+      )
+    }
     return entry?.file || input
   })
 }
