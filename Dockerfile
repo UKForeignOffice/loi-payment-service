@@ -12,4 +12,4 @@ RUN npm ci --only=production
 COPY --from=build /opt/app/dist ./dist
 COPY . ./
 EXPOSE 3003
-CMD ["node", "server", "3003"]
+CMD ["node", "server.js", "3003"]
