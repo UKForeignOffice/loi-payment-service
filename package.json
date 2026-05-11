@@ -44,10 +44,5 @@
     "format": "biome check --write .",
     "quality": "biome check --changed --since=develop"
   },
-  "overrides": {
-    "body-parser": {
-      "qs": "^6.14.1"
-    }
-  },
   "license": "MIT"
 }
