@@ -11,7 +11,7 @@
     "connect-redis": "9.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
-    "express": "^4.20.0",
+    "express": "5.2.1",
     "express-session": "^1.19.0",
     "govuk-frontend": "^6.1.0",
     "moment": "^2.30.1",
