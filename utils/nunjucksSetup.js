@@ -40,7 +40,7 @@ export default function setupNunjucks(app, path, directoryPath) {
     try {
       manifestCache = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
     } catch (error) {
-      logger.error(`Error reading manifest file: ${error.message}`)
+      logger.error(`Error reading manifest file: ${error.message}`, { error })
       manifestCache = {}
     }
     return manifestCache

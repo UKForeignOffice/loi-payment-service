@@ -185,21 +185,15 @@ scheduleJob(jobScheduleRandom, () => {
 // =====================================
 
 process.on('uncaughtException', (error, origin) => {
-  logger.error('----- Uncaught Exception -----')
-  logger.error(error)
-  logger.error('----- Exception Origin -----')
-  logger.error(origin)
+  logger.error('----- Uncaught Exception -----', { error, origin })
 })
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error('----- Unhandled Rejection -----')
-  logger.error(`Promise: ${promise}`)
-  logger.error(`Reason: ${reason}`)
+  logger.error('----- Unhandled Rejection -----', { reason, promise })
 })
 
 app.listen(serverPort)
 
-logger.info(`Port ${process.argv[2] || process.env.PORT || 3003} is now open for connections`)
 logger.info(`is-payment-service running on port: ${process.argv[2] || process.env.PORT || 3003}`)
 logger.info(
   `payment cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`,

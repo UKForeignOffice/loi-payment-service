@@ -13,7 +13,7 @@ import {
   defaultUKPayUrl,
 } from './defaultConfig.js'
 
-dotenvConfig()
+dotenvConfig({ silent: true })
 
 const resultURL = { ...defaultResultURL, ...(process.env.RESULTURL ? JSON.parse(process.env.RESULTURL) : {}) }
 
