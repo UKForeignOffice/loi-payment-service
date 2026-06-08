@@ -59,7 +59,7 @@ export const jobs = {
         }
       }
     } catch (error) {
-      logger.error(error)
+      logger.error('Error in paymentCleanup job', { error })
     } finally {
       await unLockDb()
       await stop()
@@ -74,7 +74,7 @@ export const jobs = {
     }
 
     function abort(reason) {
-      logger.info(`[PAYMENT CLEANUP JOB] ABORTED ${reason}`)
+      logger.info(`[PAYMENT CLEANUP JOB] ABORTED ${reason}`, { reason })
     }
 
     async function checkIfDbIsUnLocked() {
@@ -86,7 +86,7 @@ export const jobs = {
           },
         })
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in checkIfDbIsUnLocked', { error })
       }
     }
 
@@ -104,7 +104,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in lockDb', { error })
       }
     }
 
@@ -122,7 +122,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in unLockDb', { error })
       }
     }
 
@@ -143,7 +143,7 @@ export const jobs = {
           },
         })
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in searchEligiblePayments', { error })
       }
     }
 
@@ -165,7 +165,7 @@ export const jobs = {
           },
         })
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in searchEligibleAdditionalPayments', { error })
       }
     }
 
@@ -178,7 +178,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in searchPaidInDraftApps', { error })
       }
     }
 
@@ -199,7 +199,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in updatePaymentStatus', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -229,7 +229,7 @@ export const jobs = {
         logger.info(`[PAYMENT CLEANUP JOB] EXPORT APP DATA FOR ${problemCase.application_id}`)
         return await sequelize.query(`SELECT * FROM populate_exportedapplicationdata(${problemCase.application_id})`)
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in exportAppData', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -238,7 +238,7 @@ export const jobs = {
         logger.info(`[PAYMENT CLEANUP JOB] EXPORT E-APP DATA FOR ${problemCase.application_id}`)
         return await sequelize.query(`SELECT * FROM populate_exportedeApostilleAppdata(${problemCase.application_id})`)
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in exportEAppData', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -251,7 +251,7 @@ export const jobs = {
           },
         })
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in checkForExportedAppData', { error, applicationRef: app.application_id })
       }
     }
 
@@ -263,7 +263,7 @@ export const jobs = {
           },
         })
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in checkAdditionalPaymentAppStatus', { error, applicationRef: appId })
       }
     }
 
@@ -281,7 +281,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in queueApplication', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -299,7 +299,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in updateAppAsFailed', { error, applicationRef: app.application_id })
       }
     }
 
@@ -320,7 +320,7 @@ export const jobs = {
           },
         )
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in queueAdditionalPayment', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -336,7 +336,7 @@ export const jobs = {
         const response = await axios(options)
         return response.data
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in callGovPaymentsApi', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -363,7 +363,7 @@ export const jobs = {
           return []
         }
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in findPDFs', { error, applicationRef: app.application_id })
       }
     }
 
@@ -379,7 +379,7 @@ export const jobs = {
           presigned_url: null,
         })
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in addDocumentUrlToDB', { error, applicationRef: app.application_id })
       }
     }
 
@@ -421,7 +421,7 @@ export const jobs = {
           }
         }
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in processPayments', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -465,7 +465,7 @@ export const jobs = {
           }
         }
       } catch (error) {
-        logger.error(error)
+        logger.error('Error in processAdditionalPayments', { error, applicationRef: problemCase.application_id })
       }
     }
 
@@ -479,7 +479,7 @@ export const jobs = {
           }
         }
       } catch (error) {
-        logger.error(`[PAYMENT CLEANUP JOB] ERROR PROCESSING APPS: ${error.message}`)
+        logger.error('Error in processPaidInDraftApps', { error, applicationRef: app.application_id })
       }
     }
 
@@ -501,12 +501,18 @@ export const jobs = {
             await Promise.all(pdfs.map((pdf) => addDocumentUrlToDB(app, pdf)))
             await queueApplication(app)
           } catch (error) {
-            logger.error(`[PAYMENT CLEANUP JOB] ERROR INSERTING DOCUMENTS FOR ${app.application_id}: ${error.message}`)
+            logger.error(
+              `[PAYMENT CLEANUP JOB] ERROR INSERTING DOCUMENTS FOR ${app.application_id}: ${error.message}`,
+              { error, applicationRef: app.application_id },
+            )
             throw new Error(error)
           }
         }
       } catch (error) {
-        logger.error(`[PAYMENT CLEANUP JOB] ERROR WITH PROCESSING APP ${app.application_id}: ${error.message}`)
+        logger.error(`[PAYMENT CLEANUP JOB] ERROR WITH PROCESSING APP ${app.application_id}: ${error.message}`, {
+          error,
+          applicationRef: app.application_id,
+        })
       }
     }
 
@@ -530,7 +536,10 @@ export const jobs = {
           await queueApplication(app)
         }
       } catch (error) {
-        logger.error(`[PAYMENT CLEANUP JOB] Error processing app ${app.application_id}: ${error.message}`)
+        logger.error(`[PAYMENT CLEANUP JOB] Error processing app ${app.application_id}: ${error.message}`, {
+          error,
+          applicationRef: app.application_id,
+        })
       }
     }
   },
