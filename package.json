@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "3.1045.0",
-    "axios": "1.16.0",
+    "axios": "^1.17.0",
     "body-parser": "2.2.2",
     "chokidar": "^3.6.0",
     "connect-redis": "9.0.0",
