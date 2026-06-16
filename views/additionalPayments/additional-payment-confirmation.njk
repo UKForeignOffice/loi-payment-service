@@ -1,0 +1,111 @@
+{% extends "layouts/template.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% if isSessionValid == false %}
+    {% set newPageTitle = "Your payment was unsuccessful - Get a document legalised – GOV.UK" %}
+{% elif paymentSuccessful == true %}
+    {% set newPageTitle = "Your payment was successful - Get a document legalised – GOV.UK" %}
+{% else %}
+    {% set newPageTitle = "Your payment was unsuccessful - Get a document legalised – GOV.UK" %}
+{% endif %}
+
+{% block pageTitle %}{{ newPageTitle }}{% endblock %}
+
+{% block content %}
+    {% if isSessionValid == false %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-l">Sorry, you'll have to start again</h1>
+                <p class="govuk-body">You took longer than 25 minutes to enter your payment details and we've cleared your information to keep it secure. Your application has not been submitted and payment has not been taken.</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li><a class="govuk-link" href="/start">Start a new application</a></li>
+                    <li><a class="govuk-link" href="https://www.gov.uk">GOV.UK home page</a></li>
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        {% if paymentSuccessful == true %}
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    {{ govukPanel({
+                        titleText: "Payment complete",
+                        html: "Your FCDO reference number<br><strong>" + appReference + "</strong>"
+                    }) }}
+                </div>
+            </div>
+            <div class="govuk-grid-row">
+        
+                <div class="govuk-grid-column-two-thirds">
+                    <p class="govuk-body">Thank you for your order from the Foreign, Commonwealth & Development Office. We've taken payment for the following:</p>
+
+                    {{ govukSummaryList({
+                        rows: [
+                        {
+                            key: {
+                                text: "Amount"
+                            },
+                            value: {
+                                text: "£" + cost
+                            }
+                        },
+                        {
+                            key: {
+                                text: "Card type"
+                            },
+                            value: {
+                                text: paymentMethod
+                            }
+                        },
+                        {
+                            key: {
+                                text: "Date"
+                            },
+                            value: {
+                                text: createdDate
+                            }
+                        },
+                        {
+                            key: {
+                                text: "Payment reference"
+                            },
+                            value: {
+                                text: appReference
+                            }
+                        }]
+                        }) 
+                    }}
+
+                    <p class="govuk-body">We've emailed a confirmation to <strong>{{ email }}</strong>. If you don't receive the email please check your spam folder.</p>
+
+                    <h2 class="govuk-heading-m">What to do next</h2>
+                    <p class="govuk-body">Your payment has been successfully submitted and the Legalisation Office has been notified. No further action is required.</p>
+                    <p class="govuk-body"><a class="govuk-link" href="{{ startNewApplicationUrl }}">Make another payment</a></p>
+                </div>
+            </div>
+        {% else %}
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h1 class="govuk-heading-l">Your payment was unsuccessful</h1>
+                    <p class="govuk-body">We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card, or use a different card.</p>
+                    <p class="govuk-body">Please try again.</p>
+
+                    <!-- PAYMENT FORM -->
+                    <form action="{{ next_url }}">
+                        {{ govukButton({
+                            text: "Continue to payment",
+                            preventDoubleClick: true
+                        }) }}
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+
+
+
+
+

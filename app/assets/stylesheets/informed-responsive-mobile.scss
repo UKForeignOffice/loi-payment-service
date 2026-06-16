@@ -1,0 +1,15 @@
+@include govuk-media-query($until: tablet) {
+  #Applications-Link {
+    margin-left: 0px;
+    padding-left: 0px;
+  }
+}
+
+@media(max-width: 340px) {
+  .inner_header{
+    height: 3em!important;
+  }
+  .email-logout-text {
+    font-size: 14px!important;
+  }
+}

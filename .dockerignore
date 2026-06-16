@@ -1,5 +1,4 @@
 .gitignore
-.jshintignore
 .nvmrc
 Dockerfile
 LICENSE

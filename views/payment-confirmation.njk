@@ -1,0 +1,61 @@
+{% extends "layouts/template.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}Your payment was unsuccessful - Get a document legalised – GOV.UK{% endblock %}
+
+{% block headerEnd %}
+    {% if loggedIn == true %}
+        <div class="inner_header govuk-width-container govuk-!-margin-bottom-0">
+            {% if user_data.loggedIn %}
+                <div class="inner-header-content">
+                    <span class="email-logout-text inner-header-user">
+                        {% if user_data.account and user_data.account.first_name %}
+                            {{ (user_data.account.first_name + ' ' + user_data.account.last_name) | truncate(50, true, '') }}
+                        {% else %}
+                            {{ user_data.user.email }}
+                        {% endif %}
+                    </span>
+                    <span class="email-logout-text inner-header-links">
+                        {% if user_data.user.isAdmin %}<a id="Admin-Link" href="{{ user_data.url }}/admin" class="govuk-link">Admin</a>{% endif %}
+                        <a id="Applications-Link" href="/dashboard" class="govuk-link">Applications</a>
+                        <a id="Account-Link" href="{{ user_data.url }}account" class="govuk-link">Account</a>
+                        <a id="Addresses-Link" href="{{ user_data.url }}addresses" class="govuk-link">Addresses</a>
+                        <a href="/sign-out" id="sign-out-link" class="govuk-link">Sign out</a>
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}            
+
+{% block content %}
+    {% if isSessionValid == false %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-l">Sorry, you'll have to start again</h1>
+                <p class="govuk-body">You took longer than 25 minutes to enter your payment details and we've cleared your information to keep it secure. Your application has not been submitted and payment has not been taken.</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li><a class="govuk-link" href="/api/user/sign-in">Sign in</a></li>
+                    <li><a class="govuk-link" href="/start">Start a new application</a></li>
+                    <li><a class="govuk-link" href="https://www.gov.uk">GOV.UK home page</a></li>
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-l">Your payment was unsuccessful</h1>
+                <p class="govuk-body">We were unable to take payment on the card you entered. Check your card details, make sure you have enough funds on the card to pay for your documents, or use a different card.</p>
+                <p class="govuk-body">Please try again.</p>
+
+                <!-- PAYMENT FORM -->
+                <form action="{{ next_url }}">
+                    {{ govukButton({
+                        text: "Continue to payment",
+                        preventDoubleClick: true
+                    }) }}
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

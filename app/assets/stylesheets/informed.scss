@@ -1,0 +1,84 @@
+//INFORMED CUSTOM CSS
+
+// This is used for the section under the header, which contains links to the users applications/account etc
+.inner_header{
+  width: 100%;
+  display: block;
+  margin-top: 15px;
+  min-height: 30px;
+
+  .inner-header-content {
+    float: right;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 8px 12px;
+    flex-wrap: wrap;
+    max-width: 100%;
+    height: 30px;
+    border-bottom: none;
+  }
+
+  @media (max-width:640px) {
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    display: block;
+    border-bottom: 1px solid #bfc1c3;
+    min-height: 4em;
+   
+    .inner-header-content{
+      float: none;
+      padding: 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      height: auto;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #bfc1c3;
+      margin-left: auto;
+    }
+
+    span.email-logout-text {
+      float: none;
+      white-space: nowrap;
+    }
+  }
+}
+.email-logout-text{
+  font-family: "GDS Transport",Arial,sans-serif;
+  margin-top: 0;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.inner-header-user {
+  margin-top: .75em;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.inner-header-links {
+  margin-top: .75em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.inner-header-links a {
+  font-family: "GDS Transport",Arial,sans-serif;
+  margin-left: 0;
+}
+
+@media (max-width:640px) {
+  .inner-header-user,
+  .inner-header-links {
+    width: 100%;
+  }
+
+  .inner-header-links {
+    justify-content: flex-start;
+  }
+}

@@ -1,7 +1,3 @@
+import { paymentConfig } from './payment.js'
 
-var payment = require('./payment.js');
-
-exports.config = function() {
-    var node_env = process.env.NODE_ENV || 'development';
-    return payment;
-};
+export const config = { configGovukPay: paymentConfig }
