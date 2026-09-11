@@ -9,8 +9,9 @@ FROM node:24-alpine AS run
 WORKDIR /opt/app
 COPY package*.json ./
 RUN npm ci --only=production
-COPY --from=build /opt/app/dist ./dist
-COPY . ./
+COPY --chown=node:node --from=build /opt/app/dist ./dist
+COPY --chown=node:node . ./
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 RUN find /opt/app -type f \( \
   -name "package-lock.json" -o \
   -name "Gemfile.lock" -o \
@@ -19,4 +20,5 @@ RUN find /opt/app -type f \( \
   -name "pnpm-lock.yaml" \
 \) -delete
 EXPOSE 3003
+USER node
 CMD ["node", "server.js", "3003"]
