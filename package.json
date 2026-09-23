@@ -26,6 +26,7 @@
     "@biomejs/biome": "2.4.15",
     "@vitest/coverage-v8": "^4.1.5",
     "esbuild": "^0.28.1",
+    "husky": "^9.1.7",
     "nock": "^14.0.15",
     "sass-embedded": "^1.99.0",
     "supertest": "7.2.2",
@@ -39,7 +40,8 @@
     "preview": "vite preview",
     "test": "vitest run --coverage",
     "format": "biome check --write .",
-    "quality": "biome check --changed --since=develop"
+    "quality": "biome check --changed --since=develop",
+    "prepare": "husky"
   },
   "license": "MIT",
   "overrides": {
