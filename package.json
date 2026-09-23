@@ -41,7 +41,7 @@
     "test": "vitest run --coverage",
     "format": "biome check --write .",
     "quality": "biome check --changed --since=develop",
-    "prepare": "husky"
+    "prepare": "if [ \"$NODE_ENV\" != \"production\" ]; then husky; fi"
   },
   "license": "MIT",
   "overrides": {
