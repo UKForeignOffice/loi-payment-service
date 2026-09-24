@@ -66,7 +66,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '@govuk': path.resolve(__dirname, 'node_modules/govuk-frontend/dist/govuk'),
+      '@govuk': path.resolve(import.meta.dirname, 'node_modules/govuk-frontend/dist/govuk'),
     },
   },
 })
